@@ -1,16 +1,14 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import importlib.util
 from pathlib import Path
 import pytest
-
 # Path to your modules folder
 MODULES_DIR = "modules"
-
 @pytest.mark.core
 def get_all_modules():
     """
@@ -18,7 +16,6 @@ def get_all_modules():
     """
     modules = []
     base_path = Path("modules")
-    
     if base_path.exists():
         for path in base_path.rglob('*.py'):
             if path.is_file() and path.name != "__init__.py":

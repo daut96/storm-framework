@@ -1,20 +1,16 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 from app.banners.banner import get_random_banner
 import app.base.config_ui as config_ui
-
-
 def execute(args, context):
     # Clean the screen according to the OS
     os.system("cls" if os.name == "nt" else "clear")
-
     # Redisplay tool identity
     print(get_random_banner())
     config_ui.stormUI()
-
     return context

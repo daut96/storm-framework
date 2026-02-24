@@ -1,27 +1,21 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import subprocess
 import os
-
 REQUIRED_OPTIONS = {
     "INTERFACE": "example: eth0",
 }
-
-
 def execute(options):
-
     iface = options.get("INTERFACE")
     base_dir = os.path.dirname(os.path.abspath(__file__))
     bin_path = os.path.join(base_dir, "src", "dpi_netspy")
-
     if not os.path.isfile(bin_path):
         print(f"[!] ERROR: Binary not found {bin_path}.")
         return False
-
     print(f"[*] Run Go-Sniffer on interface: {iface}")
 
     try:

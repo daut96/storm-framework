@@ -1,22 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 import importlib.util
 import textwrap
-
 from app.utility.colors import C
-
 # For those who like CVE collections, this logic is definitely needed
 # Because this will produce output that is neat in structure and style.
 # For ease of reading, and to differentiate between Description, name, ID, etc.
 # The most important thing is to make sure that the CVE uses the example data format that has been provided.
 # Otherwise the output will be messy and not according to storm rules.
-
-
 def execute(args, context):
     query = args[0] if args else ""
     if not query:

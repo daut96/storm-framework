@@ -1,14 +1,13 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import hashlib
 import json
 from pathlib import Path
 import pytest
-
 @pytest.mark.core
 def calculate_sha256(file_path):
     sha256_hash = hashlib.sha256()
@@ -16,7 +15,6 @@ def calculate_sha256(file_path):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
-
 @pytest.mark.security
 def test_verify_repo_integrity():
     # Setup Path

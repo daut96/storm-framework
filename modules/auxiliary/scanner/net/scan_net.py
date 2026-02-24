@@ -1,24 +1,20 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 # scanner.py
 import socket
 from app.utility.colors import C
-
 STATUS_OPEN = "✅"
 STATUS_CLOSED = "❌"
-
-
 def get_service_banner(target_ip, port, timeout=1.0):
     """
     Checking port status and trying to get banner/version information.
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
-
     # ---------------------------------------------
     # 1. Open Port: Do Banner Grabbing
     # ---------------------------------------------

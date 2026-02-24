@@ -1,22 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 from app.utility.restart import run_restart
 from app.utility.update import run_update
 from app.utility.verify import run_verif
 from app.utility.colors import C
-
-
 def execute(args, context):
     cmd = args[0].lower() if args else ""
-
     if not cmd:
         print(f"{C.ERROR}[!] ERROR: Not module selected")
         return context
-
     if cmd == "update":
         status = run_update()
         if status == True:

@@ -1,26 +1,21 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import subprocess
 import os
-
 REQUIRED_OPTIONS = {
     "HOSTNAME": "ex: mail.storm.com",
     "PORT": "ex: 25",
     "THREAD": "ex: 1000",
 }
-
-
 def execute(options):
     target = str(options.get("HOSTNAME"))
     port = str(options.get("PORT"))
     threads = str(options.get("THREAD"))
-
     bin_path = "./modules/auxiliary/dos/smtp/src/smtp_flood"
-
     if not target:
         print("[-] Target is missing!")
         return

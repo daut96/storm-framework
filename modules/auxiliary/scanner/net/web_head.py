@@ -1,27 +1,20 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 # web_head.py
 import requests
 import re
-
 from app.utility.colors import C
-
 REQUIRED_OPTIONS = {"URL": ""}
-
-
 def execute(options):
     """Checking the security header of a URL."""
-
     target_url = options.get("URL")
-
     # 1. Make sure the URL has a scheme (http:// or https://)
     if not target_url.startswith(("https://", "http://")):
         target_url = "https://" + target_url
-
     print(f"{C.HEADER} CHECKING THE HEADER: {target_url}")
 
     try:

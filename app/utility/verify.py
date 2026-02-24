@@ -1,25 +1,19 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import subprocess
 import os
 import sys
-
 from app.utility.colors import C
-
-
 def run_verif():
     bin_p = "app/base/check"
-
     if not os.path.exists(bin_p):
         print(f"[-] ERROR: Rust binary not found in {bin_p}")
         sys.exit(1)
-
     print(f"[*] [INTEGRITY] Launching Rust Engine")
-
     try:
         result = subprocess.run([bin_p])
 

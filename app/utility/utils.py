@@ -1,27 +1,20 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 import importlib
-
 from rootmap import ROOT
-
 """
 utils.py It all contains help logic to make it easier during repairs and updates.
-
 This is included in the core category which cannot be modified.
-
 """
-
-
 # LOGIC GLOBAL WORDLIST
 def resolve_path(kata_kunci):
     if not kata_kunci:
         return None
-
     assets_dir = os.path.join(ROOT, "assets/wordlist")
 
     # Check manual input first

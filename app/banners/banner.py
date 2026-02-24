@@ -1,24 +1,20 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 import random
 import importlib
 from app.utility.colors import C
 from rootmap import ROOT
-
-
 def get_random_banner():
     # Gunakan ROOT_DIR agar lebih bersih
     banner_dir = os.path.join(ROOT, "lib", "ui", "banners")
-
     try:
         if not os.path.exists(banner_dir):
             return f"{C.SUCCESS}Cyber-Pentest Framework (Folder Not Found)"
-
         all_files = [
             f
             for f in os.listdir(banner_dir)

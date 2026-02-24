@@ -1,27 +1,22 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 from app.utility.colors import C
 import app.utility.utils as utils
-
-
 def execute(args, context):
     current_module = context["current_module"]
     options = context["options"]
-
     if not current_module:
         print(f"{C.ERROR}[!] No modules selected. 'use <module>' first.")
         return context
-
     # Get the list of required variables from the selected module.
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
     missing = [
         key for key in required_vars.keys() if not str(options.get(key, "")).strip()
     ]
-
     if missing:
         print(f"{C.ERROR}[!] Failed to run. Variabel null.")
         print("")

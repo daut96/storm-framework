@@ -1,26 +1,21 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 from rootmap import ROOT
-
-
 def search_modules(query):
     # Langsung gunakan ROOT_DIR, tidak perlu os.path.dirname lagi di sini
     modules_path = os.path.join(ROOT, "modules")
-
     print(f"\n[*] Searching for: {query}")
     print(f"{'Module Path':<35} {'Category'}")
     print(f"{'-'*35} {'-'*15}")
-
     count = 0
     if not os.path.exists(modules_path):
         print(f"[-] Directory not found: {modules_path}")
         return
-
     for root, dirs, files in os.walk(modules_path):
         for file in files:
             if file.endswith(".py") and file != "__init__.py":

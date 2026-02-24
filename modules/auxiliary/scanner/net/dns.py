@@ -1,22 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 # dns.py
-
 import dns.resolver
 import dns.exception
 import socket
 import ipaddress
-
 from app.utility.colors import C
-
 # Definisikan simbol status
 SYM_INFO = "💡"
 SYM_SECURITY = "🔒"
-
 # List tipe record DNS yang ingin kita cari
 DNS_RECORDS = [
     # === Core addressing ===

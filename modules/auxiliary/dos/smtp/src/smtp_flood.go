@@ -1,10 +1,9 @@
+// MIT License.
 // Copyright (c) 2026 Storm Framework
-// Licensed under the MIT License.
 
-See LICENSE file in the project root for full license information.
+// See LICENSE file in the project root for full license information.
 
 package main
-
 import (
 	"flag"
 	"fmt"
@@ -14,9 +13,7 @@ import (
 	"syscall"
 	"time"
 )
-
 var count uint64
-
 func main() {
 	targetIP := flag.String("t", "", "Target IP")
 	port := flag.Int("p", 80, "Target Port")

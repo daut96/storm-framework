@@ -1,14 +1,12 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 # subdomain.py
 import requests
-
 from app.utility.colors import C
-
 # Subdomain list sederhana untuk pengujian
 # Dalam pentest nyata, list ini bisa berisi ribuan kata
 SUBDOMAINS = [

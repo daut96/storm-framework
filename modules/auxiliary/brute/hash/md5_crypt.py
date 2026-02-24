@@ -1,17 +1,13 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 # script/md5_crypt.py
 import crypt
-
 from app.utility.colors import C
-
 REQUIRED_OPTIONS = {"HASH": "", "PASS": ""}
-
-
 # --- Main Cracker Functions ---
 def execute(options):
     """
@@ -19,7 +15,6 @@ def execute(options):
     """
     shadow_entry = options.get("HASH")
     wordlist_file = options.get("PASS")
-
     # 1. Parsing Hash
     try:
         parts = shadow_entry.split(":")

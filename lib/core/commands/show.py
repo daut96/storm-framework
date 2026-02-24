@@ -1,23 +1,19 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import app.utility.utils as utils
 from app.utility.colors import C
-
-
 def execute(args, context):
     target_show = args[0].lower() if args else ""
     current_module = context["current_module"]
     current_module_name = context["current_module_name"]
     options = context["options"]
-
     if not target_show:
         print(f"{C.ERROR}[!] No modules selected.")
         return context
-
     # 1. show modules
     if target_show == "modules":
         categories = utils.get_categories()

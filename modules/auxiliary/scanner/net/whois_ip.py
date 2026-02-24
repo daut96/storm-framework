@@ -1,23 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 from ipwhois import IPWhois
 from app.utility.colors import C
-
 REQUIRED_OPTIONS = {"IP": "(ex: x.x.x.x)"}
-
-
 def execute(options):
     target_ip = options.get("IP")
     if not target_ip:
         print(f"{C.ERROR} ERROR: IP variable content 'set ip x.x.x.x'!")
         return
-
     print(f"{C.HEADER}[ IP WHOIS/RDAP LOOKUP ] -> {target_ip}")
-
     try:
         obj = IPWhois(target_ip)
         # Using RDAP (more modern & stable than standard WHOIS)

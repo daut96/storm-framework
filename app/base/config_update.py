@@ -1,21 +1,18 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import requests
 from versi import VERSION
 from app.utility.colors import C
-
-
 def check_update():
     # Raw URL to the version.txt file on GitHub
     url = "https://raw.githubusercontent.com/storm-os/storm-framework/main/version.txt"
     try:
         response = requests.get(url, timeout=5)
         latest_version = response.text.strip()
-
         # If the version on GitHub is higher than the local version
         if latest_version > VERSION:
             print(

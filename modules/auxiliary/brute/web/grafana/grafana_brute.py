@@ -1,25 +1,21 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import requests
 import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
-
 REQUIRED_OPTIONS = {"IP": "", "PORT": "", "PASS": ""}
 SYM_SUCCESS = "🔑"
 SYM_FAILED = "🔒"
-
-
 def test_grafana(target_ip, port, username, password):
     """Trying to login to grafana using requests (HTTP POST)."""
     login_url = f"http://{target_ip}:{port}/login"
     payload = {"user": username, "password": password}
     headers = {"Content-Type": "application/json"}
-
     try:
         response = requests.post(
             login_url, json=payload, headers=headers, timeout=3, allow_redirects=False

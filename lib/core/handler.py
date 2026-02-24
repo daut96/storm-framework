@@ -1,19 +1,16 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import importlib
 import os
 from app.utility.colors import C
-
-
 def execute(cmd, args, context):
     """Fungsi pusat untuk mencari dan menjalankan file perintah."""
     # Format path: lib/core/commands/use.py
     cmd_path = os.path.join("lib", "core", "commands", f"{cmd}.py")
-
     if os.path.exists(cmd_path):
         try:
             # Import dinamis sesuai perintah

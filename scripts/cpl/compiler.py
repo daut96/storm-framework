@@ -1,8 +1,8 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 import subprocess
@@ -11,16 +11,12 @@ from rootmap import ROOT
 from scripts.cpl.ioname import get_bin_name
 from scripts.cpl.advcore import safe_mode
 from concurrent.futures import ProcessPoolExecutor
-
 # Merge all caches
 SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core",  "cache", "rust_target")
-
-
 def run_cmd(cmd, cwd=None):
     # Set environment variables
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = SHARED_TARGET
-
     try:
         subprocess.run(
             cmd,

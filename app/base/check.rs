@@ -1,7 +1,7 @@
+// MIT License.
 // Copyright (c) 2026 Storm Framework
-// Licensed under the MIT License.
 
-See LICENSE file in the project root for full license information.
+// See LICENSE file in the project root for full license information.
 
 use sha2::{Sha256, Digest};
 use std::fs;
@@ -12,13 +12,11 @@ use walkdir::WalkDir;
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
 use base64::{engine::general_purpose, Engine as _};
-
 #[derive(Serialize, Deserialize, Debug)]
 struct Manifest {
     metadata: Metadata,
     files: BTreeMap<String, FileInfo>,
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 struct Metadata {
     version: String,

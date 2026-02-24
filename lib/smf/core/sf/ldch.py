@@ -1,17 +1,14 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import os
 from rootmap import ROOT
-
-
 def session(options):
     full_path = os.path.join(ROOT, "lib", "smf", "cache")
     cache_path = os.path.join(full_path, ".storm-session")
-
     # check cache files
     if os.path.exists(cache_path):
         try:

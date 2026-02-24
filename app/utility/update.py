@@ -1,26 +1,19 @@
+# MIT License.
 # Copyright (c) 2026 Storm Framework
 
-# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
-See LICENSE file in the project root for full license information.
 
 import requests
 import subprocess
-
 from app.utility.colors import C
-
-
 def run_update():
-
     url = "https://raw.githubusercontent.com/storm-os/storm-framework/main/version.txt"
     try:
         response = requests.get(url, timeout=5)
         latest_version = response.text.strip()
     except:
         pass
-
-    print(f"{C.SUCCESS}[*] Attempting to update Storm Framework.{C.RESET}")
-
     # 1. Get the latest info without changing the locale first
     subprocess.run(["git", "fetch", "--all"], stdout=subprocess.DEVNULL)
 

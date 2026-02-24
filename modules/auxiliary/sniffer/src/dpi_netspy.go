@@ -1,20 +1,17 @@
+// MIT License.
 // Copyright (c) 2026 Storm Framework
-// Licensed under the MIT License.
 
-See LICENSE file in the project root for full license information.
+// See LICENSE file in the project root for full license information.
 
 package main
-
 import (
 	"fmt"
 	"log"
 	"os"
 	"strings"
-
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
-
 func main() {
 	// Checks whether interface arguments are given
 	if len(os.Args) < 2 {

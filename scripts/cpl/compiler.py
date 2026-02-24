@@ -12,10 +12,10 @@ from app.utility.spin import StormSpin
 from scripts.cpl.ioname import get_bin_name
 from scripts.cpl.advcore import safe_mode
 from concurrent.futures import ProcessPoolExecutor
-# Merge all caches
-SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core",  "cache", "rust_target")
+
+SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core", "cache", "rust_target")
+
 def run_cmd(cmd, cwd=None):
-    # Set environment variables
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = SHARED_TARGET
     try:
@@ -34,26 +34,20 @@ def run_cmd(cmd, cwd=None):
         print(f"[!] Rust Failed: {os.path.basename(cwd)}")
         return False
 
-
 def compile_rust_project(cargo_path):
     output_dir = os.path.dirname(cargo_path)
     output_name = os.path.basename(os.path.abspath(output_dir))
 
-    # Run as --offline
-    # The --frozen flag ensures Cargo does not modify Cargo.lock
-    # -j 1 This ensures 1 process uses 1 CPU core
-    cmd = "cargo build --release --offline -j 1"
+    cmd = "cargo build --release --offline"
 
-    with StormSpin():
-        success = run_cmd(cmd, cwd=output_dir)
-
-    if success:
+    if run_cmd(cmd, cwd=output_dir):
         bin_name = get_bin_name(cargo_path)
+
         src_bin = os.path.join(SHARED_TARGET, "release", bin_name)
         dst_bin = os.path.join(output_dir, output_name)
 
         if os.path.exists(src_bin):
-            shutil.copy(shutil.which(src_bin) or src_bin, dst_bin)
+            shutil.copy(src_bin, dst_bin)
             os.chmod(dst_bin, 0o755)
             return f"[✓] Rust: {output_name}"
     return f"[!] Rust Failed: {output_name}"
@@ -63,7 +57,6 @@ def compile_single_file(task):
     output = os.path.splitext(src_path)[0]
 
     if lang == "go":
-        # Use -mod=vendor if you also vendor the Go libraries later.
         cmd = f"CGO_ENABLED=1 go build -o '{output}' '{src_path}'"
     else:
         with open(src_path, 'r', errors='ignore') as f:
@@ -73,7 +66,7 @@ def compile_single_file(task):
 
     if run_cmd(cmd):
         os.chmod(output, 0o755)
-        return f"[✓] {lang.upper()}: {output}"
+        return f"[✓] {lang.upper()}: {os.path.basename(output)}"
     return f"[!] {lang.upper()} Failed: {output}"
 
 def main():
@@ -108,7 +101,7 @@ def main():
             with StormSpin():
                 run_cmd("cargo build --release --offline", cwd=rust_dir)
 
-    # 3. PREPARE GO
+    # --- PREPARE GO ---
     if other_tasks and not os.path.exists("go.mod"):
         print("[*] Preparing Go Modules...")
         run_cmd("go mod init github.com/storm-os/storm-framework")
@@ -116,7 +109,6 @@ def main():
 
     # EXECUTED PARALEL
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
-
     with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
         rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
         other_results_future = [executor.submit(compile_single_file, task) for task in other_tasks]

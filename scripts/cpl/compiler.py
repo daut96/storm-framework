@@ -80,7 +80,7 @@ def main():
     # SCANNING PHASE (Fast & Accurate)
     for root, dirs, files in os.walk("."):
         # Never enter a vendor or target!
-        if any(x in root for x in [".git", "vendor", "cache", "target"]):
+        if any(x in root for x in [".git", "db", "cache", "target"]):
             continue
 
         if "Cargo.toml" in files:

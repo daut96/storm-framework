@@ -8,6 +8,8 @@ import os
 import subprocess
 import sys
 from rootmap import ROOT
+
+
 def install_osint_module():
     repo_url = "https://github.com/storm-os/OSINT.git"
     target_dir = os.path.join(ROOT, "script", "osint")

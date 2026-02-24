@@ -6,9 +6,12 @@
 
 import subprocess
 import os
+
 REQUIRED_OPTIONS = {
     "INTERFACE": "example: eth0",
 }
+
+
 def execute(options):
     iface = options.get("INTERFACE")
     base_dir = os.path.dirname(os.path.abspath(__file__))

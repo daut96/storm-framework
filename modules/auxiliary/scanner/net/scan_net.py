@@ -7,8 +7,11 @@
 # scanner.py
 import socket
 from app.utility.colors import C
+
 STATUS_OPEN = "✅"
 STATUS_CLOSED = "❌"
+
+
 def get_service_banner(target_ip, port, timeout=1.0):
     """
     Checking port status and trying to get banner/version information.

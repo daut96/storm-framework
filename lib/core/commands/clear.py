@@ -7,6 +7,8 @@
 import os
 from app.banners.banner import get_random_banner
 import app.base.config_ui as config_ui
+
+
 def execute(args, context):
     # Clean the screen according to the OS
     os.system("cls" if os.name == "nt" else "clear")

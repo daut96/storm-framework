@@ -7,7 +7,10 @@
 # script/md5_crypt.py
 import crypt
 from app.utility.colors import C
+
 REQUIRED_OPTIONS = {"HASH": "", "PASS": ""}
+
+
 # --- Main Cracker Functions ---
 def execute(options):
     """

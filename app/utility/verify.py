@@ -8,6 +8,8 @@ import subprocess
 import os
 import sys
 from app.utility.colors import C
+
+
 def run_verif():
     bin_p = "app/base/check"
     if not os.path.exists(bin_p):

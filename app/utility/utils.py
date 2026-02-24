@@ -7,10 +7,13 @@
 import os
 import importlib
 from rootmap import ROOT
+
 """
 utils.py It all contains help logic to make it easier during repairs and updates.
 This is included in the core category which cannot be modified.
 """
+
+
 # LOGIC GLOBAL WORDLIST
 def resolve_path(kata_kunci):
     if not kata_kunci:

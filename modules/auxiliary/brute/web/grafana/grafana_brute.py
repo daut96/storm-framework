@@ -8,9 +8,12 @@ import requests
 import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
+
 REQUIRED_OPTIONS = {"IP": "", "PORT": "", "PASS": ""}
 SYM_SUCCESS = "🔑"
 SYM_FAILED = "🔒"
+
+
 def test_grafana(target_ip, port, username, password):
     """Trying to login to grafana using requests (HTTP POST)."""
     login_url = f"http://{target_ip}:{port}/login"

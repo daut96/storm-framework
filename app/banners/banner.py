@@ -9,6 +9,8 @@ import random
 import importlib
 from app.utility.colors import C
 from rootmap import ROOT
+
+
 def get_random_banner():
     # Gunakan ROOT_DIR agar lebih bersih
     banner_dir = os.path.join(ROOT, "lib", "ui", "banners")

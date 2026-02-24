@@ -6,6 +6,8 @@
 
 import os
 from rootmap import ROOT
+
+
 def session(options):
     full_path = os.path.join(ROOT, "lib", "smf", "cache")
     cache_path = os.path.join(full_path, ".storm-session")

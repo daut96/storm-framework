@@ -7,6 +7,8 @@
 import requests
 import subprocess
 from app.utility.colors import C
+
+
 def run_update():
     url = "https://raw.githubusercontent.com/storm-os/storm-framework/main/version.txt"
     try:

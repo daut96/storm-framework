@@ -7,6 +7,7 @@
 # subdomain.py
 import requests
 from app.utility.colors import C
+
 # Subdomain list sederhana untuk pengujian
 # Dalam pentest nyata, list ini bisa berisi ribuan kata
 SUBDOMAINS = [

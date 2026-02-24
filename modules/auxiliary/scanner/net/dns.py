@@ -10,6 +10,7 @@ import dns.exception
 import socket
 import ipaddress
 from app.utility.colors import C
+
 # Definisikan simbol status
 SYM_INFO = "💡"
 SYM_SECURITY = "🔒"

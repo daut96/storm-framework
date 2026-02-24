@@ -9,7 +9,10 @@ import time
 import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
+
 REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
+
+
 def test_ssh(target_ip, port, username, password):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

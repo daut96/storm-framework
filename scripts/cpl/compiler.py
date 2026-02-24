@@ -36,25 +36,21 @@ def run_cmd(cmd, cwd=None):
 
 def compile_rust_project(cargo_path):
     output_dir = os.path.dirname(cargo_path)
-    output_name = os.path.basename(os.path.abspath(output_dir))
     bin_name = get_bin_name(cargo_path)
+    
     src_bin = os.path.join(SHARED_TARGET, "release", bin_name)
-    dst_bin = os.path.join(output_dir, output_name)
+    dst_bin = os.path.join(output_dir, bin_name)
 
     if os.path.exists(src_bin):
         try:
             shutil.copy(src_bin, dst_bin)
             os.chmod(dst_bin, 0o755)
-            return f"[✓] Rust: {output_name}"
+            return f"[✓] Rust: {bin_name}"
         except Exception as e:
-            return f"[!] Copy Error: {output_name} ({e})"
+            return f"[!] Copy Error: {bin_name} ({e})"
+            
+    return f"[!] Rust Binary Not Found: {bin_name}"
 
-    if run_cmd("cargo build --release --offline", cwd=output_dir):
-        if os.path.exists(src_bin):
-            shutil.copy(src_bin, dst_bin)
-            os.chmod(dst_bin, 0o755)
-            return f"[✓] Rust: {output_name}"
-    return f"[!] Rust Binary Not Found: {output_name}"
 
 
 def compile_single_file(task):
@@ -116,7 +112,7 @@ def main():
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
     with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
         rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
-        other_results_future = [executor.submit(compile_single_file, task) for task in other_tasks]
+        other_results_future = [executor.submit(compile_single_file, *task) for task in other_tasks]
 
         rust_results = [f.result() for f in rust_results_future]
         other_results = [f.result() for f in other_results_future]

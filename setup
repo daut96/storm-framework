@@ -120,20 +120,13 @@ if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Cannot access $INSTALL_DIR${NC}"; }
 fi
 
-COMPILER_SRC="scripts.cpl.compiler"
-
-if [ -f "$COMPILER_SRC" ]; then
-    echo -e "[*] Run binary compilation."
-    if $NEEDS_SUDO; then
-        sudo "$PYTHON_CMD" -m "$COMPILER_SRC"
-    else
-        "$PYTHON_CMD" -m "$COMPILER_SRC"
-    fi
-    cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
+echo -e "[*] Run binary compilation."
+if $NEEDS_SUDO; then
+    sudo "$PYTHON_CMD" -m scripts.cpl.compiler
 else
-    echo -e "${RED}[x] ERROR: File compiler not found in $(pwd)!"
-    echo -e "${RED}[!] Make sure the file exists in the project directory."
+    "$PYTHON_CMD" -m scripts.cpl.compiler
 fi
+cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
 # --- Security Identity Generation (Version: The 60-Char Fix) ---
 if [ ! -f .env ]; then

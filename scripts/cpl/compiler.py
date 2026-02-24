@@ -13,7 +13,7 @@ from scripts.cpl.ioname import get_bin_name
 from scripts.cpl.advcore import safe_mode
 from concurrent.futures import ProcessPoolExecutor
 
-SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core", "cache", "rust_target")
+SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core", "cache", "rust.session")
 
 def run_cmd(cmd, cwd=None):
     env = os.environ.copy()
@@ -112,7 +112,7 @@ def main():
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
     with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
         rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
-        other_results_future = [executor.submit(compile_single_file, *task) for task in other_tasks]
+        other_results_future = [executor.submit(compile_single_file, task) for task in other_tasks]
 
         rust_results = [f.result() for f in rust_results_future]
         other_results = [f.result() for f in other_results_future]

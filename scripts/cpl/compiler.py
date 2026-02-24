@@ -97,20 +97,31 @@ def main():
             elif file.endswith(".c"):
                 other_tasks.append(("c", full_path))
 
+    if rust_tasks:
+        for cargo_path in rust_tasks:
+            rust_dir = os.path.dirname(cargo_path)
+
+            with StormSpin():
+                run_cmd("cargo build --release --offline", cwd=rust_dir)
+
+    # 3. PREPARE GO
     if other_tasks and not os.path.exists("go.mod"):
         print("[*] Preparing Go Modules...")
         run_cmd("go mod init github.com/storm-os/storm-framework")
         run_cmd("go mod tidy")
 
-    # EXECUTE PARALLEL
+    # EXECUTED PARALEL
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
-    with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
-        # Submit Rust projects
-        rust_results = list(executor.map(compile_rust_project, rust_tasks))
-        # Submit Go & C files
-        other_results = list(executor.map(compile_single_file, other_tasks))
 
-    for r in rust_results + other_results: print(r)
+    with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
+        rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
+        other_results_future = [executor.submit(compile_single_file, task) for task in other_tasks]
+
+        rust_results = [f.result() for f in rust_results_future]
+        other_results = [f.result() for f in other_results_future]
+
+    for r in rust_results + other_results:
+        print(r)
 
     # Delete the build_cache folder but after all the binaries have been moved
     # shutil.rmtree(os.path.join(ROOT, "cache"), ignore_errors=True)

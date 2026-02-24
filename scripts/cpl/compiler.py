@@ -45,7 +45,7 @@ def compile_rust_project(cargo_path):
     cmd = "cargo build --release --offline -j 1"
 
     with StormSpin():
-        success = run_cmd(cmd, cwd=output_dir):
+        success = run_cmd(cmd, cwd=output_dir)
 
     if success:
         bin_name = get_bin_name(cargo_path)

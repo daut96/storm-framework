@@ -2,18 +2,19 @@ import sys
 import time
 import threading
 
+
 class StormSpin:
     def __init__(self):
         self._done = False
         self._thread = None
 
     def _animate(self):
-        chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         while not self._done:
             for cursor in chars:
                 if self._done:
                     break
-                  
+
                 sys.stdout.write(f"\r{cursor} ")
                 sys.stdout.flush()
                 time.sleep(0.08)
@@ -29,7 +30,6 @@ class StormSpin:
         self._done = True
         if self._thread:
             self._thread.join()
-        
-        sys.stdout.write("\r \r") 
-        sys.stdout.flush()
 
+        sys.stdout.write("\r \r")
+        sys.stdout.flush()

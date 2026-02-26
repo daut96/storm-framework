@@ -35,4 +35,4 @@ def execute(options):
     except Exception as e:
         print(f"[-] No Response: {e}")
     finally:
-        s.close()
+        sock.close()

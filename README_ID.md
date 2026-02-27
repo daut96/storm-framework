@@ -1,7 +1,5 @@
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Kali Linux](https://img.shields.io/badge/Kali%20Linux-supported-blue?logo=kalilinux)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-supported-orange?logo=ubuntu)
-![Debian](https://img.shields.io/badge/Debian-supported-red?logo=debian)
 ![Termux](https://img.shields.io/badge/Termux-supported-black?logo=android)
 
 ---
@@ -42,7 +40,7 @@ Pengembang (Developer) **TIDAK** bertanggung jawab atas segala kerusakan, kerugi
 
 ### 🛠️ Instalasi
 
-Pastikan Anda memiliki **Python 3.12.x** terinstal pada sistem Anda. Tool ini dioptimalkan untuk dijalankan di lingkungan **Kali Linux/Ubuntu/Debian/Termux**.
+Pastikan Anda memiliki **Python 3.12.x** terinstal pada sistem Anda. Tool ini dioptimalkan untuk dijalankan di lingkungan **Kali Linux/Termux**.
 
 #### 1. Kloning Repositori & Instalasi Otomatis
 

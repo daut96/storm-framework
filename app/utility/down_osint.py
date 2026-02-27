@@ -27,7 +27,7 @@ def install_osint_module():
         print("[*] Detected setup.py. Installing module in editable mode...")
         # '-e .' This means install this folder as a package so that it can be imported.
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-e", target_dir], check=True
+            [sys.executable, "-m", "pip", "install", ".", target_dir], check=True
         )
         print("[✓] OSINT Package 'osint-storm' installed successfully.")
 

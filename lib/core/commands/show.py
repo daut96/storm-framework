@@ -16,13 +16,16 @@ def execute(args, context):
     if not target_show:
         print(f"{C.ERROR}[!] No modules selected.")
         return context
+        
     # 1. show modules
     if target_show == "modules":
         categories = utils.get_categories()
         print(f"\n{C.HEADER}--- Categories ---")
+        
         for cat in categories:
             print(f"  - {cat}")
-        print(f"\n{C.INPUT}Use 'show <category_name>' to see modules.")
+            
+        print(f"\n{C.INPUT}[-] WARN => show <category_name> to see modules.")
         print("")
 
     # 2. show options
@@ -52,6 +55,6 @@ def execute(args, context):
                 print(f"  - {mod}")
             print("")
         else:
-            print(f"{C.ERROR}[-] Category or option: {target_show} > not found.")
+            print(f"{C.INPUT}[-] Category or option: {target_show} > not found.")
 
     return context

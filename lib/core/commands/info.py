@@ -18,7 +18,7 @@ from app.utility.colors import C
 def execute(args, context):
     query = args[0] if args else ""
     if not query:
-        print("[-] Enter file name to info!")
+        print("{C.ERROR}[-] Enter file name to info!")
         return context
 
     # This is a special logic to know where the CVE is located.

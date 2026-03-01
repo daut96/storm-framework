@@ -27,7 +27,7 @@ def execute(options):
 
     try:
         check_ghunt = os.path.join(ROOT, "script", "ghunt", ".git")
-        if os.path.exists(check_ghunt)
+        if os.path.exists(check_ghunt):
             payload = {
                 "module": module,
                 "target": target,

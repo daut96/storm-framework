@@ -45,6 +45,8 @@ async def test_telnet(target_ip, port, username, password):
         # Verification
         return "$" in result or "#" in result
 
+    except KeyboardInterrupt:
+        pass
     except (asyncio.TimeoutError, socket.timeout, socket.error, EOFError):
         return False
     except Exception:
@@ -111,7 +113,7 @@ async def _execute_async(options):
             print(f"\n{C.MENU}  {SYM_FAILED} All passwords are incorrect.")
 
     except KeyboardInterrupt:
-        return
+        pass
     except Exception as e:
         print(f"{C.ERROR}[x] GLOBAL ERROR: {e}")
 

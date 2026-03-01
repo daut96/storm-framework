@@ -21,12 +21,12 @@ def execute(args, context):
         status = install_osint_module()
         if status == True:
             run_restart(context)
-            
+
     elif cmd == "ghunt":
         status = install_ghunt_module()
         if status == True:
             run_restart(context)
-            
+
     else:
         print(f"{C.INPUT}[-] WARN => {cmd} > Not found.")
 

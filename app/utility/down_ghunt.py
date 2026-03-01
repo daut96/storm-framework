@@ -1,11 +1,11 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
+
 
 def setup_ghunt(base_path):
     print(f"[*] Starting GHunt Environment Setup at: {base_path}")
-    
+
     venv_dir = base_path / "venv"
     # Menyesuaikan path executable berdasarkan OS
     if os.name == "nt":  # Windows
@@ -31,7 +31,9 @@ def setup_ghunt(base_path):
 
         # 3. Install Playwright (Wajib untuk GHunt login/scraping)
         print("[+] Installing Playwright browsers...")
-        subprocess.run([str(python_exe), "-m", "playwright", "install", "chromium"], check=True)
+        subprocess.run(
+            [str(python_exe), "-m", "playwright", "install", "chromium"], check=True
+        )
 
         print("\n[✔] GHunt Installation Complete!")
         return True
@@ -40,7 +42,7 @@ def setup_ghunt(base_path):
         print(f"\n[✘] Installation Failed: {e}")
         return False
 
+
 # Jalankan setup
 # base_path = Path(ROOT) / "script" / "ghunt"
 # setup_ghunt(base_path)
-

@@ -1,5 +1,4 @@
 import subprocess
-import json as json_lib
 from pathlib import Path
 from rootmap import ROOT
 

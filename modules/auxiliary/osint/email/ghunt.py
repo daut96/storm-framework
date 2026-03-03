@@ -45,7 +45,7 @@ def execute(options):
             return {"status": "success", "output": process.stdout}
         else:
             print(
-                f"[*] Try running {C.SUCCESS}down ghunt{C.RESET} first to download the module."
+                f"[*] Try running {C.SUCCESS}down ghosint{C.RESET} first to download the module."
             )
 
     except KeyboardInterrupt:

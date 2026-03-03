@@ -17,7 +17,7 @@ def execute(options):
     module = options.get("MODULE")
     target = options.get("EMAIL")
 
-    output_filename = "storm-ghunt.json"
+    output_filename = "ghosint.json"
     base_path = Path(ROOT) / "script" / "ghunt"
 
     python_executable = base_path / "venv" / "bin" / "python"

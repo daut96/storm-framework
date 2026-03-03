@@ -34,11 +34,12 @@ def run_cmd(cmd, cwd=None):
 
 def compile_rust_project(cargo_path):
     output_dir = os.path.dirname(cargo_path)
+    
     outdir = os.path.join(ROOT, "external", "source", "binary")
     bin_name = get_bin_name(cargo_path)
     
     src_bin = os.path.join(SHARED_TARGET, "release", bin_name)
-    dst_bin = os.path.join(output_dir, bin_name)
+    dst_bin = os.path.join(outdir, bin_name)
 
     if os.path.exists(src_bin):
         try:

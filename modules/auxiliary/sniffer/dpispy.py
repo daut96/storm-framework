@@ -1,11 +1,12 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
 
 
 import subprocess
 import os
+
+from rootmap import ROOT 
 
 REQUIRED_OPTIONS = {
     "INTERFACE": "example: eth0",
@@ -14,8 +15,7 @@ REQUIRED_OPTIONS = {
 
 def execute(options):
     iface = options.get("INTERFACE")
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    bin_path = os.path.join(base_dir, "src", "dpi_netspy")
+    bin_path = os.path.join(ROOT, "external", "source", "binary", "dpi_netspy")
     if not os.path.isfile(bin_path):
         print(f"[!] ERROR: Binary not found {bin_path}.")
         return False

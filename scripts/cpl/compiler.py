@@ -1,12 +1,10 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
-
-
 import os
 import subprocess
 import shutil
+
 from rootmap import ROOT
 from app.utility.spin import StormSpin
 from scripts.cpl.ioname import get_bin_name
@@ -108,13 +106,13 @@ def main():
             with StormSpin():
                 run_cmd("cargo build --release --offline", cwd=rust_dir)
 
-    # --- PREPARE GO ---
+    # Go.mod installation required by Golang compilation
     if other_tasks and not os.path.exists("go.mod"):
         print("[*] Preparing Go Modules...")
         run_cmd("go mod init github.com/storm-os/storm-framework")
         run_cmd("go mod tidy")
 
-    # EXECUTED PARALEL
+    # Perform parallel compilation in all languages
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
     with ProcessPoolExecutor(max_workers=safe_mode()) as executor:
         rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
@@ -122,9 +120,6 @@ def main():
 
         rust_results = [f.result() for f in rust_results_future]
         other_results = [f.result() for f in other_results_future]
-
-    for r in rust_results + other_results:
-        print(r)
 
 if __name__ == "__main__":
     main()

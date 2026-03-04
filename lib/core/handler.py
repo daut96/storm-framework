@@ -1,25 +1,23 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
-
-
 import importlib
 import os
 from app.utility.colors import C
 
 
 def execute(cmd, args, context):
-    """Central function to search for and execute command files."""
-
+    """
+    Central function to search for and execute command files.
+    """
     cmd_path = os.path.join("lib", "core", "commands", f"{cmd}.py")
     if os.path.exists(cmd_path):
         try:
-            # Dynamic import on command
             module = importlib.import_module(f"lib.core.commands.{cmd}")
-
-            # call dynamic function
+            
             return module.execute(args, context)
+        except KeyboardInterrupt:
+            return context
         except Exception as e:
             print(f"{C.ERROR}[-] ERROR => {cmd} > {e}")
             return context

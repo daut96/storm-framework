@@ -1,9 +1,6 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
-
-
 import telnetlib3
 import asyncio
 import socket
@@ -21,7 +18,6 @@ async def test_telnet(target_ip, port, username, password):
     Attempting Telnet login using telnetlib3 with prompt-based interaction.
     """
     try:
-        # Flash connection
         reader, writer = await telnetlib3.open_connection(
             host=target_ip, port=int(port), connect_minwait=0.05, connect_maxwait=2.5
         )
@@ -46,7 +42,7 @@ async def test_telnet(target_ip, port, username, password):
         return "$" in result or "#" in result
 
     except KeyboardInterrupt:
-        pass
+        return False
     except (asyncio.TimeoutError, socket.timeout, socket.error, EOFError):
         return False
     except Exception:
@@ -113,7 +109,7 @@ async def _execute_async(options):
             print(f"\n{C.MENU}  {SYM_FAILED} All passwords are incorrect.")
 
     except KeyboardInterrupt:
-        pass
+        return 
     except Exception as e:
         print(f"{C.ERROR}[x] GLOBAL ERROR: {e}")
 

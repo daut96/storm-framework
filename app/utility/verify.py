@@ -40,7 +40,7 @@ def check_critical_files():
         )
         sys.exit(1)
 
-    elif not os.path.exists("check"):
+    elif not os.path.isfile("check"):
         print(f"{C.ERROR}[!] CRITICAL: Integrity engine is missing!{C.RESET}")
         print(f"[*] Storm cannot verify database signatures without an engine.")
         print(f"[*] Please run the installation/restore script to fix the problem.")

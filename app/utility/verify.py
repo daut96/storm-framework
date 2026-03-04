@@ -23,7 +23,7 @@ def run_verif():
         return True
 
     except KeyboardInterrupt:
-        pass
+        return
     except Exception as e:
         print(f"[-] ERROR during execution: {e}")
         sys.exit(1)

@@ -1,9 +1,6 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
-
-
 import paramiko
 import time
 import os
@@ -11,7 +8,6 @@ from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
 
 REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
-
 
 def test_ssh(target_ip, port, username, password):
     client = paramiko.SSHClient()
@@ -33,9 +29,9 @@ def test_ssh(target_ip, port, username, password):
     except paramiko.SSHException:
         time.sleep(1)
         return False
-    except Exception:
+    except Exception: 
         return False
-    finally:
+    finally: 
         client.close()
 
 

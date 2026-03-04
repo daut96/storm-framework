@@ -1,15 +1,11 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
 
-
-# whois.py
 import whoisdomain as whois
 from app.utility.colors import C
 
 REQUIRED_OPTIONS = {"DOMAIN": "(e.g., example.com)"}
-
 
 def get_clean_data(data):
     """Tidy up the date or list format to make it easier to read."""
@@ -62,6 +58,8 @@ def execute(options):
             f"{C.MENU} Name Servers:   {C.RESET}{', '.join(list(ns)[:2]) if ns else 'N/A'}"
         )
 
+    except KeyboardInterrupt:
+        return 
     except Exception as e:
         print(f"{C.ERROR} ERROR: Unable to retrieve domain data.")
         print(f"{C.ERROR} Detail: {e}")

@@ -3,6 +3,7 @@
 # See LICENSE file in the project root for full license information.
 
 from app.utility.colors import C
+
 try:
     from script.osint.handstorm import StormOSModuleRunner
 except ImportError:
@@ -25,7 +26,6 @@ def execute(options):
                 f"{C.ERROR}[x] ERROR: EMAIL is not set. Use 'set email <target>'{C.RESET}"
             )
     except KeyboardInterrupt:
-        return 
+        return
     except Exception as e:
         return {"status": "error", "message": str(e)}
-

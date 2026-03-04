@@ -7,6 +7,7 @@ from app.utility.colors import C
 STATUS_OPEN = "✅"
 STATUS_CLOSED = "❌"
 
+
 def get_service_banner(target_ip, port, timeout=1.0):
     """
     Checking port status and trying to get banner/version information.
@@ -22,13 +23,13 @@ def get_service_banner(target_ip, port, timeout=1.0):
                 if port in [80, 443, 8080]:
                     request = f"HEAD / HTTP/1.1\r\nHost: {target_ip}\r\n\r\n"
                     s.sendall(request.encode())
-                    
+
                 banner = s.recv(1024)
                 if banner:
                     banner_info = banner.decode(errors="ignore").strip()
                     if port == 22:
                         banner_info = banner_info.split("\n")[0]
-                        
+
                     elif port in [80, 443, 8080]:
                         server_header = next(
                             (
@@ -47,7 +48,7 @@ def get_service_banner(target_ip, port, timeout=1.0):
                 banner_info = "Timeout"
             except Exception as e:
                 banner_info = f"ERROR: {e}"
-                
+
             return status_color, banner_info
         else:
             s.close()
@@ -57,6 +58,7 @@ def get_service_banner(target_ip, port, timeout=1.0):
         return
     finally:
         s.close()
+
 
 REQUIRED_OPTIONS = {"IP": ""}
 
@@ -135,7 +137,7 @@ def execute(options):
         for port in ports_to_check:
             status_line, banner = get_service_banner(target_ip, port)
             service_name = port_names.get(port, "Unknown Service")
-            
+
             port_info_string = f"  Port {port} ({service_name})"
             padding_string = port_info_string.ljust(MAX_TOTAL_WIDTH)
             output_line = f"{C.MENU}{padding_string}: {status_line}"
@@ -154,6 +156,7 @@ def execute(options):
             print(output_line)
 
         print(f"{C.HEADER} --- SCAN COMPLETE ---")
-    except KeyboardInterrupt: return 
+    except KeyboardInterrupt:
+        return
     except KeyboardInterrupt:
         print(f"\n{C.ERROR}[!] Scan stopped.{C.RESET}")

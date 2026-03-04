@@ -7,6 +7,7 @@ from app.utility.colors import C
 
 REQUIRED_OPTIONS = {"IP": "(ex: x.x.x.x)"}
 
+
 def execute(options):
     target_ip = options.get("IP")
     if not target_ip:
@@ -36,7 +37,7 @@ def execute(options):
         print(f"{C.MENU} Abuse Emails:   {C.RESET}{unique_emails}")
 
     except KeyboardInterrupt:
-        return 
+        return
     except Exception as e:
         print(f"{C.ERROR} ERROR: Failed to retrieve IP data.")
         print(f"{C.ERROR} Detail: {e}")

@@ -1,41 +1,31 @@
 # MIT License.
 # Copyright (c) 2026 Storm Framework
-
 # See LICENSE file in the project root for full license information.
 
-
-# web_head.py
 import requests
 import re
 from app.utility.colors import C
 
 REQUIRED_OPTIONS = {"URL": ""}
 
-
 def execute(options):
     """Checking the security header of a URL."""
     target_url = options.get("URL")
-    # 1. Make sure the URL has a scheme (http:// or https://)
+    
     if not target_url.startswith(("https://", "http://")):
         target_url = "https://" + target_url
     print(f"{C.HEADER} CHECKING THE HEADER: {target_url}")
-
     try:
-
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         }
-
         response = requests.get(target_url, headers=headers, timeout=5)
-
-        # 2. Iterate (Loop) through each Header received
         for header, value in response.headers.items():
             print(f"  {C.HEADER}{header}:{C.RESET} {value}")
-
-        # 3. Security Validation
+            
         print(f"{C.HEADER} \n--- HEADER SECURITY ANALYSIS ---\n")
 
-        # Check the 'Server' Header (often exposed)
+        # check server
         server = response.headers.get("Server")
         if server:
             if re.search(r"\d+\.\d+", server):

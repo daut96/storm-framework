@@ -1,17 +1,17 @@
 <h2 align="center">Storm-Framework</h2>
 
 <p align="center">
-  <a href="https://github.com/STORM-CORP/storm-framework/blob/main/LICENSE">
+  <a href="https://github.com/StormWorld0/storm-framework/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue">
   </a>
-  <a href="https://github.com/STORM-CORP/storm-framework">
+  <a href="https://github.com/StormWorld0/storm-framework">
     <img src="https://img.shields.io/badge/Kali%20Linux-supported-black?logo=kalilinux">
   </a>
   </a>
-  <a href="https://github.com/STORM-CORP/storm-framework">
+  <a href="https://github.com/StormWorld0/storm-framework">
     <img src="https://img.shields.io/badge/Termux-supported-black?logo=android">
   </a>
-  <a href="https://github.com/STORM-CORP/storm-framework/blob/main/README_ID.md">
+  <a href="https://github.com/StormWorld0/storm-framework/blob/main/README_ID.md">
     <img src="https://img.shields.io/badge/Language-Indonesian-red?logo=indonesia&logoColor=white">
   </a>
 </p>
@@ -56,7 +56,7 @@ Make sure you have **Python 3.12.x** installed on your system. This tool is opti
 Use the command `curl` following to clone the repository and run the necessary installation scripts:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/STORM-CORP/storm-framework/main/setup | bash
+curl -fsSL https://raw.githubusercontent.com/StormWorld0/storm-framework/main/setup | bash
 ```
 
 ### 2. Run
@@ -68,7 +68,7 @@ sudo pentest
 ```
 
 ### 📖 Wiki
-If you need further explanation about Storm-Framework, don't forget to read at [wiki](https://github.com/STORM-CORP/storm-framework/wiki)
+If you need further explanation about Storm-Framework, don't forget to read at [wiki](https://github.com/StormWorld0/storm-framework/wiki)
 
 ### 🤝 Contributing 
 

@@ -9,7 +9,7 @@ from rootmap import ROOT
 
 
 def install_osint_module():
-    repo_url = "https://github.com/STORM-CORP/OSINT.git"
+    repo_url = "https://github.com/StormWorld0/OSINT.git"
     target_dir = os.path.join(ROOT, "script", "osint")
     # 1. Clone Repo
     if os.path.exists(os.path.join(target_dir, ".git")):

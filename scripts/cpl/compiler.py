@@ -110,7 +110,7 @@ def main():
     # Go.mod installation required by Golang compilation
     if other_tasks and not os.path.exists("go.mod"):
         print("[*] Preparing Go Modules...")
-        run_cmd("go mod init github.com/STORM-CORP/storm-framework")
+        run_cmd("go mod init github.com/StormWorld0/storm-framework")
         run_cmd("go mod tidy")
 
     # Perform parallel compilation in all languages

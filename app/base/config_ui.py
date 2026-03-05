@@ -21,7 +21,7 @@ def show_about():
     print(f"{C.INPUT}      Purpose                   : All-in-One Pentest Tools")
     print(f"{C.INPUT}      Version                   : {v.VERSION}")
     print(
-        f"{C.INPUT}      GitHub                    : github.com/STORM-CORP/storm-framework"
+        f"{C.INPUT}      GitHub                    : github.com/StormWorld0/storm-framework"
     )
     print(
         f"{C.HEADER}==========================================================================\n"

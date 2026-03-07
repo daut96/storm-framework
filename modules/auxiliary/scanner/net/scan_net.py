@@ -83,6 +83,12 @@ def execute(options):
         123: "NTP",
         161: "SNMP",
         389: "LDAP",
+        5060: "UDP/TCP",
+        5061: "TCP/TLS",
+        10000: "RTP",
+        20000: "RTP Atl",
+        16384: "VoIP",
+        32767: "VoIP Alt",
         # === Web standard ===
         80: "HTTP",
         443: "HTTPS",

@@ -5,7 +5,7 @@
 from app.utility.colors import C
 
 try:
-    from script.osint.handstorm import StormOSModuleRunner
+    from script.osint.handler import ModuleRunner as MR
 except ImportError:
     print(
         f"[*] Try running {C.SUCCESS}down osint{C.RESET} first to download the module."
@@ -15,7 +15,7 @@ REQUIRED_OPTIONS = {"EMAIL": ""}
 
 def execute(options):
     mail = options.get("EMAIL")
-    runner = StormOSModuleRunner()
+    runner = MR()
 
     try:
         if mail:

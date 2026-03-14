@@ -3,7 +3,6 @@ from rootmap import ROOT
 
 
 def search_modules(query):
-    # Langsung gunakan ROOT_DIR, tidak perlu os.path.dirname lagi di sini
     modules_path = os.path.join(ROOT, "modules")
     print(f"\n[*] Searching for: {query}")
     print(f"{'Module Path':<35} {'Category'}")
@@ -19,7 +18,6 @@ def search_modules(query):
 
                 if query.lower() in file_name_only:
                     count += 1
-                    # rel_path tetap butuh modules_path agar hasilnya rapi (misal: network/ftp)
                     rel_path = os.path.relpath(os.path.join(root, file), modules_path)
                     clean_path = rel_path.replace(".py", "")
                     category = rel_path.split(os.sep)[0]

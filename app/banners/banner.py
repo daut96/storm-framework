@@ -31,7 +31,7 @@ def get_random_banner():
         if not lines:
             return raw_banner
 
-        padding_str = " " * 0
+        padding_str = " " * 5
 
         result = "\n".join([f"{padding_str}{line}" for line in lines])
 

@@ -1,6 +1,7 @@
 from app.utility.colors import C
 
 DATA = f"""
+
 {C.ERROR}           _______________________________
 {C.ERROR}        .-"                               "-.
 {C.ERROR}       /                                     \\
@@ -21,4 +22,5 @@ DATA = f"""
 {C.HEADER}               --[ {C.SUCCESS}STORM FRAMEWORK {C.HEADER}]--
 {C.HEADER}          --[ {C.INPUT}Code Matrix: 0100 01 01101 {C.HEADER}]--
 {C.SUCCESS}         [!] Security is just an illusion [!]
+
 """

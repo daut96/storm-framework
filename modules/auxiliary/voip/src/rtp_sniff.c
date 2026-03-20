@@ -1,8 +1,6 @@
-// MIT License.
+// GPL License.
 // Copyright (c) 2026 Storm Framework
-
 // See LICENSE file in the project root for full license information.
-
 #include <pcap.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +24,7 @@ int main(int argc, char *argv[]) {
     }
 
     char *dev = argv[1];
-    char *out_path = argv[2]; // Path file output dari Python
+    char *out_path = argv[2];
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t *handle;
 
@@ -42,7 +40,6 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
-    // Filter khusus: Hanya UDP di port VoIP umum
     struct bpf_program fp;
     if (pcap_compile(handle, &fp, "udp portrange 10000-20000", 0, PCAP_NETMASK_UNKNOWN) == -1) {
         fprintf(stderr, "[!] Bad filter\n");

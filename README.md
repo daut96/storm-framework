@@ -45,7 +45,7 @@ Developer **NO** responsible for any damage, loss, or illegal actions arising fr
 
 ### 🛠️ Installation
 
-Make sure you have **Python 3.12.x** installed on your system. This tool is optimized to run in an environment **Kali Linux/Termux**.
+Make sure you have Python 3.12.x installed on your system. This tool is optimized to run in the **Kali Linux/Termux** virtual environment.
 
 #### 1. Repository Cloning & Automated Installation
 

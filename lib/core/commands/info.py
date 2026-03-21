@@ -98,7 +98,7 @@ def execute(args, context):
 
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'LICENSE':<13} : {info['license']}")
-                
+
                 tags_list = info.get("tag", [])
                 tags_raw = ", ".join(tags_list)
                 wrapped_tags = textwrap.fill(

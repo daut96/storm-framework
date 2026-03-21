@@ -86,7 +86,7 @@ def execute(args, context):
                 print(f"{C.SUCCESS}{'NAME':<13} : {info['name']}")
                 print(f"{C.SUCCESS}{'AUTHOR':<13} : {info['author']}")
                 print(f"{C.HEADER}{'-'*width}")
-                
+
                 print(f"{C.SUCCESS}DESCRIPTION   :")
                 desc = textwrap.fill(
                     info["description"].strip(),
@@ -95,14 +95,16 @@ def execute(args, context):
                     subsequent_indent=" ",
                 )
                 print(desc)
-                
+
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'LICENSE':<13} : {info['license']}")
                 tags_raw = ", ".join(tag)
                 wrapped_tags = textwrap.fill(
-                    tags_raw, 
-                    width=width - 2, # Kurangi 16 untuk memberi ruang label "TAGS          : "
-                    subsequent_indent=" " * 2 # Baris baru bakal lurus dengan tag pertama
+                    tags_raw,
+                    width=width
+                    - 2,  # Kurangi 16 untuk memberi ruang label "TAGS          : "
+                    subsequent_indent=" "
+                    * 2,  # Baris baru bakal lurus dengan tag pertama
                 )
                 print(f"{C.SUCCESS}{'TAG':<13} : {wrapped_tags}")
                 print(f"{C.HEADER}{'='*width}")

@@ -21,14 +21,12 @@ MOD_INFO = {
     Explain about the module you created
     """,
     "license": "fill in your module license or match GPLv3",
-    "tag": [
-        "make sure the tag matches the module function"
-    ],
+    "tag": ["make sure the tag matches the module function"],
 }
 
 #
 # For REQUIRED_OPTIONS select what you need.
-# Make sure the method name for the main function to be executed matches the template's. 
+# Make sure the method name for the main function to be executed matches the template's.
 # If it's different, the module won't execute.
 #
 REQUIRED_OPTIONS = {
@@ -49,6 +47,7 @@ REQUIRED_OPTIONS = {
     "HOSTNAME": "",
     "MODULE": "",
 }
+
 
 # --- Main function ---
 def execute(options):

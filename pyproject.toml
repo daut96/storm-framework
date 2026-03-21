@@ -41,7 +41,7 @@ keywords=["storm", "pentest", "cybersecurity", "security-research", "pentesting-
 [tool.black]
 line-length = 88
 target-version = ['py312']
-include = '(app/|modules/|lib/).*\.py$'
+include = '.*\.py$'
 exclude = '''
 /(
     \.git
@@ -53,7 +53,7 @@ exclude = '''
     | buck-out
     | build
     | dist
-    | ^.*vendor/
+    | lib/smf/core/db/vendor/
     | example/
 )/
 '''

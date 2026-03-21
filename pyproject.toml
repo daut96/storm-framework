@@ -53,7 +53,7 @@ exclude = '''
     | buck-out
     | build
     | dist
-    | .*/vendor/.*
+    | /vendor/
     | example/exmod.py
 )/
 '''

@@ -101,10 +101,8 @@ def execute(args, context):
                 tags_raw = ", ".join(f"{info['tag']}")
                 wrapped_tags = textwrap.fill(
                     tags_raw,
-                    width=width
-                    - 2,
-                    subsequent_indent=" "
-                    * 2,
+                    width=width - 2,
+                    subsequent_indent=" " * 2,
                 )
                 print(f"{C.SUCCESS}{'TAG':<13} : {wrapped_tags}")
                 print(f"{C.HEADER}{'='*width}")

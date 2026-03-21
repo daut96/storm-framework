@@ -41,7 +41,6 @@ keywords=["storm", "pentest", "cybersecurity", "security-research", "pentesting-
 [tool.black]
 line-length = 88
 target-version = ['py312']
-include = '.*\.py$'
 exclude = '''
 /(
     \.git

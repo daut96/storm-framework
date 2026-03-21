@@ -32,7 +32,7 @@ jobs:
 
     - name: Auto Cleanup (Remove Unused Imports)
       run: |
-        autoflake --in-place --remove-all-unused-imports --recursive .
+        autoflake --in-place --remove-all-unused-imports --recursive . --exclude=vendor
 
     - name: Run black
       continue-on-error: true

@@ -34,11 +34,17 @@ jobs:
       run: |
         autoflake --in-place --remove-all-unused-imports --recursive . --exclude=vendor
 
+    - name: After Autoflake
+      run: git status
+      
     - name: Run black
       continue-on-error: true
       run: |
         black . --verbose
 
+    - name: After Black
+      run: git status
+      
     - name: Commit black to repo
       run: |
         git config --global user.name "black-style[bot]"

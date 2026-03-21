@@ -4,12 +4,11 @@ This is the standard that must be set so that all modules can run.
 """
 
 # This can be used to find the root project if needed.
-from rootmap import ROOT # noqa
+from rootmap import ROOT  # noqa
 
 # This can also be used if you need color when printing the log.
 # If you are confused about what the colors are, you can check the file according to the path.
-from app.utility.colors import C # noqa
-
+from app.utility.colors import C  # noqa
 
 REQUIRED_OPTIONS = {
     "IP": "",
@@ -36,6 +35,7 @@ Make sure the method name for the main function to be executed matches the templ
 If it's different, the module won't execute.
 
 """
+
 
 # --- Main function ---
 def execute(options):

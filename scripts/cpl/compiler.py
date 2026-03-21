@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 SHARED_TARGET = os.path.join(ROOT, "lib", "smf", "core", "cache", "rust-session")
 
+
 def run_cmd(cmd, cwd=None):
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = SHARED_TARGET
@@ -21,13 +22,14 @@ def run_cmd(cmd, cwd=None):
             cwd=cwd,
             env=env,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
         )
         return True
     except subprocess.CalledProcessError as e:
         print(f"ERROR: {e}")
         print(f"[!] Rust Failed: {os.path.basename(cwd)}")
         return False
+
 
 def compile_rust_project(cargo_path):
     output_dir = os.path.dirname(cargo_path)
@@ -48,6 +50,7 @@ def compile_rust_project(cargo_path):
 
     return f"[!] Rust Binary Not Found: {bin_name}"
 
+
 def compile_single_file(task):
     lang, src_path = task
     outdir = os.path.join(ROOT, "external", "source", "binary")
@@ -57,7 +60,7 @@ def compile_single_file(task):
     if lang == "go":
         cmd = f"CGO_ENABLED=1 go build -o '{output}' '{src_path}'"
     else:
-        with open(src_path, 'r', errors='ignore') as f:
+        with open(src_path, "r", errors="ignore") as f:
             content = f.read()
         libs = "-lpcap" if "pcap.h" in content else ""
         cmd = f"gcc '{src_path}' -o '{output}' {libs}"
@@ -66,6 +69,7 @@ def compile_single_file(task):
         os.chmod(output, 0o755)
         return f"[✓] {lang.upper()}: {os.path.basename(output)}"
     return f"[!] {lang.upper()} Failed: {output}"
+
 
 def main():
     os.chdir(ROOT)
@@ -109,12 +113,16 @@ def main():
     print(f"[*] Storm Engine: Compiling on {os.cpu_count()} cores")
     with ThreadPoolExecutor(max_workers=safe_mode()) as executor:
         with StormSpin():
-            rust_results_future = [executor.submit(compile_rust_project, task) for task in rust_tasks]
-            other_results_future = [executor.submit(compile_single_file, task) for task in other_tasks]
+            rust_results_future = [
+                executor.submit(compile_rust_project, task) for task in rust_tasks
+            ]
+            other_results_future = [
+                executor.submit(compile_single_file, task) for task in other_tasks
+            ]
 
             rust_results = [f.result() for f in rust_results_future]
             other_results = [f.result() for f in other_results_future]
 
+
 if __name__ == "__main__":
     main()
-

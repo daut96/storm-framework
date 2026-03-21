@@ -1,11 +1,10 @@
-
-
 import json
 import hashlib
 import base64
 from rootmap import ROOT
 from app.utility.spin import StormSpin
 from cryptography.hazmat.primitives.asymmetric import ed25519
+
 
 # logic for sha256 mathematical calculations
 def calculate_sha256(file_path):
@@ -14,7 +13,8 @@ def calculate_sha256(file_path):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
-    
+
+
 def generate_folder_manifest():
     print("[+] Get started with Storm Framework security.")
 
@@ -47,7 +47,7 @@ def generate_folder_manifest():
         ".gitignore",
         ".env",
         "res",
-        "target"
+        "target",
     }
 
     with StormSpin():
@@ -96,6 +96,7 @@ def generate_folder_manifest():
             json.dump(final_data, f, indent=4)
 
     print(f"[✓] Success! Manifest signed and saved.")
+
 
 if __name__ == "__main__":
     generate_folder_manifest()

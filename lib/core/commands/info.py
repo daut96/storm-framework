@@ -93,7 +93,7 @@ def execute(args, context):
                     subsequent_indent=" ",
                 )
                 print(desc)
-                
+
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'AUTHOR':<13} :")
                 authors_list = info.get("author", [])

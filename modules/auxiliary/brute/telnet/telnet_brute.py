@@ -5,10 +5,26 @@ import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
 
-REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
+MOD_INFO = {
+    "Name": "Bruteforce Telnet login",
+    "Description": """
+    Matching Telnet login username and password
+    to find out if a Telnet is using standard login auth.
+    Using 2 test stages, the first with standard auth
+    The second stage uses the custom keyword.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Bruteforce", {"Description": "Bypass Telnet login"}],
+    ],
+    "DefaultAction": "Bruteforce",
+    "License": "SMF License",
+}
+
 SYM_SUCCESS = "🔑"
 SYM_FAILED = "🔒"
 
+REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
 
 async def test_telnet(target_ip, port, username, password):
     """

@@ -19,7 +19,7 @@ CVE_INFO = {
     "exploit": "Enter the exploit name if there is one",
 }
 """
-For Scanner and Exploit you can create a script that is suitable for CVE 
+For Scanner and Exploit you can create a script that is suitable for CVE
 if and when you have created everything make sure the exploit or scanner name is included
 in the CVE you created.
 If it's just a CVE without an exploit or scanner, just leave it blank, don't fill it in the CVE.

@@ -95,7 +95,9 @@ def execute(args, context):
                 print(desc)
                 print(f"{C.SUCCESS}{'AUTHOR':<13} :")
                 for author in info["Author"]:
-                    print(f" {author}")
+                    print(f"{author:>13}")
+                    
+                print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'ACTION':<13} :")
                 for action in info["Action"]:
                     name = action[0]
@@ -106,11 +108,11 @@ def execute(args, context):
                         initial_indent=" ",
                         subsequent_indent=" " * 16,
                     )
-                    print(f"{C.SUCCESS}{name:<13} : {wrapped_desc}")
+                    print(f"{C.SUCCESS}{name:>13} :{wrapped_desc}")
 
+                print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'DefAction':<13} : {info['DefaultAction']}")
                 print(f"{C.SUCCESS}{'LICENSE':<13} : {info['License']}")
-
                 print(f"{C.HEADER}{'='*width}")
                 print()
 

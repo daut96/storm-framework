@@ -5,7 +5,7 @@ edition = "2024"
 
 [[bin]]
 name = "check"
-path = "check.rs"
+path = "src/check.rs"
 
 [dependencies]
 sha2 = "0.10"

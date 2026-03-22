@@ -96,7 +96,7 @@ def execute(args, context):
                 print(f"{C.SUCCESS}{'AUTHOR':<13} :")
                 for author in info["Author"]:
                     print(f"{author:>13}")
-                    
+
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'ACTION':<13} :")
                 for action in info["Action"]:

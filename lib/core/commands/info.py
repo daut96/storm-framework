@@ -107,7 +107,7 @@ def execute(args, context):
                 for action in info.get("Action", []):
                     name = action[0]
                     desc = action[1].get("Description", "")
-                    print(f"{C.SUCCESS}  > {name:<13} : {desc}")
+                    print(f"{C.SUCCESS}  > {name:<9} : {desc}")
 
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'DefAction':<13} : {info['DefaultAction']}")

@@ -96,7 +96,7 @@ def execute(args, context):
 
                 print(f"{C.HEADER}{'-'*width}")
                 print(f"{C.SUCCESS}{'AUTHOR':<13} :")
-                authors_list = info.get("author", [])
+                authors_list = info.get("Author", [])
                 if not authors_list:
                     print(f"{C.SUCCESS}{' ' * 16}- Unknown")
                 else:

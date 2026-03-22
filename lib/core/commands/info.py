@@ -46,7 +46,7 @@ def execute(args, context):
                 print(f"{C.SUCCESS}{'PUBLISHED':<13} : {info['published']}")
                 print(f"{C.SUCCESS}{'UPDATED':<13} : {info['updated']}")
                 print(f"{C.HEADER}{'-'*width}")
-                
+
                 print(f"{C.SUCCESS}DESCRIPTION   :")
                 desc = textwrap.fill(
                     info["description"].strip(),
@@ -100,9 +100,9 @@ def execute(args, context):
                 for act in info["action"]:
                     print(f" {act}")
                 print(f"{C.SUCCESS}{'DefAction':<13} : {info['DefaultAction']}")
-                
+
                 print(f"{C.HEADER}{'-'*width}")
-                
+
                 print(f"{C.SUCCESS}{'LICENSE':<13} : {info['License']}")
                 tags_list = info.get("Tag", [])
                 tags_raw = ", ".join(tags_list)
@@ -112,7 +112,7 @@ def execute(args, context):
                     subsequent_indent=" " * 16,
                 )
                 print(f"{C.SUCCESS}{'TAG':<13} : {wrapped_tags}")
-                
+
                 print(f"{C.HEADER}{'='*width}")
                 print()
 

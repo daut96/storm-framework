@@ -97,7 +97,7 @@ def execute(args, context):
                 for author in info["Author"]:
                     print(f" {author}")
                 print(f"{C.SUCCESS}{'ACTION':<13} :")
-                for act in info["action"]:
+                for act in info["Action"]:
                     print(f" {act}")
                 print(f"{C.SUCCESS}{'DefAction':<13} : {info['DefaultAction']}")
 

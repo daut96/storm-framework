@@ -79,7 +79,7 @@ def execute(args, context):
                 info = mod.MOD_INFO
                 width = 55
                 label_w = 13
-                
+
                 print()
                 print(f"{C.HEADER}{'='*width}")
                 print(f"{C.SUCCESS}{'STORM INFORMATION MODULES':^55}")

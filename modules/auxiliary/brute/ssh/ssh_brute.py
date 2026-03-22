@@ -4,8 +4,20 @@ import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from app.utility.colors import C
 
+MOD_INFO = {
+    "Name": "SSH login bruteforce",
+    "Description": """
+    Tried thousands of passwords and passphrases for
+    found a match against SSH login auth.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Bruteforce", {"Description": "Searching for SSH login data matches"}],
+    ],
+    "DefaultAction": "Bruteforce",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
-
 
 def test_ssh(target_ip, port, username, password):
     client = paramiko.SSHClient()

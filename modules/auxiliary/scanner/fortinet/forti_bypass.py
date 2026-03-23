@@ -4,11 +4,11 @@ import urllib3
 MOD_INFO = {
     "Name": "Fortinet API login bypass",
     "Description": """
-    Attempting to bypass the Fortinet login API using
-    vulnerability from cve that was discovered publicly,
-    and just do a check, if it goes through then the output
-    will release the version of Fortinet that is used.
-    """,
+Attempting to bypass the Fortinet login API using
+vulnerability from cve that was discovered publicly,
+and just do a check, if it goes through then the output
+will release the version of Fortinet that is used.
+""",
     "Author": ["zxelzy"],
     "Action": [
         ["Bypass", {"Description": "Breaking in without username & password"}],

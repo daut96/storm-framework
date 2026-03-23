@@ -8,11 +8,11 @@ from app.utility.colors import C
 MOD_INFO = {
     "Name": "Bruteforce Telnet login",
     "Description": """
-    Matching Telnet login username and password
-    to find out if a Telnet is using standard login auth.
-    Using 2 test stages, the first with standard auth
-    The second stage uses the custom keyword.
-    """,
+Matching Telnet login username and password
+to find out if a Telnet is using standard login auth.
+Using 2 test stages, the first with standard auth
+The second stage uses the custom keyword.
+""",
     "Author": ["zxelzy"],
     "Action": [
         ["Bruteforce", {"Description": "Bypass Telnet login"}],

@@ -2,6 +2,20 @@ import requests
 import re
 from app.utility.colors import C
 
+MOD_INFO = {
+    "Name": "Searching for website header",
+    "Description": """
+    Send a request to get the headers of an active website
+    and look for weaknesses or unintentionally specific versions
+    public or look for other loopholes to exploit weaknesses.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Scanner", {"Description": "Looking for vulnerabilities"}],
+    ],
+    "DefaultAction": "Scanner",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {"URL": ""}
 
 
@@ -11,6 +25,8 @@ def execute(options):
 
     if not target_url.startswith(("https://", "http://")):
         target_url = "https://" + target_url
+
+    print()
     print(f"{C.HEADER} CHECKING THE HEADER: {target_url}")
     try:
         headers = {
@@ -107,3 +123,4 @@ def execute(options):
         print(f"{C.ERROR}[x] ERROR WHILE CONNECTING TO {target_url}: {e}{C.RESET}\n")
 
     print(f"{C.HEADER} ---------------------------------------")
+    print()

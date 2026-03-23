@@ -1,9 +1,22 @@
 import os
 import subprocess
 import shutil
-
 from rootmap import ROOT
 
+MOD_INFO = {
+    "Name": "Real-Time Transport Protocol",
+    "Description": """
+    Capture and read audio or video call traffic
+    to find out the contents of the sound in it
+    in Real-time on RTP connection.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["RTP", {"Description": "Audio & video analysis"}],
+    ],
+    "DefaultAction": "RTP",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {"INTERFACE": "example: eth0"}
 
 

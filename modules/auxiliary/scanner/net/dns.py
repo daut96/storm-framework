@@ -1,14 +1,24 @@
-# dns.py
 import dns.resolver
 import dns.exception
 import socket
 import ipaddress
 from app.utility.colors import C
 
-# Definisikan simbol status
+MOD_INFO = {
+    "Name": "Scanning DNS Records",
+    "Description": """
+    Scan the DNS Record to find out the DNS data in it
+    used by a website.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Scanner", {"Description": "Scan DNS Records"}],
+    ],
+    "DefaultAction": "Scanner",
+    "License": "SMF License",
+}
 SYM_INFO = "💡"
 SYM_SECURITY = "🔒"
-# List tipe record DNS yang ingin kita cari
 DNS_RECORDS = [
     # === Core addressing ===
     "A",  # IPv4
@@ -22,13 +32,13 @@ DNS_RECORDS = [
     "SOA",  # Zone info (serial, refresh)
     # === Service discovery ===
     "SRV",  # _sip, _ldap, _xmpp, internal services
-    "NAPTR",  # VoIP / telecom (rare tapi kadang bocor info)
+    "NAPTR",  # VoIP / telecom
     # === Security / SSL ===
     "CAA",  # Allowed CA (fingerprinting infra)
-    "TLSA",  # DANE (jarang tapi worth check)
+    "TLSA",  # DANE
     # === Reverse / legacy ===
     "PTR",
-    # === DNSSEC (info only, bukan vuln langsung)
+    # === DNSSEC (info only)
     "DNSKEY",
     "DS",
     "RRSIG",
@@ -50,21 +60,17 @@ def execute(options):
     except ValueError:
         pass
 
-    # 2. Setup Resolver tanpa merusak settingan global
     resolver = dns.resolver.Resolver(configure=False)
     resolver.nameservers = ["8.8.8.8", "1.1.1.1"]
     resolver.timeout = 2.0
     resolver.lifetime = 3.0
 
     print(f"{C.HEADER} DNS ENUMERATION For {target_domain}")
-
     try:
         socket.gethostbyname(target_domain)
-
         for record_type in DNS_RECORDS:
             try:
                 answers = resolver.resolve(target_domain, record_type)
-
                 print(f"{C.MENU} \n[{record_type} Records]:")
                 for rdata in answers:
                     if record_type == "TXT":

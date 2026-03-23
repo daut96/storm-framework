@@ -9,7 +9,7 @@ MOD_INFO = {
     "Author": ["zxelzy"],
     "Action": [
         ["Scanner", {"Description": "VoIP Spying"}],
-        ["SIP", {"Description": ""}],
+        ["SIP", {"Description": "Telephone traffic"}],
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
@@ -31,7 +31,6 @@ def execute(options):
         "Max-Forwards: 70\r\n"
         "User-Agent: Storm-OS-VoIP-Scanner\r\n\r\n"
     )
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(3)
     try:

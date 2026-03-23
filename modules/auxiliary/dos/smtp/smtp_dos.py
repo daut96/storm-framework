@@ -5,9 +5,9 @@ from rootmap import ROOT
 MOD_INFO = {
     "Name": "DoS to SMTP network",
     "Description": """
-    Flooding an SMTP network to disrupt email services
-    until it is slow and even the server crashes.
-    """,
+Flooding an SMTP network to disrupt email services
+until it is slow and even the server crashes.
+""",
     "Author": ["zxelzy"],
     "Action": [
         ["DoS", {"Description": "Sending strange requests"}],

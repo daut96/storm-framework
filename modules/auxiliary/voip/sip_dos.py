@@ -1,6 +1,20 @@
 import socket
 import random
 
+MOD_INFO = {
+    "Name": "Session Initiation Protocol DoS",
+    "Description": """
+    Send thousands of SIP requests to the connection
+    phone delay to error.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["DoS", {"Description": "Spam thousands of requests"}],
+        ["SIP", {"Description": "Telephone traffic"}]
+    ],
+    "DefaultAction": "DoS",
+    "License": "SMF Lisense",
+}
 REQUIRED_OPTIONS = {"IP": "", "PORT": "standar port 5060"}
 
 

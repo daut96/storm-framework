@@ -87,13 +87,15 @@ def execute(args, context):
 
                 print(f"{C.SUCCESS}{'NAME':<13} : {info['Name']}")
                 print(f"{C.SUCCESS}DESCRIPTION   :")
-                for line in info["Description"].splitlines():
-                    if not line.strip():
+                desc = textwrap.dedent(info["Description"]).strip()
+                for line in desc.splitlines():
+                    clean = " ".join(line.strip().split())
+                    if not clean:
+                        print("")
                         continue
-                    clean_line = " ".join(line.split())
                     print(
                         textwrap.fill(
-                            clean_line,
+                            clean,
                             width=width - 2,
                             initial_indent=" ",
                             subsequent_indent=" ",

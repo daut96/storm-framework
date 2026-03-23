@@ -1,8 +1,22 @@
 import subprocess
 import os
-
 from rootmap import ROOT
 
+MOD_INFO = {
+    "Name": "Deep Packet Inspection",
+    "Description": """
+    Analyzing incoming and outgoing packets
+    to find out the origin of the packet,
+    payload content if HTTP, analyze connection
+    malware.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["DPI", {"Description": "Analyze Packet"}],
+    ],
+    "DefaultAction": "DPI",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {
     "INTERFACE": "example: eth0",
 }
@@ -34,7 +48,6 @@ def execute(options):
             print(line.strip())
 
     except KeyboardInterrupt:
-        print("\n[*] Stop Sniffer...")
         proc.terminate()
     except Exception as e:
         print(f"[!] ERROR: {e}")

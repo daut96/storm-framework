@@ -1,6 +1,5 @@
 import requests
 from app.utility.colors import C
-from app.utility.spin import StormSpin
 
 MOD_INFO = {
     "Name": "Searching for subdomains",

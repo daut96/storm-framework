@@ -1,6 +1,21 @@
 import requests
 import urllib3
 
+MOD_INFO = {
+    "Name": "Fortinet API login bypass",
+    "Description": """
+    Attempting to bypass the Fortinet login API using
+    vulnerability from cve that was discovered publicly,
+    and just do a check, if it goes through then the output
+    will release the version of Fortinet that is used.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Bypass", {"Description": "Breaking in without username & password"}],
+    ],
+    "DefaultAction": "Bypass",
+    "License": "SMF License",
+}
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 REQUIRED_OPTIONS = {"URL": ""}
 

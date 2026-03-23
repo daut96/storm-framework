@@ -4,7 +4,7 @@ from app.utility.colors import C
 MOD_INFO = {
     "Name": "Searching for subdomains",
     "Description": """
-    Perform a scan on the specified subdomain 
+    Perform a scan on the specified subdomain
     to search and find subdomains that allow for
     exploited.
     """,

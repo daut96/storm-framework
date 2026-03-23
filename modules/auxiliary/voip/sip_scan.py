@@ -1,5 +1,19 @@
 import socket
 
+MOD_INFO = {
+    "Name": "Scanning Session Initiation Protocol",
+    "Description": """
+    Conducting surveillance on VoIP systems
+    before performing a DoS on VoIP traffic.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["Scanner", {"Description": "VoIP Spying"}],
+        ["SIP", {"Description": ""}],
+    ],
+    "DefaultAction": "Scanner",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {"IP": "", "PORT": "standar port 5060"}
 
 

@@ -6,10 +6,10 @@ from app.utility.colors import C
 MOD_INFO = {
     "Name": "Bruteforce FTP connection",
     "Description": """
-    Bruteforce FTP username and password 
-    to bypass FTP login quickly to find out
-    is FTP login auth that weak or quite strong.
-    """,
+Bruteforce FTP username and password 
+to bypass FTP login quickly to find out
+is FTP login auth that weak or quite strong.
+""",
     "Author": ["zxelzy"],
     "Action": [
         [

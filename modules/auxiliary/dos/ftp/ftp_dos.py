@@ -2,6 +2,19 @@ import subprocess
 import os
 from rootmap import ROOT
 
+MOD_INFO = {
+    "Name": "DoS to FTP connection",
+    "Description": """
+    Flooding an FTP network to disrupt its functionality
+    and make the server slow until it crashes.
+    """,
+    "Author": ["zxelzy"],
+    "Action": [
+        ["DoS", {"Description": "Sending annoying requests"}],
+    ],
+    "DefaultAction": "DoS",
+    "License": "SMF License",
+}
 REQUIRED_OPTIONS = {"IP": "", "THREAD": "example: 1000"}
 
 

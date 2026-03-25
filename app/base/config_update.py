@@ -14,9 +14,7 @@ def check_update():
         # If the version on GitHub is higher than the local version
         if latest_version > VERSION:
             print(f"{C.SUCCES}[!] Current version => v{VERSION}")
-            print(
-                f"{C.SUCCESS}[!] Update available => v{latest_version}"
-            )
+            print(f"{C.SUCCESS}[!] Update available => v{latest_version}")
             print(f"{C.SUCCESS}[-] Type => storm update")
             print("")
     except:

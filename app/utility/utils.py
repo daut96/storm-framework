@@ -5,6 +5,7 @@ from rootmap import ROOT
 # utils.py It all contains help logic to make it easier during repairs and updates.
 # This is included in the core category which cannot be modified.
 
+
 # LOGIC GLOBAL WORDLIST
 def resolve_path(kata_kunci):
     if not kata_kunci:
@@ -47,12 +48,13 @@ def load_module_dynamically(module_name):
                 except Exception as e:
                     print(f"[-] ERROR => {e}")
                     return None
-                    
+
     return None
 
 
 # UI MODULES
 EXT = (".py", ".go", ".rs", ".c", ".cpp", ".rb", ".php", ".sh", ".js", ".ts", ".html")
+
 
 def count_modules():
     total = 0
@@ -96,7 +98,7 @@ def count_by_category():
         # Add to dictionary if the folder contains modules
         if count > 0:
             stats[cat] = count
-            
+
     return stats
 
 

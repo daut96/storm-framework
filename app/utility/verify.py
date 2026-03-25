@@ -6,7 +6,7 @@ from app.utility.colors import C
 
 def run_verif():
     lib = "external/source/binary/check"
-    if not os.path.exists(bin_p):
+    if not os.path.exists(lib):
         print(f"[-] ERROR => Rust binary not found in {lib}")
         sys.exit(1)
     print(f"[∆] [INTEGRITY STORM RUNNING] [∆]")

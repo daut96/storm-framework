@@ -2,6 +2,7 @@ import requests
 import subprocess
 from app.utility.colors import C
 
+
 def run_update():
     url = (
         "https://raw.githubusercontent.com/StormWorld0/storm-framework/main/version.txt"
@@ -27,7 +28,9 @@ def run_update():
     )
 
     if process.returncode == 0:
-        print(f"{C.SUCCESS}\n[✓] System updated to version => {latest_version}{C.RESET}")
+        print(
+            f"{C.SUCCESS}\n[✓] System updated to version => {latest_version}{C.RESET}"
+        )
 
     # 4. Trigger Compiler ONLY IF needed
     try:

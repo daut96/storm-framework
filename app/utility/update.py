@@ -28,7 +28,9 @@ def run_update():
     )
 
     if process.returncode == 0:
-        print(f"{C.SUCCESS}\n[✓] System updated to version: {latest_version}{C.RESET}")
+        print(
+            f"{C.SUCCESS}\n[✓] System updated to version => {latest_version}{C.RESET}"
+        )
 
     # 4. Trigger Compiler ONLY IF needed
     try:
@@ -37,4 +39,4 @@ def run_update():
         generate_folder_manifest()
         return True
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"ERROR => {e}")

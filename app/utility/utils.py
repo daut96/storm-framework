@@ -2,10 +2,8 @@ import os
 import importlib
 from rootmap import ROOT
 
-"""
-utils.py It all contains help logic to make it easier during repairs and updates.
-This is included in the core category which cannot be modified.
-"""
+# utils.py It all contains help logic to make it easier during repairs and updates.
+# This is included in the core category which cannot be modified.
 
 
 # LOGIC GLOBAL WORDLIST
@@ -45,11 +43,10 @@ def load_module_dynamically(module_name):
                     clean_path = relative_path
 
                 module_dots = clean_path.replace(os.sep, ".")
-
                 try:
                     return importlib.import_module(module_dots)
                 except Exception as e:
-                    print(f"[-] Error: {e}")
+                    print(f"[-] ERROR => {e}")
                     return None
 
     return None
@@ -61,9 +58,7 @@ EXT = (".py", ".go", ".rs", ".c", ".cpp", ".rb", ".php", ".sh", ".js", ".ts", ".
 
 def count_modules():
     total = 0
-    # Get absolute root path
     path = os.path.join(ROOT, "modules")
-
     if not os.path.exists(path):
         return 0
 

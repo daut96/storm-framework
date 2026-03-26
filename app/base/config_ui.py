@@ -36,6 +36,7 @@ def show_help():
   search <filename>             : To search for files
   about                         : Information Development
   info <cve_name>               : Complete CVE information
+  info <module_name>            : Complete Modules information
   back                          : Back from current position
   clear                         : Clear command line
   exit                          : Exit the application

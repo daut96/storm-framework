@@ -30,13 +30,14 @@ def run_cmd(cmd, cwd=None):
         print(f"[!] Rust Failed => {os.path.basename(cwd)}")
         return False
 
+
 def compile_rust_project(cargo_path):
     outdir = os.path.join(ROOT, "external", "source", "binary")
     bin_name = get_bin_name(cargo_path)
     src_bin = os.path.join(SHARED_TARGET, "release", bin_name)
-    
+
     if bin_name.startswith("lib") and bin_name.endswith(".so"):
-        clean_name = bin_name[3:] 
+        clean_name = bin_name[3:]
     else:
         clean_name = bin_name
 
@@ -50,7 +51,6 @@ def compile_rust_project(cargo_path):
             return f"[!] Copy Error => {clean_name} > ({e})"
 
     return f"[!] Rust Binary Not Found => {bin_name}"
-    
 
 
 def compile_single_file(task):

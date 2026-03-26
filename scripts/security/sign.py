@@ -1,8 +1,8 @@
 def run_sign():
     try:
-        from external.source.binary import sign
+        from external.source.binary import signed
 
-        sign()
+        signed()
         return True
     except ImportError as e:
         return f"ERROR => {e}"

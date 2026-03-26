@@ -1,0 +1,19 @@
+[package]
+name = "storm_core"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "sign"
+path = "src/sign.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module"] }
+sha2 = "0.10"
+ed25519-dalek = "2"
+base64 = "0.21"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+walkdir = "2"
+hex = "0.4"

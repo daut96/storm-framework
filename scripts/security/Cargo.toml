@@ -5,7 +5,7 @@ edition = "2024"
 
 [lib]
 name = "sign"
-path = "src/sign.rs"
+path = "src/integrity.rs"
 crate-type = ["cdylib"]
 
 [dependencies]

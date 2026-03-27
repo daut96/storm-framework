@@ -1,5 +1,6 @@
 import sys
 
+
 def run_sign():
     try:
         from external.source.binary import signed

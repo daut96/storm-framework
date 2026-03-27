@@ -38,3 +38,4 @@ ed25519-dalek = { version = "2", features = ["rand_core"] }
 base64 = "0.21"
 
 pyo3 = { version = "0.21", features = ["extension-module"] }
+rayon = "1"

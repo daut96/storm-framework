@@ -5,7 +5,7 @@ edition = "2024"
 
 [lib]
 name = "signed"
-path = "src/integrity.rs"
+path = "src/test.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
@@ -17,3 +17,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 walkdir = "2"
 hex = "0.4"
+rayon = "1"

@@ -3,12 +3,19 @@ use pyo3::types::{PyTuple};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, Read};
+use std::io::{self, Write, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 use ed25519_dalek::{SigningKey, Signer};
 use base64::{Engine as _, engine::general_purpose::STANDARD as b64};
 use serde_json::{json, Value};
+
+macro_rules! log {
+    ($($arg:tt)*) => {{
+        println!($($arg)*);
+        let _ = io::stdout().flush();
+    }};
+    }
 
 // Logika kalkulasi SHA256 (I/O streaming dengan buffer 4KB)
 fn calculate_sha256(file_path: &Path) -> std::io::Result<String> {
@@ -30,7 +37,7 @@ fn calculate_sha256(file_path: &Path) -> std::io::Result<String> {
 
 #[pyfunction]
 fn generate_folder_manifest(py: Python) -> PyResult<()> {
-    println!("[+] Get started with Storm Framework security.");
+    log!("[+] Get started with Storm Framework security.");
 
     // 1. Memanggil objek Python: from rootmap import ROOT
     let rootmap_mod = PyModule::import_bound(py, "rootmap")?;
@@ -59,7 +66,7 @@ fn generate_folder_manifest(py: Python) -> PyResult<()> {
     let priv_key_b64 = match priv_key_b64 {
         Some(k) => k,
         None => {
-            println!("[!] ERROR: STORM_PRIVKEY not found in .env. Reinstall storm!");
+            log!("[!] ERROR: STORM_PRIVKEY not found in .env. Reinstall storm!");
             return Ok(());
         }
     };
@@ -139,13 +146,13 @@ fn generate_folder_manifest(py: Python) -> PyResult<()> {
     let priv_bytes = match b64.decode(&priv_key_b64) {
         Ok(b) => b,
         Err(e) => {
-            println!("[!] Signing Error (Base64): {}", e);
+            log!("[!] Signing Error (Base64): {}", e);
             return Ok(());
         }
     };
 
     if priv_bytes.len() < 32 {
-        println!("[!] Signing Error: Invalid private key length.");
+        log!("[!] Signing Error: Invalid private key length.");
         return Ok(());
     }
 
@@ -168,17 +175,17 @@ fn generate_folder_manifest(py: Python) -> PyResult<()> {
     // 8. Output file I/O
     let output_dir = root_path.join("lib").join("core").join("database");
     if let Err(e) = fs::create_dir_all(&output_dir) {
-        println!("[!] Error creating directories: {}", e);
+        log!("[!] Error creating directories: {}", e);
         return Ok(());
     }
 
     let manifest_path = output_dir.join("signed_manifest.json");
     if let Err(e) = fs::write(&manifest_path, serde_json::to_string_pretty(&final_data).unwrap()) {
-        println!("[!] Error saving manifest: {}", e);
+        log!("[!] Error saving manifest: {}", e);
         return Ok(());
     }
 
-    println!("[✓] Success! Manifest signed and saved.");
+    log!("[✓] Success! Manifest signed and saved.");
     Ok(())
 }
 

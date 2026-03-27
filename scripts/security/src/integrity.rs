@@ -39,7 +39,7 @@ fn generate_folder_manifest(py: Python) -> PyResult<()> {
     let root_path = PathBuf::from(&root_path_str);
 
     // 2. Parsing .env secara manual (Sesuai logika asli)
-    let env_path = root_path.join(".env");
+    let env_path = ".env";
     let mut priv_key_b64 = None;
 
     if env_path.exists() {

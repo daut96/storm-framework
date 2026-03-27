@@ -2,7 +2,7 @@ import sys
 
 def run_sign():
     try:
-        from external.source.binary import signed.sign
+        from external.source.binary import signed
 
         signed.sign()
         return True

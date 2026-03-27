@@ -1,6 +1,6 @@
 [package]
 name = "pyo3"
-version = "0.20.3"
+version = "0.21.2"
 description = "Bindings to Python interpreter"
 authors = ["PyO3 Project and Contributors <https://github.com/PyO3>"]
 readme = "README.md"
@@ -22,10 +22,10 @@ memoffset = "0.9"
 portable-atomic = "1.0"
 
 # ffi bindings to the python interpreter, split into a separate crate so they can be used independently
-pyo3-ffi = { path = "pyo3-ffi", version = "=0.20.3" }
+pyo3-ffi = { path = "pyo3-ffi", version = "=0.21.2" }
 
 # support crates for macros feature
-pyo3-macros = { path = "pyo3-macros", version = "=0.20.3", optional = true }
+pyo3-macros = { path = "pyo3-macros", version = "=0.21.2", optional = true }
 indoc = { version = "2.0.1", optional = true }
 unindent = { version = "0.2.1", optional = true }
 
@@ -35,6 +35,7 @@ inventory = { version = "0.3.0", optional = true }
 # crate integrations that can be added using the eponymous features
 anyhow = { version = "1.0", optional = true }
 chrono = { version = "0.4.25", default-features = false, optional = true }
+chrono-tz = { version = ">= 0.6, < 0.9", default-features = false, optional = true }
 either = { version = "1.9", optional = true }
 eyre = { version = ">= 0.4, < 0.7", optional = true }
 hashbrown = { version = ">= 0.9, < 0.15", optional = true }
@@ -47,7 +48,8 @@ smallvec = { version = "1.0", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
-chrono = { version = "0.4.25" }
+chrono = "0.4.25"
+chrono-tz = ">= 0.6, < 0.9"
 # Required for "and $N others" normalization
 trybuild = ">=1.0.70"
 proptest = { version = "1.0", default-features = false, features = ["std"] }
@@ -55,17 +57,23 @@ send_wrapper = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.61"
 rayon = "1.6.1"
-widestring = "0.5.1"
+futures = "0.3.28"
 
 [build-dependencies]
-pyo3-build-config = { path = "pyo3-build-config", version = "=0.20.3", features = ["resolve-config"] }
+pyo3-build-config = { path = "pyo3-build-config", version = "=0.21.2", features = ["resolve-config"] }
 
 [features]
 default = ["macros"]
 
+# Enables support for `async fn` for `#[pyfunction]` and `#[pymethods]`.
+experimental-async = ["macros", "pyo3-macros/experimental-async"]
+
 # Enables pyo3::inspect module and additional type information on FromPyObject
 # and IntoPy traits
 experimental-inspect = []
+
+# Enables annotating Rust inline modules with #[pymodule] to build Python modules declaratively
+experimental-declarative-modules = ["pyo3-macros/experimental-declarative-modules", "macros"]
 
 # Enables macros: #[pyclass], #[pymodule], #[pyfunction] etc.
 macros = ["pyo3-macros", "indoc", "unindent"]
@@ -95,6 +103,9 @@ generate-import-lib = ["pyo3-ffi/generate-import-lib"]
 # Changes `Python::with_gil` to automatically initialize the Python interpreter if needed.
 auto-initialize = []
 
+# Allows use of the deprecated "GIL Refs" APIs.
+gil-refs = []
+
 # Optimizes PyObject to Vec conversion and so on.
 nightly = []
 
@@ -105,7 +116,10 @@ full = [
     # "multiple-pymethods", # TODO re-add this when MSRV is greater than 1.62
     "anyhow",
     "chrono",
+    "chrono-tz",
     "either",
+    "experimental-async",
+    "experimental-declarative-modules",
     "experimental-inspect",
     "eyre",
     "hashbrown",
@@ -129,7 +143,7 @@ members = [
 
 [package.metadata.docs.rs]
 no-default-features = true
-features = ["full"]
+features = ["full", "gil-refs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [workspace.lints.clippy]
@@ -153,9 +167,6 @@ invalid_doc_attributes = "warn"
 rust_2018_idioms = "warn"
 rust_2021_prelude_collisions = "warn"
 unused_lifetimes = "warn"
-# rust nightly got stricter about these since PyO3 0.20 was released
-dead_code = "allow"
-unused_imports = "allow"
 
 [workspace.lints.rustdoc]
 broken_intra_doc_links = "warn"

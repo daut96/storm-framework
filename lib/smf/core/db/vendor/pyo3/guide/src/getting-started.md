@@ -2,6 +2,8 @@
 
 To get started using PyO3 you will need three things: a Rust toolchain, a Python environment, and a way to build. We'll cover each of these below.
 
+> If you'd like to chat to the PyO3 maintainers and other PyO3 users, consider joining the [PyO3 Discord server](https://discord.gg/33kcChzH7f). We're keen to hear about your experience getting started, so we can make PyO3 as accessible as possible for everyone!
+
 ## Rust
 
 First, make sure you have Rust installed on your system. If you haven't already done so, try following the instructions [here](https://www.rust-lang.org/tools/install). PyO3 runs on both the `stable` and `nightly` versions so you can choose whichever one fits you best. The minimum required Rust version is 1.56.
@@ -31,7 +33,7 @@ You can read more about `pyenv`'s configuration options [here](https://github.co
 
 ### Building
 
-There are a number of build and Python package management systems such as [`setuptools-rust`](https://github.com/PyO3/setuptools-rust) or [manually](https://pyo3.rs/latest/building_and_distribution.html#manual-builds). We recommend the use of `maturin`, which you can install [here](https://maturin.rs/installation.html). It is developed to work with PyO3 and provides the most "batteries included" experience, especially if you are aiming to publish to PyPI. `maturin` is just a Python package, so you can add it in the same you already install Python packages.
+There are a number of build and Python package management systems such as [`setuptools-rust`](https://github.com/PyO3/setuptools-rust) or [manually](./building-and-distribution.md#manual-builds). We recommend the use of `maturin`, which you can install [here](https://maturin.rs/installation.html). It is developed to work with PyO3 and provides the most "batteries included" experience, especially if you are aiming to publish to PyPI. `maturin` is just a Python package, so you can add it in the same way you already install Python packages.
 
 System Python:
 ```bash
@@ -161,7 +163,7 @@ fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
 /// the `lib.name` setting in the `Cargo.toml`, else Python will not be able to
 /// import the module.
 #[pymodule]
-fn pyo3_example(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn pyo3_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     Ok(())
 }
@@ -178,4 +180,4 @@ $ python
 '25'
 ```
 
-For more instructions on how to use Python code from Rust, see the [Python from Rust](python_from_rust.md) page.
+For more instructions on how to use Python code from Rust, see the [Python from Rust](python-from-rust.md) page.

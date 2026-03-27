@@ -46,7 +46,8 @@
 #[cfg(feature = "experimental-inspect")]
 use crate::inspect::types::TypeInfo;
 use crate::{
-    exceptions::PyTypeError, FromPyObject, IntoPy, PyAny, PyObject, PyResult, Python, ToPyObject,
+    exceptions::PyTypeError, types::any::PyAnyMethods, Bound, FromPyObject, IntoPy, PyAny,
+    PyObject, PyResult, Python, ToPyObject,
 };
 use either::Either;
 
@@ -81,13 +82,13 @@ where
 }
 
 #[cfg_attr(docsrs, doc(cfg(feature = "either")))]
-impl<'source, L, R> FromPyObject<'source> for Either<L, R>
+impl<'py, L, R> FromPyObject<'py> for Either<L, R>
 where
-    L: FromPyObject<'source>,
-    R: FromPyObject<'source>,
+    L: FromPyObject<'py>,
+    R: FromPyObject<'py>,
 {
     #[inline]
-    fn extract(obj: &'source PyAny) -> PyResult<Self> {
+    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
         if let Ok(l) = obj.extract::<L>() {
             Ok(Either::Left(l))
         } else if let Ok(r) = obj.extract::<R>() {
@@ -112,6 +113,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use crate::exceptions::PyTypeError;
     use crate::{Python, ToPyObject};
 
@@ -131,7 +134,7 @@ mod tests {
 
             let r = E::Right("foo".to_owned());
             let obj_r = r.to_object(py);
-            assert_eq!(obj_r.extract::<&str>(py).unwrap(), "foo");
+            assert_eq!(obj_r.extract::<Cow<'_, str>>(py).unwrap(), "foo");
             assert_eq!(obj_r.extract::<E>(py).unwrap(), r);
 
             let obj_s = "foo".to_object(py);

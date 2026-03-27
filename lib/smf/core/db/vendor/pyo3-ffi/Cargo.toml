@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "pyo3-ffi"
-version = "0.20.3"
+version = "0.21.2"
 authors = ["PyO3 Project and Contributors <https://github.com/PyO3>"]
 links = "python"
 description = "Python-API bindings for the PyO3 ecosystem"
@@ -35,7 +35,7 @@ repository = "https://github.com/pyo3/pyo3"
 version = "0.2.62"
 
 [build-dependencies.pyo3-build-config]
-version = "=0.20.3"
+version = "=0.21.2"
 features = ["resolve-config"]
 
 [features]
@@ -84,12 +84,10 @@ used_underscore_binding = "warn"
 useless_transmute = "warn"
 
 [lints.rust]
-dead_code = "allow"
 elided_lifetimes_in_paths = "warn"
 invalid_doc_attributes = "warn"
 rust_2018_idioms = "warn"
 rust_2021_prelude_collisions = "warn"
-unused_imports = "allow"
 unused_lifetimes = "warn"
 
 [lints.rustdoc]

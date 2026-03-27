@@ -1,6 +1,6 @@
 # Using in Python a Rust function with trait bounds
 
-PyO3 allows for easy conversion from Rust to Python for certain functions and classes (see the [conversion table](conversions/tables.html).
+PyO3 allows for easy conversion from Rust to Python for certain functions and classes (see the [conversion table](conversions/tables.md).
 However, it is not always straightforward to convert Rust code that requires a given trait implementation as an argument.
 
 This tutorial explains how to convert a Rust function that takes a trait as argument for use in Python with classes implementing the same methods as the trait.
@@ -64,7 +64,9 @@ class Model:
 The following wrapper will call the Python model from Rust, using a struct to hold the model as a `PyAny` object:
 
 ```rust
+# #![allow(dead_code)]
 use pyo3::prelude::*;
+use pyo3::types::PyList;
 
 # pub trait Model {
 #   fn set_variables(&mut self, inputs: &Vec<f64>);
@@ -80,11 +82,9 @@ impl Model for UserModel {
     fn set_variables(&mut self, var: &Vec<f64>) {
         println!("Rust calling Python to set the variables");
         Python::with_gil(|py| {
-            let values: Vec<f64> = var.clone();
-            let list: PyObject = values.into_py(py);
-            let py_model = self.model.as_ref(py);
-            py_model
-                .call_method("set_variables", (list,), None)
+            self.model
+                .bind(py)
+                .call_method("set_variables", (PyList::new_bound(py, var),), None)
                 .unwrap();
         })
     }
@@ -93,7 +93,7 @@ impl Model for UserModel {
         println!("Rust calling Python to get the results");
         Python::with_gil(|py| {
             self.model
-                .as_ref(py)
+                .bind(py)
                 .call_method("get_results", (), None)
                 .unwrap()
                 .extract()
@@ -105,7 +105,7 @@ impl Model for UserModel {
         println!("Rust calling Python to perform the computation");
         Python::with_gil(|py| {
             self.model
-                .as_ref(py)
+                .bind(py)
                 .call_method("compute", (), None)
                 .unwrap();
         })
@@ -131,7 +131,7 @@ struct UserModel {
 }
 
 #[pymodule]
-fn trait_exposure(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn trait_exposure(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<UserModel>()?;
     Ok(())
 }
@@ -162,7 +162,9 @@ However, we can write a second wrapper around these functions to call them direc
 This wrapper will also perform the type conversions between Python and Rust.
 
 ```rust
+# #![allow(dead_code)]
 # use pyo3::prelude::*;
+# use pyo3::types::PyList;
 #
 # pub trait Model {
 #   fn set_variables(&mut self, inputs: &Vec<f64>);
@@ -179,11 +181,8 @@ This wrapper will also perform the type conversions between Python and Rust.
 #  fn set_variables(&mut self, var: &Vec<f64>) {
 #      println!("Rust calling Python to set the variables");
 #      Python::with_gil(|py| {
-#          let values: Vec<f64> = var.clone();
-#          let list: PyObject = values.into_py(py);
-#          let py_model = self.model.as_ref(py);
-#          py_model
-#              .call_method("set_variables", (list,), None)
+#          self.model.bind(py)
+#              .call_method("set_variables", (PyList::new_bound(py, var),), None)
 #              .unwrap();
 #      })
 #  }
@@ -192,7 +191,7 @@ This wrapper will also perform the type conversions between Python and Rust.
 #      println!("Rust calling Python to get the results");
 #      Python::with_gil(|py| {
 #          self.model
-#              .as_ref(py)
+#              .bind(py)
 #              .call_method("get_results", (), None)
 #              .unwrap()
 #              .extract()
@@ -204,7 +203,7 @@ This wrapper will also perform the type conversions between Python and Rust.
 #      println!("Rust calling Python to perform the computation");
 #      Python::with_gil(|py| {
 #          self.model
-#              .as_ref(py)
+#              .bind(py)
 #              .call_method("compute", (), None)
 #              .unwrap();
 #      })
@@ -330,7 +329,9 @@ Let's modify the code performing the type conversion to give a helpful error mes
 We used in our `get_results` method the following call that performs the type conversion:
 
 ```rust
+# #![allow(dead_code)]
 # use pyo3::prelude::*;
+# use pyo3::types::PyList;
 #
 # pub trait Model {
 #   fn set_variables(&mut self, inputs: &Vec<f64>);
@@ -348,7 +349,7 @@ impl Model for UserModel {
         println!("Rust calling Python to get the results");
         Python::with_gil(|py| {
             self.model
-                .as_ref(py)
+                .bind(py)
                 .call_method("get_results", (), None)
                 .unwrap()
                 .extract()
@@ -358,11 +359,8 @@ impl Model for UserModel {
 #     fn set_variables(&mut self, var: &Vec<f64>) {
 #         println!("Rust calling Python to set the variables");
 #         Python::with_gil(|py| {
-#             let values: Vec<f64> = var.clone();
-#             let list: PyObject = values.into_py(py);
-#             let py_model = self.model.as_ref(py);
-#             py_model
-#                 .call_method("set_variables", (list,), None)
+#             self.model.bind(py)
+#                 .call_method("set_variables", (PyList::new_bound(py, var),), None)
 #                 .unwrap();
 #         })
 #     }
@@ -371,7 +369,7 @@ impl Model for UserModel {
 #         println!("Rust calling Python to perform the computation");
 #         Python::with_gil(|py| {
 #             self.model
-#                 .as_ref(py)
+#                 .bind(py)
 #                 .call_method("compute", (), None)
 #                 .unwrap();
 #         })
@@ -382,7 +380,9 @@ impl Model for UserModel {
 Let's break it down in order to perform better error handling:
 
 ```rust
+# #![allow(dead_code)]
 # use pyo3::prelude::*;
+# use pyo3::types::PyList;
 #
 # pub trait Model {
 #   fn set_variables(&mut self, inputs: &Vec<f64>);
@@ -399,9 +399,9 @@ impl Model for UserModel {
     fn get_results(&self) -> Vec<f64> {
         println!("Get results from Rust calling Python");
         Python::with_gil(|py| {
-            let py_result: &PyAny = self
+            let py_result: Bound<'_, PyAny> = self
                 .model
-                .as_ref(py)
+                .bind(py)
                 .call_method("get_results", (), None)
                 .unwrap();
 
@@ -418,11 +418,8 @@ impl Model for UserModel {
 #     fn set_variables(&mut self, var: &Vec<f64>) {
 #         println!("Rust calling Python to set the variables");
 #         Python::with_gil(|py| {
-#             let values: Vec<f64> = var.clone();
-#             let list: PyObject = values.into_py(py);
-#             let py_model = self.model.as_ref(py);
-#             py_model
-#                 .call_method("set_variables", (list,), None)
+#             let py_model = self.model.bind(py)
+#                 .call_method("set_variables", (PyList::new_bound(py, var),), None)
 #                 .unwrap();
 #         })
 #     }
@@ -431,7 +428,7 @@ impl Model for UserModel {
 #         println!("Rust calling Python to perform the computation");
 #         Python::with_gil(|py| {
 #             self.model
-#                 .as_ref(py)
+#                 .bind(py)
 #                 .call_method("compute", (), None)
 #                 .unwrap();
 #         })
@@ -460,7 +457,9 @@ Because of this, we can write a function wrapper that takes the `UserModel`--whi
 It is also required to make the struct public.
 
 ```rust
+# #![allow(dead_code)]
 use pyo3::prelude::*;
+use pyo3::types::PyList;
 
 pub trait Model {
     fn set_variables(&mut self, var: &Vec<f64>);
@@ -484,7 +483,7 @@ pub struct UserModel {
 }
 
 #[pymodule]
-fn trait_exposure(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn trait_exposure(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<UserModel>()?;
     m.add_function(wrap_pyfunction!(solve_wrapper, m)?)?;
     Ok(())
@@ -516,11 +515,9 @@ impl Model for UserModel {
     fn set_variables(&mut self, var: &Vec<f64>) {
         println!("Rust calling Python to set the variables");
         Python::with_gil(|py| {
-            let values: Vec<f64> = var.clone();
-            let list: PyObject = values.into_py(py);
-            let py_model = self.model.as_ref(py);
-            py_model
-                .call_method("set_variables", (list,), None)
+            self.model
+                .bind(py)
+                .call_method("set_variables", (PyList::new_bound(py, var),), None)
                 .unwrap();
         })
     }
@@ -528,9 +525,9 @@ impl Model for UserModel {
     fn get_results(&self) -> Vec<f64> {
         println!("Get results from Rust calling Python");
         Python::with_gil(|py| {
-            let py_result: &PyAny = self
+            let py_result: Bound<'_, PyAny> = self
                 .model
-                .as_ref(py)
+                .bind(py)
                 .call_method("get_results", (), None)
                 .unwrap();
 
@@ -549,7 +546,7 @@ impl Model for UserModel {
         println!("Rust calling Python to perform the computation");
         Python::with_gil(|py| {
             self.model
-                .as_ref(py)
+                .bind(py)
                 .call_method("compute", (), None)
                 .unwrap();
         })

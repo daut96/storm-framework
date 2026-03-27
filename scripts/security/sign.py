@@ -5,7 +5,10 @@ def run_sign():
         signed()
         return True
     except ImportError as e:
-        print(f"[!] Critical: Binary 'storm_sign' not found or ABI mismatch.", file=sys.stderr)
+        print(
+            f"[!] Critical: Binary 'storm_sign' not found or ABI mismatch.",
+            file=sys.stderr,
+        )
         print(f"[!] Detail => {e}", file=sys.stderr)
         return False
     except Exception as e:

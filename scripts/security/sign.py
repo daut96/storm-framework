@@ -3,9 +3,9 @@ import sys
 
 def run_sign():
     try:
-        from external.source.binary import run
+        from external.source.binary import signed
 
-        run.storm_sign()
+        signed.storm_sign()
         return True
     except ImportError as e:
         print(

@@ -34,9 +34,13 @@ def run_update():
 
     # 4. Trigger Compiler ONLY IF needed
     try:
-        from scripts.security.sign import generate_folder_manifest
+        from external.source.binary import signed
 
-        generate_folder_manifest()
+        signed.storm_sign()
         return True
+    except ImportError as e:
+        print(f"[!] ERROR IMPORT => {e}", file=sys.stderr)
+        return False
     except Exception as e:
-        print(f"ERROR => {e}")
+        print(f"[!] ERROR => {e}", file=sys.stderr)
+        return False

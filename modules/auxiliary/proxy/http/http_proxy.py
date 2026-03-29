@@ -19,17 +19,14 @@ forward proxy logic.
     "License": "SMF License",
 }
 
+
 def execute(options):
     lib = os.path.join(ROOT, "external", "source", "binary", "http_prox")
 
     cmd = [lib]
 
     process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
 
     try:

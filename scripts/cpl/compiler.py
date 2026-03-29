@@ -27,7 +27,6 @@ def run_cmd(cmd, cwd=None):
         return True
     except subprocess.CalledProcessError as e:
         print(f"ERROR => {e}")
-        print(f"[!] Rust Failed => {os.path.basename(cwd)}")
         return False
 
 

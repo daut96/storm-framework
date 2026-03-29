@@ -1,6 +1,9 @@
 package main
 
 import (
+	
+	"context"
+	"syscall"
 	"io"
 	"log"
 	"net/http"
@@ -66,18 +69,32 @@ func copyHeaders(dst, src http.Header) {
 }
 
 func main() {
-	port := ":7900" // Tentukan port proxy di sini
-	log.Printf("Forward Proxy berjalan di port %s...", port)
-	log.Println("Menunggu paket masuk...")
+	addr := ":7900"
+	
+	// 1. Buat konfigurasi Listener khusus
+	lc := net.ListenConfig{
+		Control: func(network, address string, c syscall.RawConn) error {
+			return c.Control(func(fd uintptr) {
+				// Paksa OS agar mengizinkan penggunaan ulang port (SO_REUSEADDR)
+				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+			})
+		},
+	}
 
-	// Konfigurasi Server
+	// 2. Lakukan Listen secara manual menggunakan konfigurasi di atas
+	lp, err := lc.Listen(context.Background(), "tcp4", addr)
+	if err != nil {
+		log.Fatalf("Gagal merebut port %s: %v", addr, err)
+	}
+
+	log.Printf("Proxy aktif di %s (Mode: Force Bind)", addr)
+
+	// 3. Masukkan listener ke HTTP Server
 	server := &http.Server{
-		Addr:    port,
 		Handler: http.HandlerFunc(proxyHandler),
 	}
 
-	// ListenAndServe akan otomatis memicu goroutine (go c.serve(connCtx)) untuk tiap koneksi TCP
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("Fatal error pada proxy server: %v", err)
+	if err := server.Serve(lp); err != nil {
+		log.Fatal(err)
 	}
 }

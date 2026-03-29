@@ -66,7 +66,7 @@ func copyHeaders(dst, src http.Header) {
 }
 
 func main() {
-	port := ":7900" // Tentukan port proxy di sini
+	port := "127.0.0.1:7900" // Tentukan port proxy di sini
 	
 	log.Printf("Forward Proxy berjalan di port %s...", port)
 	log.Println("Menunggu paket masuk...")

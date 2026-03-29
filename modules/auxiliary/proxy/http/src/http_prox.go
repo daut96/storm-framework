@@ -1,9 +1,8 @@
 package main
 
 import (
-	
-	"context"
-	"syscall"
+	"fmt"
+	"net"
 	"io"
 	"log"
 	"net/http"
@@ -69,32 +68,25 @@ func copyHeaders(dst, src http.Header) {
 }
 
 func main() {
-	addr := ":7900"
-	
-	// 1. Buat konfigurasi Listener khusus
-	lc := net.ListenConfig{
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				// Paksa OS agar mengizinkan penggunaan ulang port (SO_REUSEADDR)
-				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-			})
-		},
-	}
+	port := "0.0.0.0:7900" // Paksa ke IPv4 agar tidak bentrok dengan IPv6 sistem
 
-	// 2. Lakukan Listen secara manual menggunakan konfigurasi di atas
-	lp, err := lc.Listen(context.Background(), "tcp4", addr)
+	// 1. BUAT LISTENER MANUAL (Langkah paling aman)
+	// Dengan menggunakan net.Listen secara terpisah, kita punya kontrol 
+	// lebih besar sebelum server HTTP mengambil alih.
+	l, err := net.Listen("tcp4", port)
 	if err != nil {
-		log.Fatalf("Gagal merebut port %s: %v", addr, err)
+		log.Fatalf("Gagal mengunci port %s: %v. Pastikan tidak ada zombie process!", port, err)
 	}
 
-	log.Printf("Proxy aktif di %s (Mode: Force Bind)", addr)
+	log.Printf("Proxy Berjalan di %s", l.Addr().String())
 
-	// 3. Masukkan listener ke HTTP Server
+	// 2. MASUKKAN KE SERVER
 	server := &http.Server{
 		Handler: http.HandlerFunc(proxyHandler),
 	}
 
-	if err := server.Serve(lp); err != nil {
+	// Gunakan .Serve(l), bukan .ListenAndServe()
+	if err := server.Serve(l); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -4,7 +4,7 @@ from rootmap import ROOT
 
 def session(options):
     full_path = os.path.join(ROOT, "lib", "smf", "cache", "res")
-    cache_path = os.path.join(full_path, ".storm-session")
+    cache_path = os.path.join(full_path, ".storm-options")
     # check cache files
     if os.path.exists(cache_path):
         try:

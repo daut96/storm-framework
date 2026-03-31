@@ -23,7 +23,7 @@ def session(options):
             os.remove(cache_path)
             return options
         except Exception as e:
-            print(f"[!] Error loading session: {e}")
+            print(f"[!] ERROR loading session => {e}")
             return options
 
     return options

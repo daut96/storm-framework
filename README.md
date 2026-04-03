@@ -64,7 +64,7 @@ curl -fsSL https://raw.githubusercontent.com/StormWorld0/storm-framework/main/se
 Use this command to run it.
 
 ```bash
-sudo pentest
+sudo storm
 ```
 
 ### 📖 Wiki

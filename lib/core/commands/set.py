@@ -1,7 +1,14 @@
+# -- https://github.com/StormWorld0/storm-framework 
+# -- SMF License 
 import app.utility.utils as utils
 from app.utility.colors import C
 
-
+# The set command is used to save data to global variables and module variables.
+# it seems like the following example
+# Command => set <var> <val>
+# or
+# Command => set ip 192.168.1.0
+# a command like this will insert value data into the variable we implement.
 def execute(args, context):
     options = context["options"]
     if len(args) >= 2:

@@ -7,10 +7,10 @@ import readline  # noqa: F401
 import app.base.config_ui as ui
 import lib.smf.core.sf.ldch as ldch
 
-from app.base.config_update import check_update
+from app.base.config_update import *
 from app.utility.colors import C
 from app.utility.verify import *
-from app.banners.banner import get_random_banner
+from app.banners.uib import banner
 
 from lib.core import handler as h
 
@@ -25,7 +25,7 @@ def main():
     except KeyboardInterrupt: return
 
     os.system('clear')
-    print(get_random_banner())
+    print(banner())
     ui.stormUI()
     check_update()
 

@@ -109,7 +109,7 @@ def execute(args, context):
                     print(f"{C.SUCCESS}{' '*(label_w)} : - {extra}")
 
                 print(f"{C.HEADER}{'-'*width}")
-                print(f"{C.SUCCESS}{'ACTION':<13} :")
+                print(f"{C.SUCCESS}{'ACTION':<13}")
                 for action in info.get("Action", []):
                     name = action[0]
                     desc = action[1].get("Description", "")

@@ -1,3 +1,5 @@
+# -- https://github.com/StormWorld0/storm-framework 
+# -- SMF License 
 import os
 import importlib.util
 import textwrap
@@ -27,6 +29,8 @@ def execute(args, context):
     filename = os.path.basename(found_path).lower()
     if found_path:
         if filename.startswith("cve"):
+            # Used to display cve // vulnerability information
+            # Command => info <cve_name>
             try:
                 spec = importlib.util.spec_from_file_location("temp_mod", found_path)
                 mod = importlib.util.module_from_spec(spec)
@@ -70,6 +74,8 @@ def execute(args, context):
                 print(f"{C.ERROR}[-] Failed to read => {e}")
 
         else:
+            # To display information about a specific module
+            # Command => info <modules_name>
             try:
                 spec = importlib.util.spec_from_file_location("temp_mod", found_path)
                 mod = importlib.util.module_from_spec(spec)

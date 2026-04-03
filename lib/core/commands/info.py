@@ -1,5 +1,5 @@
-# -- https://github.com/StormWorld0/storm-framework 
-# -- SMF License 
+# -- https://github.com/StormWorld0/storm-framework
+# -- SMF License
 import os
 import importlib.util
 import textwrap

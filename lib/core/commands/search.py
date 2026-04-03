@@ -1,6 +1,7 @@
-# -- https://github.com/StormWorld0/storm-framework 
-# -- SMF License 
+# -- https://github.com/StormWorld0/storm-framework
+# -- SMF License
 from app.utility.search import search_modules
+
 
 # Search command to search for the modules we want to search for
 # This is very dynamic as in general it does not require specific words.

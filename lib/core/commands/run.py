@@ -7,6 +7,7 @@ def execute(args, context):
     options = context["options"]
     if not current_module:
         print(f"{C.ERROR}[!] No modules selected. 'use <module>' first.")
+        print()
         return context
     # Get the list of required variables from the selected module.
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
@@ -29,8 +30,8 @@ def execute(args, context):
         current_module.execute(options)
 
     except AttributeError as d:
-        print(f"{C.ERROR}[-] ERROR: {d}")
+        print(f"{C.ERROR}[-] ERROR => {d}")
     except Exception as e:
-        print(f"{C.ERROR}[-] Error during execution: {e}")
+        print(f"{C.ERROR}[-] Error during execution => {e}")
 
     return context

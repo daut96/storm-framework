@@ -1,5 +1,5 @@
 # -- https://github.com/StormWorld0/storm-framework/version.txt
-# -- SMF License 
+# -- SMF License
 VERSION = "3.6.0"
 # Change when doing a major update to the storm function
 #

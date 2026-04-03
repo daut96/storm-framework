@@ -1,7 +1,15 @@
+# -- https://github.com/StormWorld0/storm-framework 
+# -- SMF License 
 from app.utility.colors import C
 import app.utility.utils as utils
 
-
+# Run command to run a module that we want to execute
+# The workflow is as below;
+# Command => use <module_name>
+# Command => set <var> <val>
+# Command => run
+##
+# After running the module will run and you just have to wait for it to finish.
 def execute(args, context):
     current_module = context["current_module"]
     options = context["options"]

@@ -12,4 +12,4 @@ class C:
     ERROR = Fore.RED + Style.BRIGHT
     RESET = Style.RESET_ALL
 
-    B = Force.BLUE + Style.BRIGHT
+    B = Fore.BLUE + Style.BRIGHT

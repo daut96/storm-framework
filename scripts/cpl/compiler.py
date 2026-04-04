@@ -5,7 +5,7 @@ from rootmap import ROOT
 from app.utility.spin import StormSpin
 from scripts.cpl.advcore import safe_mode
 
-def start_engine_build():
+def start_build():
     os.chdir(ROOT)
     cores = safe_mode()
     print(f"[*] Storm Run compilation...")

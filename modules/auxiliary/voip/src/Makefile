@@ -1,27 +1,27 @@
-# --- Konfigurasi ---
+# --- MANDATORY CONFIG ---
+# Tentukan nama binary secara eksplisit di sini
+NAME     := sniffer_core
+
+# --- PATH CONFIG ---
 # BIN_DIR disuapi dari Python (Environment Variable)
 OUT      := $(BIN_DIR)
-# Nama binary diambil dari nama folder tempat Makefile ini berada
-TARGET   := $(OUT)/$(notdir $(CURDIR))
-# Ambil semua file .c di folder ini
-SOURCES  := $(wildcard *.c)
+TARGET   := $(OUT)/$(NAME)
+SOURCES  := $(wildcard *.go) # Eh, maksudnya *.c, maaf kebiasaan Go tadi
 
-# --- Aturan Utama ---
+# --- RULES ---
 all: $(TARGET)
 
-# Hanya jalan jika file .c lebih baru daripada file binary-nya
 $(TARGET): $(SOURCES)
 	@mkdir -p $(OUT)
-	@echo "[*] Compiling C Module: $(notdir $(CURDIR))..."
+	@echo "[*] Building $(NAME)..."
 	
-	@# Logika otomatis: Cek apakah butuh library pcap
+	@# Otomatisasi library pcap tetap dipertahankan
 	@LIBS=$$(grep -q "pcap.h" $(SOURCES) && echo "-lpcap" || echo ""); \
 	gcc $(SOURCES) -o $(TARGET) $$LIBS
 	
-	@# Pastikan bisa dieksekusi dan update timestamp
-	@chmod +55 $(TARGET)
+	@chmod +x $(TARGET)
 	@touch $(TARGET)
-	@echo "[✓] Output: $(TARGET)"
+	@echo "[✓] Binary created: $(TARGET)"
 
 clean:
 	rm -f $(TARGET)

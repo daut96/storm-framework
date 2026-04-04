@@ -5,6 +5,7 @@ from rootmap import ROOT
 from app.utility.spin import StormSpin
 from scripts.cpl.advcore import safe_mode
 
+
 def start_build():
     os.chdir(ROOT)
     cores = safe_mode()
@@ -21,6 +22,7 @@ def start_build():
             print("[!] Build process failed!")
         except FileNotFoundError:
             print("[!] 'make' not found. Please install build-essential.")
+
 
 if __name__ == "__main__":
     start_build()

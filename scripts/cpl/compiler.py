@@ -9,13 +9,15 @@ def start_build():
     os.chdir(ROOT)
     cores = safe_mode()
 
-    shared_rust_cache = os.path.abspath(os.path.join(ROOT, "lib/smf/core/cache/rust-session"))
+    shared_rust_cache = os.path.abspath(
+        os.path.join(ROOT, "lib/smf/core/cache/rust-session")
+    )
     os.makedirs(shared_rust_cache, exist_ok=True)
     bin_path = os.path.abspath(os.path.join(ROOT, "external/source/bin"))
     os.makedirs(bin_path, exist_ok=True)
 
     # context to Makefile
-    os.environ['CARGO_TARGET_DIR'] = shared_rust_cache
+    os.environ["CARGO_TARGET_DIR"] = shared_rust_cache
     os.environ["BIN_DIR"] = bin_path
 
     # Daftar folder yang HARUS diabaikan

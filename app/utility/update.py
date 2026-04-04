@@ -35,8 +35,10 @@ def run_update():
 
     # 4. Trigger Compiler ONLY IF needed
     try:
+        from scripts.cpl import compiler
         from external.source.bin import signed
 
+        compiler.start_build()
         signed.storm_sign()
         return True
     except ImportError as e:

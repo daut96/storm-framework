@@ -10,8 +10,6 @@ $(TARGET): $(SOURCES)
 	@mkdir -p $(OUT)
 	@LIBS=$$(grep -q "pcap.h" $(SOURCES) && echo "-lpcap" || echo ""); \
 	gcc $(SOURCES) -o $(TARGET) $$LIBS
-	@chmod +x $(TARGET)
-	@touch $(TARGET)
 
 clean:
 	rm -f $(TARGET)

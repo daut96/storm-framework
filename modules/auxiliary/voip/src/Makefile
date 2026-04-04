@@ -1,6 +1,6 @@
 # --- MANDATORY CONFIG ---
 # Tentukan nama binary secara eksplisit di sini
-NAME     := sniffer_core
+NAME     := rtp_sniff
 
 # --- PATH CONFIG ---
 # BIN_DIR disuapi dari Python (Environment Variable)

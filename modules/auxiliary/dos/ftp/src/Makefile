@@ -1,6 +1,6 @@
 # --- MANDATORY CONFIG ---
 # Nama binary tanpa ekstensi (Contoh: storm_scanner)
-NAME     := storm_scanner
+NAME     := ftp_flood
 
 # --- PATH CONFIG ---
 # BIN_DIR disuapi dari Python (Environment Variable)

@@ -37,7 +37,8 @@ def start_build():
                 except FileNotFoundError:
                     print("[!] make > not found. Please install build-essential.")
                     break
-    print("[✓] Compilation successful.") 
+    print("[✓] Compilation successful.")
+
 
 if __name__ == "__main__":
     start_build()

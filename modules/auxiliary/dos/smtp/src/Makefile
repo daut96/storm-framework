@@ -1,12 +1,15 @@
 NAME     := smtp_flood
 OUT      := $(BIN_DIR)
 TARGET   := $(OUT)/$(NAME)
+SRC      := $(wildcard *.go)
+
+.PHONY: all clean
 
 all: $(TARGET)
 
-$(TARGET): *.go
+$(TARGET): $(SRC)
 	@mkdir -p $(OUT)
 	@go build -o $(TARGET) .
-	@chmod +x $(TARGET)
-	@touch $(TARGET)
 
+clean:
+	rm -rf $(OUT)

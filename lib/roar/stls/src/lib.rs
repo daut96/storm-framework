@@ -1,6 +1,7 @@
 mod tls;
 mod http2;
 
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 use std::sync::OnceLock;
@@ -44,17 +45,16 @@ pub extern "C" fn storm_request(
     body_ptr: *const u8,
     body_len: usize,
 ) -> *mut c_char {
-    // 1. Validasi Input Dasar
     if url_ptr.is_null() || method_ptr.is_null() {
         return CString::new("ERROR: Null pointer on mandatory fields").unwrap().into_raw();
     }
 
-    // 2. Marshalling C-Types ke Rust-Types
     let url = unsafe { CStr::from_ptr(url_ptr).to_string_lossy().into_owned() };
     let method = unsafe { CStr::from_ptr(method_ptr).to_string_lossy().into_owned() };
     
+    // FIX: Perbaikan typo string JSON kosong
     let headers_json = if headers_json_ptr.is_null() {
-        "{}\"".to_string() // Default empty JSON object
+        "{}".to_string() 
     } else {
         unsafe { CStr::from_ptr(headers_json_ptr).to_string_lossy().into_owned() }
     };
@@ -65,10 +65,8 @@ pub extern "C" fn storm_request(
         unsafe { Some(std::slice::from_raw_parts(body_ptr, body_len).to_vec()) }
     };
 
-    // 3. Panggil Global Tokio Runtime
     let rt = get_runtime();
 
-    // 4. Eksekusi Engine Asinkronus
     let result = rt.block_on(async move {
         match execute_dynamic_request(&url, &method, &headers_json, body_bytes).await {
             Ok(response_body) => response_body,
@@ -96,13 +94,11 @@ async fn execute_dynamic_request(
     headers_json: &str,
     body: Option<Vec<u8>>,
 ) -> Result<String, Box<dyn std::error::Error>> {
-    // 1. Parsing Target
     let uri = target_url.parse::<http::Uri>()?;
     let host = uri.host().ok_or("URL has no host")?;
     let port = uri.port_u16().unwrap_or(443);
     let target_addr = format!("{}:{}", host, port);
 
-    // 2. Setup TLS & Koneksi
     let ctx = build_chrome_ssl_context()?;
     let tcp_stream = TcpStream::connect(&target_addr).await?;
     
@@ -111,55 +107,62 @@ async fn execute_dynamic_request(
 
     let tls_stream = tokio_boring::SslStreamBuilder::new(ssl, tcp_stream).connect().await?;
 
-    // 3. Negosiasi HTTP/2
+    // SINKRONISASI 1: HTTP/2 Settings & Connection Window Update
     let mut h2_builder = h2::client::Builder::new();
     h2_builder
         .initial_window_size(ChromeH2Settings::INITIAL_WINDOW_SIZE)
+        .initial_connection_window_size(ChromeH2Settings::CONNECTION_WINDOW_UPDATE) // <-- Sangat penting untuk Akamai
         .max_concurrent_streams(ChromeH2Settings::MAX_CONCURRENT_STREAMS)
         .header_table_size(ChromeH2Settings::HEADER_TABLE_SIZE)
-        .max_header_list_size(ChromeH2Settings::MAX_HEADER_LIST_SIZE) // Tambahan krusial
-        .enable_push(ChromeH2Settings::ENABLE_PUSH); // Menghasilkan SETTINGS_ENABLE_PUSH (2:0)
+        .max_header_list_size(ChromeH2Settings::MAX_HEADER_LIST_SIZE)
+        .enable_push(ChromeH2Settings::ENABLE_PUSH);
 
     let (mut client, h2_connection) = h2_builder.handshake::<_, bytes::Bytes>(tls_stream).await?;
 
     tokio::spawn(async move {
         if let Err(_e) = h2_connection.await {
-            // Background connection handler (bisa pasang logging di sini)
+            // Background handler
         }
     });
 
-    // 4. Membangun HTTP Request secara Dinamis
     let mut request_builder = http::Request::builder()
         .method(method)
         .uri(target_url);
 
-    // Parsing Header dari JSON (memudahkan interface multi-bahasa)
+    // SINKRONISASI 2: Dynamic Header Sorting (Lexical Ordering)
+    let mut header_map: HashMap<String, String> = HashMap::new();
     if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
         if let Some(obj) = parsed_headers.as_object() {
             for (key, value) in obj {
                 if let Some(val_str) = value.as_str() {
-                    request_builder = request_builder.header(key, val_str);
+                    // Normalisasi key ke lowercase karena HTTP/2 mewajibkan lowercase header keys
+                    header_map.insert(key.to_lowercase(), val_str.to_string());
                 }
             }
         }
     }
 
-    // Default Pseudo-Headers H2 (jika tidak di-supply oleh user)
-    // Di produksi, biasanya kita men-cek apakah key "user-agent" sudah ada sebelum menambahkan default.
+    // 1. Masukkan Standard Headers sesuai urutan Chrome 120+
+    for expected_key in ChromeH2Settings::get_standard_header_order() {
+        if let Some(val) = header_map.remove(*expected_key) {
+            request_builder = request_builder.header(*expected_key, val);
+        }
+    }
+
+    // 2. Masukkan sisa Custom Headers (misal: x-csrf-token, authorization, dsb) di bagian paling bawah
+    for (key, val) in header_map {
+        request_builder = request_builder.header(key, val);
+    }
+
     let request = request_builder.body(())?;
 
-    // 5. Logika Pengiriman dengan/tanpa Body (End-Of-Stream logic)
     let has_body = body.is_some();
-    // Jika has_body = true, end_of_stream saat mengirim head harus false!
     let (response_future, mut send_stream) = client.send_request(request, !has_body)?;
 
-    // 6. Streaming Body Payload (Jika ada method POST/PUT)
     if let Some(payload) = body {
-        // Mengirim data chunk, parameter 'true' di akhir berarti ini chunk terakhir (EOS)
         send_stream.send_data(bytes::Bytes::from(payload), true)?;
     }
 
-    // 7. Tunggu & Kumpulkan Response
     let response = response_future.await?;
     let mut resp_body = response.into_body();
     let mut response_bytes = Vec::new();
@@ -170,4 +173,4 @@ async fn execute_dynamic_request(
     }
 
     Ok(String::from_utf8_lossy(&response_bytes).to_string())
-                                                                 }
+}

@@ -83,8 +83,9 @@ fn main() {
     // TAHAP 1: I/O BOUND (Filter File)
     // Hindari iterasi array manual berulang kali, gunakan HashSet untuk pencarian O(1)
     let ignored_items: HashSet<&str> = [
-        ".git", "__pycache__", ".pytest_cache", ".github", "storm.db", 
-        "signed_manifest.json", ".gitignore", ".env", "target", "res"
+        ".git", "__pycache__", ".pytest_cache", ".github", 
+        "sqlite", "signed_manifest.json", ".gitignore", 
+        ".env", "target", "res", "cache"
     ].into_iter().collect();
 
     let mut target_files = Vec::new();

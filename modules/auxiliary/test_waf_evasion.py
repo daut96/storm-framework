@@ -46,7 +46,7 @@ def execute(options):
             f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n"
         )
 
-        data = json.loads(response)
+        data = response.json()
 
         if not data:
             smf.printf("Empty response from server")

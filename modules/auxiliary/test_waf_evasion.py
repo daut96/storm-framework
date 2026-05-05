@@ -46,7 +46,7 @@ def execute(options):
             f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n"
         )
 
-        # Parsing JSON response dari Peet.ws
+        # Parsing JSON response
         data = response.json()
 
         # Ekstraksi metrik krusial
@@ -63,6 +63,11 @@ def execute(options):
         smf.printf(f"    JA4 Fingerprint Hash    : {ja4_hash}")
         smf.printf(f"    Akamai H2 Fingerprint   : {akamai_fp}")
         smf.printf("==================================================\n")
+
+        if not data:
+            smf.printf("Json data does not exist", type(data))
+            smf.printf(data)
+            return
 
         smf.printf("[*] Full details of TLS Ciphers & Extensions the server sees:")
         # Menampilkan detail raw TLS dari server (hanya bagian tls)

@@ -52,8 +52,7 @@ def execute(options):
             smf.printf("Empty response from server")
             return
 
-        raw_str = raw.strip()
-
+        raw_str = raw
         # Deteksi JSON sederhana (cukup efektif)
         if raw_str.startswith("{") or raw_str.startswith("["):
             try:

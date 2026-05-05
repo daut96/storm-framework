@@ -33,7 +33,7 @@
     <img src="https://img.shields.io/badge/Golang-1.26.2-black">
   </a>
   <a href="https://github.com/rust-lang/rust">
-    <img src="https://img.shields.io/badge/Rustc-1.95.0-black">
+    <img src="https://img.shields.io/badge/Rust-1.95.0-black">
   </a>
   <a href="https://www.gnu.org/software/bash/">
     <img src="https://img.shields.io/badge/Bash-5.3.9-black">

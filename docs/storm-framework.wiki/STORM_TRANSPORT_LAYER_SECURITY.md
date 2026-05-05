@@ -14,7 +14,7 @@ Does not use OpenSSL or the language’s default cryptographic libraries. STLS l
 - **JA3/JA4 Spoofing:** Dynamic with GREASE injection that keeps the signature constantly changing but still recognizable as genuine Chrome.
 - **Akamai HTTP/2 Fingerprint:** Manipulating the giant Window Update frame (15663105) and Header Lexical Ordering to bypass HTTP/2 protection.
 
-## 🚀 Post-Quantum Cryptography (PQC):**
+**🚀 Post-Quantum Cryptography (PQC):**
 
 Fully supports X25519Kyber768 hybrid key exchange, a mandatory requirement for bypassing modern Cloudflare detections.
 

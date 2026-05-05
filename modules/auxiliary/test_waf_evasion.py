@@ -42,6 +42,7 @@ def execute(options):
         response = stls.get(target_url, headers=headers)
         elapsed_time = time.time() - start_time
 
+        smf.printf(response)
         smf.printf(
             f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n"
         )

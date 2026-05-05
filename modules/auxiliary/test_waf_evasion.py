@@ -17,7 +17,7 @@ def execute(options):
     smf.printf("==================================================")
     smf.printf(f"[*] Target      : {target_url}")
     smf.printf(f"[*] Time        : {time.strftime('%Y-%m-%d %H:%M:%S')}")
-    smf.printf(f"[*] Status      : Mengirim request melalui mesin Rust...\n")
+    smf.printf(f"[*] Status      : Sending requests through the Rust engine...\n")
 
     # Simulasi header browser yang natural
     headers = {
@@ -63,7 +63,7 @@ def execute(options):
         smf.printf(f"Akamai FP    : {akamai_fp}")
 
         smf.printf("[*] TLS Details:")
-        smf.printf(json.dumps(data.get("tls", {}), indent=4))
+        smf.printf(json.dumps(data, indent=4)
 
     except KeyboardInterrupt:
         return

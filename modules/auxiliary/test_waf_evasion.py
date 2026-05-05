@@ -63,7 +63,7 @@ def execute(options):
         smf.printf(f"Akamai FP    : {akamai_fp}")
 
         smf.printf("[*] TLS Details:")
-        smf.printf(json.dumps(data, indent=4)
+        smf.printf(json.dumps(data, indent=4))
 
     except KeyboardInterrupt:
         return

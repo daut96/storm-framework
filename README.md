@@ -108,7 +108,8 @@ For questions or suggestions, etc:
 - Follow [@elzyone](https://x.com/elzyone) for X or [@zxelzy](https://github.com/zxelzy) for github account.
 
 ### 📖 Wiki
-If you need further explanation about Storm-Framework, don't forget to read at [wiki](https://github.com/StormWorld0/storm-framework/wiki)
+
+In the wiki where we explain various feature logic and others, you can read about it at [wiki](https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki)
 
 ### 🤝 Contributing 
 

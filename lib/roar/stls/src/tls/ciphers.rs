@@ -1,17 +1,5 @@
 // src/tls/ciphers.rs
 
-/// Mengembalikan cipher suites khusus untuk TLS 1.3.
-/// Fungsi ini akan dimasukkan ke `builder.set_ciphersuites()`.
-/// Urutan ini mencerminkan apa yang dikirim oleh Chrome 120+ modern.
-pub fn chrome_tls13_ciphersuites() -> &'static str {
-    // OpenSSL/BoringSSL parser untuk TLS 1.3 menggunakan nama standar RFC
-    concat!(
-        "TLS_AES_128_GCM_SHA256:",
-        "TLS_AES_256_GCM_SHA384:",
-        "TLS_CHACHA20_POLY1305_SHA256"
-    )
-}
-
 /// Mengembalikan cipher suites untuk TLS 1.2 dan fallback.
 /// Fungsi ini akan dimasukkan ke `builder.set_cipher_list()`.
 /// Perhatikan penamaannya menggunakan format OpenSSL, bukan RFC.

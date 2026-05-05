@@ -2,59 +2,87 @@ mod tls;
 mod http2;
 
 use std::ffi::{CStr, CString};
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_void};
+use std::sync::OnceLock;
 use tokio::runtime::Runtime;
+use tokio::net::TcpStream;
+use boring::ssl::Ssl;
 
 use tls::builder::build_chrome_ssl_context;
 use http2::fingerprint::ChromeH2Settings;
-use tokio::net::TcpStream;
-use boring::ssl::Ssl;
+
+// =========================================================================
+// GLOBAL OPTIMIZATION (Zero-Cost Runtime)
+// =========================================================================
+
+/// Menggunakan OnceLock untuk memastikan Tokio Runtime hanya di-spawn SEKALI 
+/// selama siklus hidup shared library (menghilangkan overhead thread-creation).
+static TOKIO_RT: OnceLock<Runtime> = OnceLock::new();
+
+fn get_runtime() -> &'static Runtime {
+    TOKIO_RT.get_or_init(|| {
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .expect("Fatal: Failed to initialize Tokio multi-thread runtime")
+    })
+}
 
 // =========================================================================
 // C-ABI / FFI BOUNDARY
 // =========================================================================
 
+/// FFI Signature yang lebih kaya.
+/// - method_ptr: "GET", "POST", "PUT", dll.
+/// - headers_json_ptr: Serialisasi JSON dari dictionary header (mudah dipassing dari Python/Go).
+/// - body_ptr & body_len: Array of bytes untuk payload (mendukung binary maupun teks).
 #[unsafe(no_mangle)]
-pub extern "C" fn storm_fetch(url_ptr: *const c_char) -> *mut c_char {
-    // 1. Validasi Pointer dari bahasa eksternal (Python/Go)
-    if url_ptr.is_null() {
-        return std::ptr::null_mut();
+pub extern "C" fn storm_request(
+    url_ptr: *const c_char,
+    method_ptr: *const c_char,
+    headers_json_ptr: *const c_char,
+    body_ptr: *const u8,
+    body_len: usize,
+) -> *mut c_char {
+    // 1. Validasi Input Dasar
+    if url_ptr.is_null() || method_ptr.is_null() {
+        return CString::new("ERROR: Null pointer on mandatory fields").unwrap().into_raw();
     }
 
-    // 2. Konversi C-String menjadi Rust String
-    let c_str = unsafe { CStr::from_ptr(url_ptr) };
-    let url_str = match c_str.to_str() {
-        Ok(s) => s,
-        Err(_) => return CString::new("ERROR: Invalid UTF-8").unwrap().into_raw(),
+    // 2. Marshalling C-Types ke Rust-Types
+    let url = unsafe { CStr::from_ptr(url_ptr).to_string_lossy().into_owned() };
+    let method = unsafe { CStr::from_ptr(method_ptr).to_string_lossy().into_owned() };
+    
+    let headers_json = if headers_json_ptr.is_null() {
+        "{}\"".to_string() // Default empty JSON object
+    } else {
+        unsafe { CStr::from_ptr(headers_json_ptr).to_string_lossy().into_owned() }
     };
 
-    // 3. Inisialisasi Tokio Runtime (Menjembatani kode synchronous C ke asynchronous Rust)
-    let rt = match Runtime::new() {
-        Ok(rt) => rt,
-        Err(_) => return CString::new("ERROR: Failed to start Tokio").unwrap().into_raw(),
+    let body_bytes = if body_ptr.is_null() || body_len == 0 {
+        None
+    } else {
+        unsafe { Some(std::slice::from_raw_parts(body_ptr, body_len).to_vec()) }
     };
 
-    // 4. Eksekusi Engine secara blocking
-    let result = rt.block_on(async {
-        match execute_request(url_str).await {
+    // 3. Panggil Global Tokio Runtime
+    let rt = get_runtime();
+
+    // 4. Eksekusi Engine Asinkronus
+    let result = rt.block_on(async move {
+        match execute_dynamic_request(&url, &method, &headers_json, body_bytes).await {
             Ok(response_body) => response_body,
             Err(e) => format!("ERROR: STLS Failure - {}", e),
         }
     });
 
-    // 5. Konversi hasil kembali ke C-String dan serahkan memory ownership
-    let c_result = CString::new(result).unwrap_or_else(|_| CString::new("ERROR: CString encoding failed").unwrap());
-    c_result.into_raw()
+    CString::new(result).unwrap_or_else(|_| CString::new("ERROR: Encoding failed").unwrap()).into_raw()
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn storm_free_string(s: *mut c_char) {
-    if s.is_null() {
-        return;
-    }
-    unsafe {
-        // Ambil kembali pointer, lalu Rust akan melakukan auto-drop memori
-        let _ = CString::from_raw(s);
+    if !s.is_null() {
+        unsafe { let _ = CString::from_raw(s); }
     }
 }
 
@@ -62,27 +90,28 @@ pub extern "C" fn storm_free_string(s: *mut c_char) {
 // ASYNCHRONOUS EVASION ENGINE
 // =========================================================================
 
-/// Fungsi internal untuk menangani logika jaringan secara asynchronous
-async fn execute_request(target_url: &str) -> Result<String, Box<dyn std::error::Error>> {
-    // 1. Ekstraksi Host dan Port dari URL target
+async fn execute_dynamic_request(
+    target_url: &str,
+    method: &str,
+    headers_json: &str,
+    body: Option<Vec<u8>>,
+) -> Result<String, Box<dyn std::error::Error>> {
+    // 1. Parsing Target
     let uri = target_url.parse::<http::Uri>()?;
     let host = uri.host().ok_or("URL has no host")?;
     let port = uri.port_u16().unwrap_or(443);
     let target_addr = format!("{}:{}", host, port);
 
-    // 2. Inisialisasi SSL Context (BoringSSL dengan Chrome Fingerprint)
+    // 2. Setup TLS & Koneksi
     let ctx = build_chrome_ssl_context()?;
     let tcp_stream = TcpStream::connect(&target_addr).await?;
     
     let mut ssl = Ssl::new(&ctx)?;
-    ssl.set_hostname(host)?; // Set SNI agar WAF tidak curiga
+    ssl.set_hostname(host)?; 
 
-    // 3. TLS Handshake dengan GREASE
-    let tls_stream = tokio_boring::SslStreamBuilder::new(ssl, tcp_stream)
-        .connect()
-        .await?;
+    let tls_stream = tokio_boring::SslStreamBuilder::new(ssl, tcp_stream).connect().await?;
 
-    // 4. Negosiasi HTTP/2 dengan ALPN h2 dan Chrome H2 Settings
+    // 3. Negosiasi HTTP/2
     let mut h2_builder = h2::client::Builder::new();
     h2_builder
         .initial_window_size(ChromeH2Settings::INITIAL_WINDOW_SIZE)
@@ -92,38 +121,52 @@ async fn execute_request(target_url: &str) -> Result<String, Box<dyn std::error:
 
     let (mut client, h2_connection) = h2_builder.handshake::<_, bytes::Bytes>(tls_stream).await?;
 
-    // Pindahkan koneksi H2 ke background worker (Keep-Alive)
     tokio::spawn(async move {
-        if let Err(e) = h2_connection.await {
-            // Error di background, biasanya karena server menutup koneksi (GOAWAY)
-            // Di production, logger akan berguna di sini.
-            let _ = e;
+        if let Err(_e) = h2_connection.await {
+            // Background connection handler (bisa pasang logging di sini)
         }
     });
 
-    // 5. Bangun Pseudo-Headers HTTP/2
-    let request = http::Request::builder()
-        .method("GET")
-        .uri(target_url)
-        .header("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-        .header("accept", "application/json")
-        .header("accept-language", "en-US,en;q=0.9")
-        .header("accept-encoding", "gzip, deflate, br, zstd") 
-        .body(())?;
+    // 4. Membangun HTTP Request secara Dinamis
+    let mut request_builder = http::Request::builder()
+        .method(method)
+        .uri(target_url);
 
-    // 6. Kirim Request
-    let (response_future, _send_stream) = client.send_request(request, true)?;
+    // Parsing Header dari JSON (memudahkan interface multi-bahasa)
+    if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
+        if let Some(obj) = parsed_headers.as_object() {
+            for (key, value) in obj {
+                if let Some(val_str) = value.as_str() {
+                    request_builder = request_builder.header(key, val_str);
+                }
+            }
+        }
+    }
+
+    // Default Pseudo-Headers H2 (jika tidak di-supply oleh user)
+    // Di produksi, biasanya kita men-cek apakah key "user-agent" sudah ada sebelum menambahkan default.
+    let request = request_builder.body(())?;
+
+    // 5. Logika Pengiriman dengan/tanpa Body (End-Of-Stream logic)
+    let has_body = body.is_some();
+    // Jika has_body = true, end_of_stream saat mengirim head harus false!
+    let (response_future, mut send_stream) = client.send_request(request, !has_body)?;
+
+    // 6. Streaming Body Payload (Jika ada method POST/PUT)
+    if let Some(payload) = body {
+        // Mengirim data chunk, parameter 'true' di akhir berarti ini chunk terakhir (EOS)
+        send_stream.send_data(bytes::Bytes::from(payload), true)?;
+    }
+
+    // 7. Tunggu & Kumpulkan Response
     let response = response_future.await?;
-
-    // 7. Baca stream Response Body
-    let mut body = response.into_body();
+    let mut resp_body = response.into_body();
     let mut response_bytes = Vec::new();
 
-    while let Some(chunk) = body.data().await {
+    while let Some(chunk) = resp_body.data().await {
         let chunk = chunk?;
         response_bytes.extend_from_slice(&chunk);
     }
 
-    // Mengembalikan raw String ke FFI
     Ok(String::from_utf8_lossy(&response_bytes).to_string())
-}
+                                                                 }

@@ -2,7 +2,7 @@
 
 NAME    := stls
 OUT_DIR ?= build
-OUT     := $(ROOT_DIR)/scripts/wrapper
+OUT     := $(OUT_ROOT)/scripts/wrapper
 TARGET  := $(OUT)/$(NAME)
 SRC     := $(wildcard *.go)
 

@@ -1,7 +1,6 @@
 import smf
 import json
 import time
-import sys
 
 from scripts.wrapper import stls
 
@@ -12,7 +11,7 @@ def execute(options):
 
     # Peet.ws adalah standar industri untuk memvalidasi TLS/HTTP2 fingerprint
     target_url = options.get("URL")
-    
+
     smf.printf("==================================================")
     smf.printf("[*] STORM FRAMEWORK - STLS EVASION TEST")
     smf.printf("==================================================")
@@ -33,27 +32,29 @@ def execute(options):
         "sec-fetch-site": "none",
         "sec-fetch-user": "?1",
         "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Linux; Android 15; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "user-agent": "Mozilla/5.0 (Linux; Android 15; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     }
 
     start_time = time.time()
-    
+
     try:
         # Menembak target menggunakan GET method
         response = stls.get(target_url, headers=headers)
         elapsed_time = time.time() - start_time
-        
-        smf.printf(f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n")
-        
+
+        smf.printf(
+            f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n"
+        )
+
         # Parsing JSON response dari Peet.ws
         data = response.json()
-        
+
         # Ekstraksi metrik krusial
         http_version = data.get("http_version", "Unknown")
         ja3_hash = data.get("tls", {}).get("ja3_hash", "Not detected")
         ja4_hash = data.get("tls", {}).get("ja4", "Not detected")
         akamai_fp = data.get("http2", {}).get("akamai_fingerprint_hash", "Not detected")
-        
+
         smf.printf("==================================================")
         smf.printf("[+] FINGERPRINT ANALYSIS (WAF EVASION METRICS)")
         smf.printf("==================================================")
@@ -62,7 +63,7 @@ def execute(options):
         smf.printf(f"    JA4 Fingerprint Hash    : {ja4_hash}")
         smf.printf(f"    Akamai H2 Fingerprint   : {akamai_fp}")
         smf.printf("==================================================\n")
-        
+
         smf.printf("[*] Full details of TLS Ciphers & Extensions the server sees:")
         # Menampilkan detail raw TLS dari server (hanya bagian tls)
         smf.printf(json.dumps(data.get("tls", {}), indent=4))

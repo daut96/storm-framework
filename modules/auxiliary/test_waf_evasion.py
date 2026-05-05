@@ -82,3 +82,8 @@ def execute(options):
         else:
             smf.printf("[!] Non-JSON response detected")
             smf.printf(raw_str[:500])
+
+    except KeyboardInterrupt:
+        return
+    except Exception as e:
+        smf.printf("Outer exception error", e)

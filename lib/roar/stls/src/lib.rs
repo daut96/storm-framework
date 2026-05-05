@@ -69,8 +69,18 @@ pub extern "C" fn storm_request(
 
     let result = rt.block_on(async move {
         match execute_dynamic_request(&url, &method, &headers_json, body_bytes).await {
-            Ok(response_body) => response_body,
-            Err(e) => format!("ERROR: STLS Failure - {}", e),
+            Ok(response_body) => {
+                serde_json::json!({
+                    "success": true,
+                    "data": response_body
+                }).to_string()
+            },
+            Err(e) => {
+                serde_json::json!({
+                    "success": false,
+                    "error": e.to_string()
+                }).to_string()
+            }
         }
     });
 
@@ -131,7 +141,10 @@ async fn execute_dynamic_request(
 
     // SINKRONISASI 2: Dynamic Header Sorting (Lexical Ordering)
     let mut header_map: HashMap<String, String> = HashMap::new();
-    if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
+    if let Err(e) = serde_json::from_str::<serde_json::Value>(headers_json) {
+        eprintln!("[ERROR] JSON parse failed: {}", e);
+        eprintln!("[ERROR] RAW headers_json: {:?}", headers_json);
+    } else if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
         if let Some(obj) = parsed_headers.as_object() {
             for (key, value) in obj {
                 if let Some(val_str) = value.as_str() {

@@ -31,7 +31,7 @@ static const char* load_stls_library(const char* path) {
 
 // Wrapper C untuk eksekusi
 static char* do_request(const char* url, const char* method, const char* headers, const unsigned char* body, size_t body_len) {
-    if (!req_func) return "ERROR: Library STLS belum di-load";
+    if (!req_func) return "ERROR: STLS library has not been loaded";
     return req_func(url, method, headers, body, body_len);
 }
 
@@ -71,8 +71,6 @@ func printLog(level, msg string) {
 // findSTLS melacak libstls.so secara instan berdasarkan arsitektur fix Storm Framework.
 // Algoritma: Traversal ke atas (Upward Lookup) tanpa iterasi folder anak.
 func findSTLS() (string, error) {
-	printLog("INFO", "Melacak libstls.so berdasarkan arsitektur Storm Framework...")
-
 	// Target path relatif yang sudah kita ketahui letaknya
 	targetRelPath := filepath.Join("external", "source", "out", "core", "tls", "libstls.so")
 
@@ -82,7 +80,6 @@ func findSTLS() (string, error) {
 		fullPath := filepath.Join(envRoot, targetRelPath)
 		if _, err := os.Stat(fullPath); err == nil {
 			absPath, _ := filepath.Abs(fullPath)
-			printLog("SUCCESS", fmt.Sprintf("Binary ditemukan via env STORM_ROOT di: %s", absPath))
 			return absPath, nil
 		}
 	}
@@ -91,7 +88,7 @@ func findSTLS() (string, error) {
 	// Mencari letak root 'storm-framework' dengan naik direktori satu per satu.
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return "", errors.New("gagal mendapatkan direktori eksekusi saat ini")
+		return "", errors.New("failed to get current executable directory")
 	}
 
 	for {
@@ -101,7 +98,6 @@ func findSTLS() (string, error) {
 		// Cek apakah file benar-benar ada dan bukan direktori
 		if info, err := os.Stat(checkPath); err == nil && !info.IsDir() {
 			absPath, _ := filepath.Abs(checkPath)
-			printLog("SUCCESS", fmt.Sprintf("Binary berhasil dipetakan secara dinamis di: %s", absPath))
 			return absPath, nil
 		}
 
@@ -114,7 +110,7 @@ func findSTLS() (string, error) {
 		currentDir = parentDir
 	}
 
-	return "", errors.New("gagal meresolusi libstls.so. Pastikan dieksekusi di dalam tree Storm Framework atau set env STORM_ROOT")
+	return "", errors.New("failed to resolve libstls.so")
 }
 
 

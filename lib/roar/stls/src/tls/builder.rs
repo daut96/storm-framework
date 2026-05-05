@@ -17,7 +17,7 @@ pub fn build_chrome_ssl_context() -> Result<SslContext, boring::error::ErrorStac
     
     // Untuk TLS 1.3, WAJIB menggunakan metode set_ciphersuites()
     // Contoh string yang diharapkan: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256"
-    builder.set_ciphersuites(ciphers::chrome_tls13_ciphersuites())?;
+    // builder.set_ciphersuites(ciphers::chrome_tls13_ciphersuites())?;
 
     // 3. Set Curves (X25519 atau Kyber hibrida untuk Chrome 120+)
     builder.set_curves_list(ciphers::chrome_curves())?;

@@ -68,6 +68,8 @@ def execute(options):
         # Menampilkan detail raw TLS dari server (hanya bagian tls)
         smf.printf(json.dumps(data.get("tls", {}), indent=4))
 
+    except KeyboardInterrupt:
+        pass
     except Exception as e:
         smf.printf(f"\n[!] FAIL! STLS engine crashed or experienced an error:")
         smf.printf(f"    {e}")

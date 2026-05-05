@@ -46,43 +46,26 @@ def execute(options):
             f"[+] Request Successful! (Travel time: {elapsed_time:.2f} second)\n"
         )
 
-        raw = getattr(response, "text", None)
+        data = json.loads(response)
 
-        if not raw:
+        if not data:
             smf.printf("Empty response from server")
             return
 
-        raw_str = raw
-        # Deteksi JSON sederhana (cukup efektif)
-        if raw_str.startswith("{") or raw_str.startswith("["):
-            try:
-                data = json.loads(raw_str)
+        http_version = data.get("http_version", "Unknown")
+        ja3_hash = data.get("tls", {}).get("ja3_hash", "Not detected")
+        ja4_hash = data.get("tls", {}).get("ja4", "Not detected")
+        akamai_fp = data.get("http2", {}).get(
+            "akamai_fingerprint_hash", "Not detected"
+        )
 
-                smf.printf("[+] JSON response detected")
+        smf.printf(f"HTTP Version : {http_version}")
+        smf.printf(f"JA3          : {ja3_hash}")
+        smf.printf(f"JA4          : {ja4_hash}")
+        smf.printf(f"Akamai FP    : {akamai_fp}")
 
-                http_version = data.get("http_version", "Unknown")
-                ja3_hash = data.get("tls", {}).get("ja3_hash", "Not detected")
-                ja4_hash = data.get("tls", {}).get("ja4", "Not detected")
-                akamai_fp = data.get("http2", {}).get(
-                    "akamai_fingerprint_hash", "Not detected"
-                )
-
-                smf.printf(f"HTTP Version : {http_version}")
-                smf.printf(f"JA3          : {ja3_hash}")
-                smf.printf(f"JA4          : {ja4_hash}")
-                smf.printf(f"Akamai FP    : {akamai_fp}")
-
-                smf.printf("[*] TLS Details:")
-                smf.printf(json.dumps(data.get("tls", {}), indent=4))
-
-            except Exception as e:
-                smf.printf("JSON parse failed")
-                smf.printf(f"Reason: {e}")
-                smf.printf(f"RAW:\n{raw_str}")
-
-        else:
-            smf.printf("[!] Non-JSON response detected")
-            smf.printf(raw_str)
+        smf.printf("[*] TLS Details:")
+        smf.printf(json.dumps(data.get("tls", {}), indent=4))
 
     except KeyboardInterrupt:
         return

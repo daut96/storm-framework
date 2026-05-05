@@ -3,7 +3,7 @@ mod http2;
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_void};
+use std::os::raw::c_char;
 use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 use tokio::net::TcpStream;
@@ -144,8 +144,8 @@ async fn execute_dynamic_request(
 
     // 1. Masukkan Standard Headers sesuai urutan Chrome 120+
     for expected_key in ChromeH2Settings::get_standard_header_order() {
-        if let Some(val) = header_map.remove(*expected_key) {
-            request_builder = request_builder.header(*expected_key, val);
+        if let Some(val) = header_map.remove(expected_key) {
+            request_builder = request_builder.header(expected_key, val);
         }
     }
 

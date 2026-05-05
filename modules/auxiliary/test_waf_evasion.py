@@ -55,9 +55,7 @@ def execute(options):
         http_version = data.get("http_version", "Unknown")
         ja3_hash = data.get("tls", {}).get("ja3_hash", "Not detected")
         ja4_hash = data.get("tls", {}).get("ja4", "Not detected")
-        akamai_fp = data.get("http2", {}).get(
-            "akamai_fingerprint_hash", "Not detected"
-        )
+        akamai_fp = data.get("http2", {}).get("akamai_fingerprint_hash", "Not detected")
 
         smf.printf(f"HTTP Version : {http_version}")
         smf.printf(f"JA3          : {ja3_hash}")

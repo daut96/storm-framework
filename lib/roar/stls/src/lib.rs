@@ -117,7 +117,8 @@ async fn execute_dynamic_request(
         .initial_window_size(ChromeH2Settings::INITIAL_WINDOW_SIZE)
         .max_concurrent_streams(ChromeH2Settings::MAX_CONCURRENT_STREAMS)
         .header_table_size(ChromeH2Settings::HEADER_TABLE_SIZE)
-        .enable_push(false);
+        .max_header_list_size(ChromeH2Settings::MAX_HEADER_LIST_SIZE) // Tambahan krusial
+        .enable_push(ChromeH2Settings::ENABLE_PUSH); // Menghasilkan SETTINGS_ENABLE_PUSH (2:0)
 
     let (mut client, h2_connection) = h2_builder.handshake::<_, bytes::Bytes>(tls_stream).await?;
 

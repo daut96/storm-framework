@@ -1,6 +1,20 @@
-# ⚡ STLS (Storm Transport Layer Security)
+<h1 align="center"> ⚡ STLS (Storm Transport Layer Security)</h1>
 
-### Weaponized WAF Evasion & TLS Fingerprinting Engine for Storm Framework.
+<p align="center">
+    <a>
+        <img src="https://img.shields.io/badge/Architecture-Rust%7CGo%7CPython-black">
+    </a>
+    <a>
+        <img src="https://img.shields.io/badge/Bypass-God%20Tier-green">
+    </a>
+    <a>
+        <img src="https://img.shields.io/badge/PQC-Kyber768%20Ready-purple">
+    </a>
+</p>
+
+<h4 align="center">Weaponized WAF Evasion & TLS Fingerprinting Engine for Storm Framework.</h4>
+
+---
 
 STLS is not just an HTTP Client. This is a network-level clone of Google Chrome 120+ identities compressed into an asynchronous architecture with advanced memory efficiency.
 
@@ -44,7 +58,7 @@ Ignoring the complexities of C-ABI negotiation, FFI, and BoringSSL configuration
 **Python:**
 
 ```python
-import stls
+from scripts.wrapper import stls
 import smf
 
 # WAF killer machine in 3 lines of code

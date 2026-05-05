@@ -32,7 +32,7 @@ endif
 
 # --- OS-SPECIFIC ADJUSTMENTS ---
 ifeq ($(OS_NAME), Android)
-    GO_ENV += CGO_ENABLED=0
+    GO_ENV += CGO_ENABLED=1
 endif
 
 .PHONY: all clean

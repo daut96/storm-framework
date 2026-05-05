@@ -52,10 +52,15 @@ def execute(options):
             smf.printf("Empty response from server")
             return
 
-        http_version = data.get("http_version", "Unknown")
-        ja3_hash = data.get("tls", {}).get("ja3_hash", "Not detected")
-        ja4_hash = data.get("tls", {}).get("ja4", "Not detected")
-        akamai_fp = data.get("http2", {}).get("akamai_fingerprint_hash", "Not detected")
+        outer = data
+
+        # parse inner JSON
+        outer["data"] = json.loads(outer["data"])
+
+        http_version = outer.get("http_version", "Unknown")
+        ja3_hash = outer.get("tls", {}).get("ja3_hash", "Not detected")
+        ja4_hash = outer.get("tls", {}).get("ja4", "Not detected")
+        akamai_fp = outer.get("http2", {}).get("akamai_fingerprint_hash", "Not detected")
 
         smf.printf(f"HTTP Version : {http_version}")
         smf.printf(f"JA3          : {ja3_hash}")
@@ -63,7 +68,7 @@ def execute(options):
         smf.printf(f"Akamai FP    : {akamai_fp}")
 
         smf.printf("[*] TLS Details:")
-        smf.printf(json.dumps(data, indent=4))
+        smf.printf(json.dumps(outer, indent=4))
 
     except KeyboardInterrupt:
         return

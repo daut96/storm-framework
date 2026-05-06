@@ -35,6 +35,7 @@ fn main() {
 
     // 5. BINDGEN: Menghasilkan peta fungsi untuk Rust pengguna
     let header_path = bssl_source_path.join("include/openssl/ssl.h");
+    let include_path = bssl_source_path.join("include");
     let bindings = bindgen::Builder::default()
         .header(header_path.to_str().unwrap())
         .allowlist_function("SSL_.*")

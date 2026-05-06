@@ -39,7 +39,6 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header(header_path.to_str().unwrap())
         .clang_arg(format!("-I{}", include_path.display()))
-        .generate_unsafe_extern_blocks(true)
         .allowlist_function("SSL_.*")
         .allowlist_type("SSL_.*")
         .allowlist_var("SSL_.*")

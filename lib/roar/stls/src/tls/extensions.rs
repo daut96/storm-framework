@@ -63,7 +63,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
             0x00, 0x06, 0x00, 0x04, 0x00, 0x00, // MAX_HEADER_LIST_SIZE
         ]; 
         
-        let alps_res = bssl::SSL_CTX_add_application_settings(
+        let alps_res = bssl::SSL_add_application_settings(
             ctx,
             alps_proto.as_ptr(),
             alps_proto.len(),

@@ -8,24 +8,28 @@ name = "stls"
 crate-type = ["cdylib"]
 
 [dependencies]
+# CORE ASYNC & NETWORKING
+# Menggunakan "full" aman, tapi jika ingin binary lebih kecil, 
+# bisa spesifik: ["rt-multi-thread", "macros", "net", "io-util", "sync"]
 tokio = { version = "1", features = ["full"] }
-hyper = "1.0"
-http = "1.0"
 h2 = "0.4"
+http = "1.0"
 bytes = "1.5"
-libc = "0.2"
+# DATA HANDLING
 serde_json = "1.0"
-
-# LIBRARY CLOUDFLARE DIHAPUS:
-# boring = "4.4.0" (Dihapus)
-# tokio-boring = "4.4.0" (Dihapus)
+serde = { version = "1.0", features = ["derive"] }
+# SYSTEM & FFI
+libc = "0.2"
+anyhow = "1.0" 
 
 [build-dependencies]
+# Alur build native Google BoringSSL
 cmake = "0.1"
-bindgen = "0.69"
+bindgen = "0.70"
 
 [profile.release]
-lto = true            
-codegen-units = 1     
-panic = "abort"       
-strip = true          
+lto = true            # Optimasi lintas crate (Link Time Optimization)
+codegen-units = 1     # Maksimalisasi optimasi biner (mengurangi paralelisme kompilasi)
+panic = "abort"       # Memperkecil ukuran biner & mempercepat crash handling
+strip = true          # Menghapus simbol debug (Wajib untuk cdylib agar file .so ringan)
+opt-level = "z"       # Fokus pada ukuran biner terkecil (opsional, gunakan "3" jika butuh speed murni)

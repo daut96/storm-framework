@@ -1,13 +1,18 @@
 mod tls;
 mod http2;
 
+// Injeksi Hulu Google murni
+#[allow(non_upper_case_globals, non_camel_case_types, non_snake_case, dead_code)]
+pub mod bssl {
+    include!(concat!(env!("OUT_DIR"), "/bssl_bindings.rs"));
+}
+
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 use tokio::net::TcpStream;
-use boring::ssl::Ssl;
 
 use tls::builder::build_chrome_ssl_context;
 use http2::fingerprint::ChromeH2Settings;
@@ -111,6 +116,22 @@ async fn execute_dynamic_request(
 
     let ctx = build_chrome_ssl_context()?;
     let tcp_stream = TcpStream::connect(&target_addr).await?;
+
+        // =========================================================
+    // IMPLEMENTASI BARU: BARE-METAL GOOGLE BORINGSSL
+    // =========================================================
+    
+    // Di sinilah fungsi `build_chrome_ssl_context` dari modul `tls::builder` Anda 
+    // harus mengembalikan pointer mentah *mut bssl::SSL_CTX
+    let raw_ctx = tls::builder::build_chrome_ssl_context_native()?;
+    
+    // Nanti Anda harus membuat wrapper struct, misalnya `StormTlsStream`, 
+    // yang mengimplementasikan tokio::io::AsyncRead dan tokio::io::AsyncWrite
+    // lalu menghubungkannya dengan bssl::SSL_set_fd() dan bssl::SSL_connect()
+    
+    // let tls_stream = StormTlsStream::connect(raw_ctx, tcp_stream, host).await?;
+
+    // =========================================================
     
     let mut ssl = Ssl::new(&ctx)?;
     ssl.set_hostname(host)?; 

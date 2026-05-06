@@ -20,8 +20,12 @@ endif
 # supported by the user's local silicon.
 export RUSTFLAGS := -C target-cpu=native
 
-# Source code resolution for re-compile trigger
-SRC      := $(shell find src -name "*.rs" 2>/dev/null) Cargo.toml
+# Source code resolution
+# Tambahkan build.rs dan folder external ke dalam pemantauan SRC
+# agar jika Google submodule di-update, Makefile tahu harus me-rebuild.
+SRC := $(shell find src -name "*.rs" 2>/dev/null) \
+       $(shell find ../../../../external/source/google/vendor/boringssl -name "*" -type f 2>/dev/null | head -n 20) \
+       Cargo.toml build.rs
 
 .PHONY: all clean
 
@@ -35,4 +39,4 @@ $(TARGET): $(SRC)
 
 clean:
 	cargo clean --quiet
-	rm -f $(TARGET)
+	rm -rf $(OUT)

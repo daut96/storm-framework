@@ -44,10 +44,15 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
             return Err("FATAL: Failed to set Signature Algorithms".to_string());
         }
 
-        // 6. ALPS (Application-Layer Protocol Settings)
+        Ok(())
+    }
+}
+
+pub fn apply_alps_extension(ssl: *mut bssl::SSL) -> Result<(), String> {
+    unsafe {
+        // ALPS (Application-Layer Protocol Settings)
         let alps_proto = b"h2";
-        
-        // PERBAIKAN FATAL: ALPS tidak boleh kosong! 
+
         // Chrome mengirimkan representasi biner dari HTTP/2 SETTINGS di dalam ekstensi ini.
         // Byte sequence di bawah ini adalah representasi dari:
         // - HEADER_TABLE_SIZE: 65536 (0x0001 -> 0x00010000)
@@ -56,24 +61,24 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
         // - INITIAL_WINDOW_SIZE: 6291456 (0x0004 -> 0x00600000)
         // - MAX_HEADER_LIST_SIZE: 262144 (0x0006 -> 0x00040000)
         let alps_settings: [u8; 30] = [
-            0x00, 0x01, 0x00, 0x01, 0x00, 0x00, // HEADER_TABLE_SIZE
-            0x00, 0x02, 0x00, 0x00, 0x00, 0x00, // ENABLE_PUSH
-            0x00, 0x03, 0x00, 0x00, 0x03, 0xe8, // MAX_CONCURRENT_STREAMS
-            0x00, 0x04, 0x00, 0x60, 0x00, 0x00, // INITIAL_WINDOW_SIZE
-            0x00, 0x06, 0x00, 0x04, 0x00, 0x00, // MAX_HEADER_LIST_SIZE
+            0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 
+            0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x03, 0x00, 0x00, 0x03, 0xe8, 
+            0x00, 0x04, 0x00, 0x60, 0x00, 0x00, 
+            0x00, 0x06, 0x00, 0x04, 0x00, 0x00, 
         ]; 
         
         let alps_res = bssl::SSL_add_application_settings(
-            ssl,
+            ssl, // Sekarang 'ssl' sudah ada di scope fungsi ini
             alps_proto.as_ptr(),
             alps_proto.len(),
             alps_settings.as_ptr(),
             alps_settings.len(),
         );
-        if alps_res != 1 {
-            return Err("FATAL: Failed to inject ALPS (Application-Layer Protocol Settings) extension".to_string());
-        }
 
+        if alps_res != 1 {
+            return Err("FATAL: Failed to inject ALPS".to_string());
+        }
         Ok(())
     }
 }

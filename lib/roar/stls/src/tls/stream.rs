@@ -23,7 +23,7 @@ impl StormTlsStream {
             // 1. Buat object SSL untuk koneksi ini
             let ssl = bssl::SSL_new(ctx);
             if ssl.is_null() {
-                return Err(io::Error::new(io::ErrorKind::Other, "FATAL: Gagal membuat objek SSL"));
+                return Err(io::Error::new(io::ErrorKind::Other, "FATAL: Failed to create SSL object"));
             }
             
             // 2. Set SNI (Server Name Indication)
@@ -58,12 +58,12 @@ impl StormTlsStream {
                     bssl::SSL_free(ssl); // Cleanup sebelum return error
                     return Err(io::Error::new(
                         io::ErrorKind::ConnectionAborted,
-                        format!("TLS Handshake Gagal! SSL_error_code: {}", err_code)
+                        format!("TLS Handshake Failed! SSL_error_code: {}", err_code)
                     ));
                 }
             }
 
-            Ok(Self { tcp, ssl })
+            Ok(Self { tcp, SslPtr(ssl) })
         }
     }
 }
@@ -88,14 +88,14 @@ impl AsyncRead for StormTlsStream {
             unsafe {
                 let slice = buf.unfilled_mut();
                 // 2. Panggil native Google BoringSSL read
-                let read_bytes = bssl::SSL_read(self.ssl, slice.as_mut_ptr() as *mut _, slice.len() as i32);
+                let read_bytes = bssl::SSL_read(self.ssl.0, slice.as_mut_ptr() as *mut _, slice.len() as i32);
 
                 if read_bytes > 0 {
                     buf.advance(read_bytes as usize);
                     return Poll::Ready(Ok(()));
                 } 
 
-                let err_code = bssl::SSL_get_error(self.ssl, read_bytes);
+                let err_code = bssl::SSL_get_error(self.ssl.0, read_bytes);
                 
                 if err_code == bssl::SSL_ERROR_WANT_READ as i32 {
                     // PERBAIKAN FATAL: Bersihkan status "Ready" dari Tokio agar tidak Spin-Loop 100% CPU
@@ -132,13 +132,13 @@ impl AsyncWrite for StormTlsStream {
             }
 
             unsafe {
-                let written = bssl::SSL_write(self.ssl, buf.as_ptr() as *const _, buf.len() as i32);
+                let written = bssl::SSL_write(self.ssl.0, buf.as_ptr() as *const _, buf.len() as i32);
                 
                 if written > 0 {
                     return Poll::Ready(Ok(written as usize));
                 } 
                 
-                let err_code = bssl::SSL_get_error(self.ssl, written);
+                let err_code = bssl::SSL_get_error(self.ssl.0, written);
                 
                 if err_code == bssl::SSL_ERROR_WANT_WRITE as i32 {
                     // PERBAIKAN FATAL: Mencegah Spin-Loop saat buffer kirim penuh
@@ -159,7 +159,7 @@ impl AsyncWrite for StormTlsStream {
     }
 
     fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        unsafe { bssl::SSL_shutdown(self.ssl); }
+        unsafe { bssl::SSL_shutdown(self.ssl.0); }
         Poll::Ready(Ok(()))
     }
 }
@@ -167,8 +167,8 @@ impl AsyncWrite for StormTlsStream {
 impl Drop for StormTlsStream {
     fn drop(&mut self) {
         unsafe {
-            if !self.ssl.is_null() {
-                bssl::SSL_free(self.ssl);
+            if !self.ssl.0.is_null() {
+                bssl::SSL_free(self.ssl.0);
             }
         }
     }

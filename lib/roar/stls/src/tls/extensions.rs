@@ -2,37 +2,33 @@
 use crate::bssl;
 
 /// Mengonfigurasi ekstensi TLS langsung ke memori BoringSSL 
-/// untuk membuat fingerprint identik dengan Chrome versi terbaru.
+/// untuk membuat fingerprint identik dengan Chrome versi terbaru (145+).
 pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
     unsafe {
         // 1. GREASE (Generate Random Extensions And Sustain Extensibility)
-        // Disuntikkan secara dinamis oleh BoringSSL untuk mengecoh middlebox statis.
         bssl::SSL_CTX_set_grease_enabled(ctx, 1);
 
         // 2. ALPN (Application-Layer Protocol Negotiation)
-        // Memberitahu server kita mendukung HTTP/2 sejak awal handshake.
         let alpn_protos = b"\x02h2\x08http/1.1";
         let alpn_res = bssl::SSL_CTX_set_alpn_protos(
             ctx, 
             alpn_protos.as_ptr(), 
             alpn_protos.len() as u32
         );
-        // Catatan FFI: Fungsi ALPN BoringSSL mengembalikan 0 jika sukses.
         if alpn_res != 0 {
             return Err("FATAL: Failed to inject ALPN into SSL_CTX".to_string());
         }
 
         // 3. OCSP Stapling (status_request extension)
-        // Wajib untuk meniru Chrome agar WAF seperti Akamai/Datadome tidak curiga.
         bssl::SSL_CTX_enable_ocsp_stapling(ctx);
 
         // 4. Signed Certificate Timestamps (SCT / Extension 18)
-        // Bukti Certificate Transparency yang selalu diminta oleh browser Chrome asli.
         bssl::SSL_CTX_enable_signed_cert_timestamps(ctx);
 
         // 5. Signature Algorithms (Extension 13)
-        // Trik Zero-Cost FFI: Tambahkan \0 di akhir string agar kompatibel dengan C-ABI.
+        // PERBAIKAN: Menambahkan 'ed25519' di awal, sesuai standar Chrome modern.
         let sigalgs = concat!(
+            "ed25519:",
             "ecdsa_secp256r1_sha256:",
             "rsa_pss_rsae_sha256:",
             "rsa_pkcs1_sha256:",
@@ -48,14 +44,24 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
             return Err("FATAL: Failed to set Signature Algorithms".to_string());
         }
 
-        // 6. ALPS (Application-Layer Protocol Settings) - EKSEKUSI FITUR EKSKLUSIF
-        // Fitur ini tidak ada di rust-boring. Dengan ini, Storm Framework resmi
-        // setara dengan Chromium engine dalam manipulasi handshake.
+        // 6. ALPS (Application-Layer Protocol Settings)
         let alps_proto = b"h2";
-        // Di sini Anda bisa menyuntikkan payload frame SETTINGS HTTP/2 mentah 
-        // yang disepakati lebih awal. Untuk default evasion, string kosong sudah memicu
-        // ekstensi ALPS muncul di paket ClientHello.
-        let alps_settings = b""; 
+        
+        // PERBAIKAN FATAL: ALPS tidak boleh kosong! 
+        // Chrome mengirimkan representasi biner dari HTTP/2 SETTINGS di dalam ekstensi ini.
+        // Byte sequence di bawah ini adalah representasi dari:
+        // - HEADER_TABLE_SIZE: 65536 (0x0001 -> 0x00010000)
+        // - ENABLE_PUSH: 0 (0x0002 -> 0x00000000)
+        // - MAX_CONCURRENT_STREAMS: 1000 (0x0003 -> 0x000003E8)
+        // - INITIAL_WINDOW_SIZE: 6291456 (0x0004 -> 0x00600000)
+        // - MAX_HEADER_LIST_SIZE: 262144 (0x0006 -> 0x00040000)
+        let alps_settings: [u8; 30] = [
+            0x00, 0x01, 0x00, 0x01, 0x00, 0x00, // HEADER_TABLE_SIZE
+            0x00, 0x02, 0x00, 0x00, 0x00, 0x00, // ENABLE_PUSH
+            0x00, 0x03, 0x00, 0x00, 0x03, 0xe8, // MAX_CONCURRENT_STREAMS
+            0x00, 0x04, 0x00, 0x60, 0x00, 0x00, // INITIAL_WINDOW_SIZE
+            0x00, 0x06, 0x00, 0x04, 0x00, 0x00, // MAX_HEADER_LIST_SIZE
+        ]; 
         
         let alps_res = bssl::SSL_CTX_add_application_settings(
             ctx,
@@ -65,7 +71,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
             alps_settings.len(),
         );
         if alps_res != 1 {
-            return Err("FATAL: Failed to inject ALPS (Application-Layer Protocol Settings) extension)".to_string());
+            return Err("FATAL: Failed to inject ALPS (Application-Layer Protocol Settings) extension".to_string());
         }
 
         Ok(())

@@ -8,18 +8,24 @@ name = "stls"
 crate-type = ["cdylib"]
 
 [dependencies]
-boring = "4.4.0" 
 tokio = { version = "1", features = ["full"] }
 hyper = "1.0"
 http = "1.0"
-tokio-boring = "4.4.0"
 h2 = "0.4"
 bytes = "1.5"
 libc = "0.2"
 serde_json = "1.0"
 
+# LIBRARY CLOUDFLARE DIHAPUS:
+# boring = "4.4.0" (Dihapus)
+# tokio-boring = "4.4.0" (Dihapus)
+
+[build-dependencies]
+cmake = "0.1"
+bindgen = "0.69"
+
 [profile.release]
-lto = true            # Link-Time Optimization (optimasi lintas file .rs)
-codegen-units = 1     # Mengurangi paralelisasi kompilasi demi optimasi maksimal
-panic = "abort"       # Mengurangi ukuran biner & mempercepat eksekusi saat crash
-strip = true          # Menghapus simbol debug agar file .so lebih ringan
+lto = true            
+codegen-units = 1     
+panic = "abort"       
+strip = true          

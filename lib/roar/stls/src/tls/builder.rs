@@ -61,6 +61,12 @@ pub fn build_chrome_ssl_context() -> Result<StormSslContext, String> {
         // 7. Verifikasi Sertifikat (None untuk keperluan OSINT/Evasion)
         bssl::SSL_CTX_set_verify(ctx, bssl::SSL_VERIFY_NONE as i32, None);
 
+        // Set Cipher list menggunakan string FFI yang sudah kita optimasi
+        bssl::SSL_CTX_set_strict_cipher_list(ctx, ciphers::chrome_tls12_ciphers_ffi());
+
+        // Set Curves menggunakan fungsi BoringSSL native (contoh FFI name: SSL_CTX_set1_curves_list)
+        bssl::SSL_CTX_set1_curves_list(ctx, ciphers::chrome_curves_ffi());
+
         Ok(StormSslContext { inner: ctx })
     }
 }

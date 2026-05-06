@@ -49,3 +49,7 @@ tokio-boring = "4.4.0"
 h2 = "0.4"
 bytes = "1.5"
 libc = "0.2"
+
+anyhow = "1.0"
+cmake = "0.1"
+bindgen = "0.70"

@@ -33,3 +33,12 @@ pub fn chrome_curves_ffi() -> *const std::os::raw::c_char {
         "\0" // Null-terminator wajib untuk FFI
     ).as_ptr() as *const std::os::raw::c_char
 }
+
+pub fn chrome_tls13_ciphersuites_ffi() -> *const std::os::raw::c_char {
+    concat!(
+        "TLS_AES_128_GCM_SHA256:",
+        "TLS_AES_256_GCM_SHA384:",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "\0" // Null-terminator untuk FFI
+    ).as_ptr() as *const std::os::raw::c_char
+}

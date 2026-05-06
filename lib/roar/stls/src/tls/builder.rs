@@ -33,8 +33,8 @@ pub fn build_chrome_ssl_context() -> Result<StormSslContext, String> {
         // 2. PROTOCOL VERSION BOUNDARIES
         // Chrome 145+ (Mei 2026) sangat ketat pada TLS 1.2 dan 1.3
         // =================================================================
-        bssl::SSL_CTX_set_min_proto_version(ctx, bssl::TLS1_2_VERSION as u16);
-        bssl::SSL_CTX_set_max_proto_version(ctx, bssl::TLS1_3_VERSION as u16);
+        bssl::SSL_CTX_set_min_proto_version(ctx, 0x0303);
+        bssl::SSL_CTX_set_max_proto_version(ctx, 0x0304);
 
         // =================================================================
         // 3. CRYPTOGRAPHIC SUITES (PERBAIKAN KRITIS)

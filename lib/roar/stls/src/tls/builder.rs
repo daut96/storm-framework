@@ -22,7 +22,7 @@ pub fn build_chrome_ssl_context() -> Result<StormSslContext, String> {
         // =================================================================
         // 1. ENGINE ALLOCATION
         // =================================================================
-        let method = bssl::TLS_client_method();
+        let method = bssl::TLS_method();
         let ctx = bssl::SSL_CTX_new(method);
 
         if ctx.is_null() {

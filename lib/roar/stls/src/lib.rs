@@ -1,7 +1,7 @@
 mod tls;
 mod http2;
 
-// Injeksi Hulu Google murni
+// Injeksi Hulu Google murni (BoringSSL via Bindgen)
 #[allow(non_upper_case_globals, non_camel_case_types, non_snake_case, dead_code)]
 pub mod bssl {
     include!(concat!(env!("OUT_DIR"), "/bssl_bindings.rs"));
@@ -21,8 +21,6 @@ use http2::fingerprint::ChromeH2Settings;
 // GLOBAL OPTIMIZATION (Zero-Cost Runtime)
 // =========================================================================
 
-/// Menggunakan OnceLock untuk memastikan Tokio Runtime hanya di-spawn SEKALI 
-/// selama siklus hidup shared library (menghilangkan overhead thread-creation).
 static TOKIO_RT: OnceLock<Runtime> = OnceLock::new();
 
 fn get_runtime() -> &'static Runtime {
@@ -109,27 +107,12 @@ async fn execute_dynamic_request(
     let port = uri.port_u16().unwrap_or(443);
     let target_addr = format!("{}:{}", host, port);
 
-    // =========================================================
-    // 1. BUAT KONEKSI TCP (Tokio Non-Blocking)
-    // =========================================================
+    // 1. KONEKSI TCP & TLS (Chrome 145+ Bare-Metal)
     let tcp_stream = TcpStream::connect(&target_addr).await?;
-
-    // =========================================================
-    // 2. BUAT NATIVE SSL CONTEXT (Hulu Google BoringSSL)
-    // =========================================================
-    // Ini memanggil fungsi dari src/tls/builder.rs yang sudah diperbarui
     let native_ctx = build_chrome_ssl_context()?;
-
-    // =========================================================
-    // 3. JEMBATANI TCP DENGAN POINTER C MENGGUNAKAN WRAPPER KITA
-    // =========================================================
-    // Menghubungkan Context C++, Socket TCP Tokio, dan Hostname untuk SNI
-    // (Ini memanggil struct StormTlsStream dari src/tls/stream.rs)
     let tls_stream = tls::stream::StormTlsStream::connect(native_ctx.inner, tcp_stream, host).await?;
 
-    // =========================================================
-    // 4. SINKRONISASI HTTP/2 (KODE BAWAAN ANDA TETAP AMAN)
-    // =========================================================
+    // 2. HANDSHAKE HTTP/2 (Menggunakan Sidik Jari SETTINGS & WINDOW_UPDATE Chrome)
     let mut h2_builder = h2::client::Builder::new();
     h2_builder
         .initial_window_size(ChromeH2Settings::INITIAL_WINDOW_SIZE)
@@ -139,43 +122,47 @@ async fn execute_dynamic_request(
         .max_header_list_size(ChromeH2Settings::MAX_HEADER_LIST_SIZE)
         .enable_push(ChromeH2Settings::ENABLE_PUSH);
 
-    // h2 builder sekarang menggunakan tls_stream buatan sendiri, bukan tokio-boring!
     let (mut client, h2_connection) = h2_builder.handshake::<_, bytes::Bytes>(tls_stream).await?;
 
     tokio::spawn(async move {
-        if let Err(_e) = h2_connection.await {
-            // Background handler untuk koneksi H2
-        }
+        if let Err(_e) = h2_connection.await { /* Connection dropped */ }
     });
 
-    let mut request_builder = http::Request::builder()
-        .method(method)
-        .uri(target_url);
+    // 3. SINKRONISASI HEADER: DYNAMIC INJECT & MERGE
+    let mut request_builder = http::Request::builder().method(method).uri(target_url);
 
-    // SINKRONISASI HEADER: Dynamic Header Sorting (Lexical Ordering)
-    let mut header_map: HashMap<String, String> = HashMap::new();
-    if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
-        if let Some(obj) = parsed_headers.as_object() {
-            for (key, value) in obj {
-                if let Some(val_str) = value.as_str() {
-                    header_map.insert(key.to_lowercase(), val_str.to_string());
+    // A. Parse Custom Headers dari User (Python/Go)
+    let mut user_headers: HashMap<String, String> = HashMap::new();
+    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(headers_json) {
+        if let Some(obj) = parsed.as_object() {
+            for (k, v) in obj {
+                if let Some(v_str) = v.as_str() {
+                    user_headers.insert(k.to_lowercase(), v_str.to_string());
                 }
             }
         }
     }
 
-    for expected_key in ChromeH2Settings::get_standard_header_order() {
-        if let Some(val) = header_map.remove(expected_key) {
-            request_builder = request_builder.header(expected_key, val);
+    // B. Generate Base Chrome 145 Headers (OS-Aware: Android/Linux)
+    let base_headers = ChromeH2Settings::generate_dynamic_headers();
+
+    // C. Merge Logic: User Overrides Base, Base Fills Gaps
+    for (key, default_val) in base_headers {
+        if let Some(custom_val) = user_headers.remove(&key) {
+            request_builder = request_builder.header(&key, custom_val);
+        } else {
+            request_builder = request_builder.header(&key, default_val);
         }
     }
 
-    for (key, val) in header_map {
-        request_builder = request_builder.header(key, val);
+    // D. Suntikkan sisa header unik (Cookie, Auth, dll)
+    for (k, v) in user_headers {
+        request_builder = request_builder.header(k, v);
     }
 
     let request = request_builder.body(())?;
 
+    // 4. EXECUTION
     let has_body = body.is_some();
     let (response_future, mut send_stream) = client.send_request(request, !has_body)?;
 

@@ -96,7 +96,7 @@ if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
     echo -e "${GREEN}[+] Installing Python dependencies and Building Image.${NC}"
 
     CREATE_DOCKERFILE="FROM python:3.13-slim
-RUN apt-get update && apt-get install -y git golang build-essential libpcap-dev clang ffmpeg openssl cargo pkg-config libssl-dev rustc python3-dev
+RUN apt-get update && apt-get install -y git golang build-essential libpcap-dev clang cmake ffmpeg openssl cargo pkg-config libssl-dev rustc python3-dev
 WORKDIR $INSTALL_DIR
 COPY . $INSTALL_DIR
 RUN pip install --upgrade pip setuptools wheel

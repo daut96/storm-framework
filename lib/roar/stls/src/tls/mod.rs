@@ -2,3 +2,4 @@
 pub mod builder;
 pub mod ciphers;
 pub mod extensions;
+pub mod stream;

@@ -2,7 +2,6 @@
 exclude =
     .git,
     __pycache__,
-    external/source/dep/vendor,
     build,
     dist,
     example,

@@ -1,30 +1,8 @@
 // src/tls/ciphers.rs
 
-/// Mengembalikan cipher suites untuk TLS 1.2 dan fallback.
-/// Menggunakan null-terminator (\0) di akhir string agar 100% kompatibel 
-/// dengan C-ABI secara Zero-Cost, siap dilempar ke pointer C.
-pub fn chrome_tls12_ciphers_ffi() -> *const std::os::raw::c_char {
-    concat!(
-        "ECDHE-ECDSA-AES128-GCM-SHA256:",
-        "ECDHE-RSA-AES128-GCM-SHA256:",
-        "ECDHE-ECDSA-AES256-GCM-SHA384:",
-        "ECDHE-RSA-AES256-GCM-SHA384:",
-        "ECDHE-ECDSA-CHACHA20-POLY1305:",
-        "ECDHE-RSA-CHACHA20-POLY1305:",
-        "ECDHE-RSA-AES128-SHA:",
-        "ECDHE-RSA-AES256-SHA:",
-        "AES128-GCM-SHA256:",
-        "AES256-GCM-SHA384:",
-        "AES128-SHA:",
-        "AES256-SHA",
-        "\0" // Null-terminator wajib untuk FFI
-    ).as_ptr() as *const std::os::raw::c_char
-}
-
 /// Supported Groups (Curves) untuk proses Key Share
+/// Standar Chrome 140+ (Menggunakan Post-Quantum ML-KEM FIPS 203)
 pub fn chrome_curves_ffi() -> *const std::os::raw::c_char {
-    // UPDATE TERBARU: Hulu BoringSSL telah beralih dari KyberDraft00 ke MLKEM.
-    // X25519MLKEM768 adalah standar hibrida Post-Quantum terbaru milik Google.
     concat!(
         "X25519MLKEM768:", 
         "X25519:",
@@ -34,11 +12,50 @@ pub fn chrome_curves_ffi() -> *const std::os::raw::c_char {
     ).as_ptr() as *const std::os::raw::c_char
 }
 
-pub fn chrome_tls13_ciphersuites_ffi() -> *const std::os::raw::c_char {
+/// ====================================================================
+/// KONDISI 1: JIKA DI-COMPILE UNTUK ANDROID (TERMUX)
+/// ====================================================================
+#[cfg(target_os = "android")]
+pub fn chrome_ciphers_ffi() -> *const std::os::raw::c_char {
+    // Android / ARM Chrome Behavior: Prioritaskan ChaCha20_Poly1305
     concat!(
+        // TLS 1.3 Ciphers
+        "TLS_CHACHA20_POLY1305_SHA256:",
         "TLS_AES_128_GCM_SHA256:",
         "TLS_AES_256_GCM_SHA384:",
-        "TLS_CHACHA20_POLY1305_SHA256",
-        "\0" // Null-terminator untuk FFI
+        // TLS 1.2 Ciphers
+        "ECDHE-ECDSA-CHACHA20-POLY1305:",
+        "ECDHE-RSA-CHACHA20-POLY1305:",
+        "ECDHE-ECDSA-AES128-GCM-SHA256:",
+        "ECDHE-RSA-AES128-GCM-SHA256:",
+        "ECDHE-ECDSA-AES256-GCM-SHA384:",
+        "ECDHE-RSA-AES256-GCM-SHA384:",
+        "AES128-GCM-SHA256:",
+        "AES256-GCM-SHA384:",
+        "\0"
+    ).as_ptr() as *const std::os::raw::c_char
+}
+
+/// ====================================================================
+/// KONDISI 2: JIKA DI-COMPILE UNTUK LINUX/WINDOWS/MACOS STANDAR
+/// ====================================================================
+#[cfg(not(target_os = "android"))]
+pub fn chrome_ciphers_ffi() -> *const std::os::raw::c_char {
+    // Desktop Chrome Behavior: Prioritaskan AES (Hardware AES-NI)
+    concat!(
+        // TLS 1.3 Ciphers
+        "TLS_AES_128_GCM_SHA256:",
+        "TLS_AES_256_GCM_SHA384:",
+        "TLS_CHACHA20_POLY1305_SHA256:",
+        // TLS 1.2 Ciphers
+        "ECDHE-ECDSA-AES128-GCM-SHA256:",
+        "ECDHE-RSA-AES128-GCM-SHA256:",
+        "ECDHE-ECDSA-AES256-GCM-SHA384:",
+        "ECDHE-RSA-AES256-GCM-SHA384:",
+        "ECDHE-ECDSA-CHACHA20-POLY1305:",
+        "ECDHE-RSA-CHACHA20-POLY1305:",
+        "AES128-GCM-SHA256:",
+        "AES256-GCM-SHA384:",
+        "\0"
     ).as_ptr() as *const std::os::raw::c_char
 }

@@ -94,10 +94,10 @@ impl AsyncRead for StormTlsStream {
                 
                 if err_code == bssl::SSL_ERROR_WANT_READ as i32 {
                     // PERBAIKAN FATAL: Bersihkan status "Ready" dari Tokio agar tidak Spin-Loop 100% CPU
-                    let _ = self.tcp.clear_read_ready(cx);
+                    let _ = self.tcp.poll_read_ready(cx);
                     continue; // Ulangi loop dan kembali ke status Pending di atas
                 } else if err_code == bssl::SSL_ERROR_WANT_WRITE as i32 {
-                    let _ = self.tcp.clear_write_ready(cx);
+                    let _ = self.tcp.poll_write_ready(cx);
                     return Poll::Pending;
                 } else if err_code == bssl::SSL_ERROR_ZERO_RETURN as i32 {
                     // Koneksi ditutup dengan bersih (Clean Shutdown)
@@ -137,10 +137,10 @@ impl AsyncWrite for StormTlsStream {
                 
                 if err_code == bssl::SSL_ERROR_WANT_WRITE as i32 {
                     // PERBAIKAN FATAL: Mencegah Spin-Loop saat buffer kirim penuh
-                    let _ = self.tcp.clear_write_ready(cx);
+                    let _ = self.tcp.poll_write_ready(cx);
                     continue;
                 } else if err_code == bssl::SSL_ERROR_WANT_READ as i32 {
-                    let _ = self.tcp.clear_read_ready(cx);
+                    let _ = self.tcp.poll_read_ready(cx);
                     return Poll::Pending;
                 } else {
                     return Poll::Ready(Err(io::Error::new(io::ErrorKind::ConnectionAborted, "BoringSSL_write error")));

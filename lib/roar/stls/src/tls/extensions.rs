@@ -13,7 +13,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
         let alpn_res = bssl::SSL_CTX_set_alpn_protos(
             ctx, 
             alpn_protos.as_ptr(), 
-            alpn_protos.len() as u32
+            alpn_protos.len() as usize
         );
         if alpn_res != 0 {
             return Err("FATAL: Failed to inject ALPN into SSL_CTX".to_string());

@@ -5,4 +5,5 @@ exclude =
     external/source/dep/vendor,
     build,
     dist,
-    example
+    example,
+    vendor

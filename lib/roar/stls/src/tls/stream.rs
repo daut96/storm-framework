@@ -7,9 +7,14 @@ use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use tokio::net::TcpStream;
 
+pub struct SslPtr(pub *mut bssl::SSL);
+
+unsafe impl Send for SslPtr {}
+unsafe impl Sync for SslPtr {}
+
 pub struct StormTlsStream {
-    tcp: TcpStream,
-    ssl: *mut bssl::SSL,
+    pub tcp: TcpStream,
+    pub ssl: SslPtr,
 }
 
 impl StormTlsStream {

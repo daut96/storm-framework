@@ -38,9 +38,13 @@ fn main() {
     let include_path = bssl_source_path.join("include");
     let bindings = bindgen::Builder::default()
         .header(header_path.to_str().unwrap())
+        .clang_arg(format!("-I{}", include_path.display())) 
         .allowlist_function("SSL_.*")
         .allowlist_type("SSL_.*")
         .allowlist_var("SSL_.*")
+        .clang_arg("-D__STDC_CONSTANT_MACROS")
+        .clang_arg("-D__STDC_FORMAT_MACROS")
+        .clang_arg("-D__STDC_LIMIT_MACROS")
         .generate()
         .expect("Failed to translate BoringSSL header on user device");
 

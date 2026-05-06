@@ -64,7 +64,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
         ]; 
         
         let alps_res = bssl::SSL_add_application_settings(
-            ctx,
+            ssl,
             alps_proto.as_ptr(),
             alps_proto.len(),
             alps_settings.as_ptr(),

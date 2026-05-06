@@ -1,10 +1,9 @@
 // src/tls/ciphers.rs
 
 /// Mengembalikan cipher suites untuk TLS 1.2 dan fallback.
-/// Fungsi ini akan dimasukkan ke `builder.set_cipher_list()`.
-/// Perhatikan penamaannya menggunakan format OpenSSL, bukan RFC.
-pub fn chrome_tls12_ciphers() -> &'static str {
-    // Ekstraksi fallback TLS 1.2 persis seperti payload ClientHello Chrome
+/// Menggunakan null-terminator (\0) di akhir string agar 100% kompatibel 
+/// dengan C-ABI secara Zero-Cost, siap dilempar ke pointer C.
+pub fn chrome_tls12_ciphers_ffi() -> *const std::os::raw::c_char {
     concat!(
         "ECDHE-ECDSA-AES128-GCM-SHA256:",
         "ECDHE-RSA-AES128-GCM-SHA256:",
@@ -12,26 +11,25 @@ pub fn chrome_tls12_ciphers() -> &'static str {
         "ECDHE-RSA-AES256-GCM-SHA384:",
         "ECDHE-ECDSA-CHACHA20-POLY1305:",
         "ECDHE-RSA-CHACHA20-POLY1305:",
-        // Chrome juga sering mengirim cipher lawas ini di ekor ClientHello 
-        // untuk kompatibilitas server lama. Akamai akan mengecek keberadaan ini.
         "ECDHE-RSA-AES128-SHA:",
         "ECDHE-RSA-AES256-SHA:",
         "AES128-GCM-SHA256:",
         "AES256-GCM-SHA384:",
         "AES128-SHA:",
-        "AES256-SHA"
-    )
+        "AES256-SHA",
+        "\0" // Null-terminator wajib untuk FFI
+    ).as_ptr() as *const std::os::raw::c_char
 }
 
 /// Supported Groups (Curves) untuk proses Key Share
-pub fn chrome_curves() -> &'static str {
-    // WAF Modern (seperti Cloudflare Turnstile) mengecek adopsi PQC (Post-Quantum Cryptography).
-    // Chrome 120+ default menggunakan X25519Kyber768Draft00 (di BoringSSL sering direpresentasikan sebagai x25519_kyber768).
-    // Jika server tidak dukung PQC, otomatis fallback ke X25519.
+pub fn chrome_curves_ffi() -> *const std::os::raw::c_char {
+    // UPDATE TERBARU: Hulu BoringSSL telah beralih dari KyberDraft00 ke MLKEM.
+    // X25519MLKEM768 adalah standar hibrida Post-Quantum terbaru milik Google.
     concat!(
-        "X25519Kyber768Draft00:", // Hibrida Post-Quantum (Sangat krusial untuk trust-score tinggi)
+        "X25519MLKEM768:", 
         "X25519:",
         "P-256:",
-        "P-384"
-    )
+        "P-384",
+        "\0" // Null-terminator wajib untuk FFI
+    ).as_ptr() as *const std::os::raw::c_char
 }

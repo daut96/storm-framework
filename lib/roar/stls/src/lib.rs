@@ -38,10 +38,6 @@ fn get_runtime() -> &'static Runtime {
 // C-ABI / FFI BOUNDARY
 // =========================================================================
 
-/// FFI Signature yang lebih kaya.
-/// - method_ptr: "GET", "POST", "PUT", dll.
-/// - headers_json_ptr: Serialisasi JSON dari dictionary header (mudah dipassing dari Python/Go).
-/// - body_ptr & body_len: Array of bytes untuk payload (mendukung binary maupun teks).
 #[unsafe(no_mangle)]
 pub extern "C" fn storm_request(
     url_ptr: *const c_char,
@@ -57,7 +53,6 @@ pub extern "C" fn storm_request(
     let url = unsafe { CStr::from_ptr(url_ptr).to_string_lossy().into_owned() };
     let method = unsafe { CStr::from_ptr(method_ptr).to_string_lossy().into_owned() };
     
-    // FIX: Perbaikan typo string JSON kosong
     let headers_json = if headers_json_ptr.is_null() {
         "{}".to_string() 
     } else {
@@ -114,45 +109,42 @@ async fn execute_dynamic_request(
     let port = uri.port_u16().unwrap_or(443);
     let target_addr = format!("{}:{}", host, port);
 
-    let ctx = build_chrome_ssl_context()?;
+    // =========================================================
+    // 1. BUAT KONEKSI TCP (Tokio Non-Blocking)
+    // =========================================================
     let tcp_stream = TcpStream::connect(&target_addr).await?;
 
-        // =========================================================
-    // IMPLEMENTASI BARU: BARE-METAL GOOGLE BORINGSSL
     // =========================================================
-    
-    // Di sinilah fungsi `build_chrome_ssl_context` dari modul `tls::builder` Anda 
-    // harus mengembalikan pointer mentah *mut bssl::SSL_CTX
-    let raw_ctx = tls::builder::build_chrome_ssl_context_native()?;
-    
-    // Nanti Anda harus membuat wrapper struct, misalnya `StormTlsStream`, 
-    // yang mengimplementasikan tokio::io::AsyncRead dan tokio::io::AsyncWrite
-    // lalu menghubungkannya dengan bssl::SSL_set_fd() dan bssl::SSL_connect()
-    
-    // let tls_stream = StormTlsStream::connect(raw_ctx, tcp_stream, host).await?;
+    // 2. BUAT NATIVE SSL CONTEXT (Hulu Google BoringSSL)
+    // =========================================================
+    // Ini memanggil fungsi dari src/tls/builder.rs yang sudah diperbarui
+    let native_ctx = build_chrome_ssl_context()?;
 
     // =========================================================
-    
-    let mut ssl = Ssl::new(&ctx)?;
-    ssl.set_hostname(host)?; 
+    // 3. JEMBATANI TCP DENGAN POINTER C MENGGUNAKAN WRAPPER KITA
+    // =========================================================
+    // Menghubungkan Context C++, Socket TCP Tokio, dan Hostname untuk SNI
+    // (Ini memanggil struct StormTlsStream dari src/tls/stream.rs)
+    let tls_stream = tls::stream::StormTlsStream::connect(native_ctx.inner, tcp_stream, host).await?;
 
-    let tls_stream = tokio_boring::SslStreamBuilder::new(ssl, tcp_stream).connect().await?;
-
-    // SINKRONISASI 1: HTTP/2 Settings & Connection Window Update
+    // =========================================================
+    // 4. SINKRONISASI HTTP/2 (KODE BAWAAN ANDA TETAP AMAN)
+    // =========================================================
     let mut h2_builder = h2::client::Builder::new();
     h2_builder
         .initial_window_size(ChromeH2Settings::INITIAL_WINDOW_SIZE)
-        .initial_connection_window_size(ChromeH2Settings::CONNECTION_WINDOW_UPDATE) // <-- Sangat penting untuk Akamai
+        .initial_connection_window_size(ChromeH2Settings::CONNECTION_WINDOW_UPDATE) 
         .max_concurrent_streams(ChromeH2Settings::MAX_CONCURRENT_STREAMS)
         .header_table_size(ChromeH2Settings::HEADER_TABLE_SIZE)
         .max_header_list_size(ChromeH2Settings::MAX_HEADER_LIST_SIZE)
         .enable_push(ChromeH2Settings::ENABLE_PUSH);
 
+    // h2 builder sekarang menggunakan tls_stream buatan sendiri, bukan tokio-boring!
     let (mut client, h2_connection) = h2_builder.handshake::<_, bytes::Bytes>(tls_stream).await?;
 
     tokio::spawn(async move {
         if let Err(_e) = h2_connection.await {
-            // Background handler
+            // Background handler untuk koneksi H2
         }
     });
 
@@ -160,30 +152,24 @@ async fn execute_dynamic_request(
         .method(method)
         .uri(target_url);
 
-    // SINKRONISASI 2: Dynamic Header Sorting (Lexical Ordering)
+    // SINKRONISASI HEADER: Dynamic Header Sorting (Lexical Ordering)
     let mut header_map: HashMap<String, String> = HashMap::new();
-    if let Err(e) = serde_json::from_str::<serde_json::Value>(headers_json) {
-        eprintln!("[ERROR] JSON parse failed: {}", e);
-        eprintln!("[ERROR] RAW headers_json: {:?}", headers_json);
-    } else if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
+    if let Ok(parsed_headers) = serde_json::from_str::<serde_json::Value>(headers_json) {
         if let Some(obj) = parsed_headers.as_object() {
             for (key, value) in obj {
                 if let Some(val_str) = value.as_str() {
-                    // Normalisasi key ke lowercase karena HTTP/2 mewajibkan lowercase header keys
                     header_map.insert(key.to_lowercase(), val_str.to_string());
                 }
             }
         }
     }
 
-    // 1. Masukkan Standard Headers sesuai urutan Chrome 120+
     for expected_key in ChromeH2Settings::get_standard_header_order() {
         if let Some(val) = header_map.remove(expected_key) {
             request_builder = request_builder.header(expected_key, val);
         }
     }
 
-    // 2. Masukkan sisa Custom Headers (misal: x-csrf-token, authorization, dsb) di bagian paling bawah
     for (key, val) in header_map {
         request_builder = request_builder.header(key, val);
     }

@@ -24,14 +24,44 @@ fn main() {
     // Jika user di Android (Termux), CMake akan menyesuaikan toolchain secara otomatis
     let bssl_out_dir = config.build();
 
-    // 4. LINKING: Menghubungkan library internal ke hasil kompilasi BoringSSL
-    // Kita arahkan linker pengguna untuk mencari file .a di folder output
-    println!("cargo:rustc-link-search=native={}/build/crypto", bssl_out_dir.display());
-    println!("cargo:rustc-link-search=native={}/build/ssl", bssl_out_dir.display());
+    // 4. LINKING: Menghubungkan library secara dinamis dan adaptif
+    let build_dir = bssl_out_dir.join("build");
+    let lib_dir = bssl_out_dir.join("lib");
 
-    // Menggabungkan secara statis agar hasil .so milik user mandiri (standalone)
+    // Daftar folder potensial tempat libcrypto.a dan libssl.a berada
+    let potential_paths = vec![
+        build_dir.join("crypto"), // Standar Linux
+        build_dir.join("ssl"),    // Standar Linux
+        build_dir.clone(),        // Termux (Flat layout)
+        lib_dir.clone(),          // Beberapa env Android/Termux
+    ];
+
+    let mut found_crypto = false;
+    let mut found_ssl = false;
+
+    for path in potential_paths {
+        if path.exists() {
+            // Cek apakah file .a benar-benar ada di folder ini
+            if path.join("libcrypto.a").exists() || path.join("crypto.lib").exists() {
+                println!("cargo:rustc-link-search=native={}", path.display());
+                found_crypto = true;
+            }
+            if path.join("libssl.a").exists() || path.join("ssl.lib").exists() {
+                println!("cargo:rustc-link-search=native={}", path.display());
+                found_ssl = true;
+            }
+        }
+    }
+
+    // Fail-safe: Jika probing gagal fallback
+    if !found_crypto || !found_ssl {
+        println!("cargo:rustc-link-search=native={}", build_dir.display());
+    }
+
+    // Menggabungkan secara statis agar hasil .so mandiri
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
+
 
     // 5. BINDGEN: Menghasilkan peta fungsi untuk Rust pengguna
     let header_path = bssl_source_path.join("include/openssl/ssl.h");

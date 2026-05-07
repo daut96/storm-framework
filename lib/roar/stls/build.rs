@@ -66,20 +66,22 @@ fn main() {
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 
-    // =========================================================================
-    // 3. TARGET ENVIRONMENT ADJUSTMENTS (Mencegah DLL Hell)
+        // =========================================================================
+    // 3. TARGET ENVIRONMENT ADJUSTMENTS (Memperbaiki Linker C++)
     // =========================================================================
     let target = env::var("TARGET").unwrap_or_default();
     
-    // PERBAIKAN 2: Hapus rustc-link-lib=dylib=c++_shared
-    // BoringSSL core adalah C. Tidak perlu standard library C++ yang bisa bentrok.
-    
     if target.contains("android") {
-        // Flag ketat untuk Android/Termux: Tolak undefined symbols saat kompilasi!
+        // Flag ketat untuk Android/Termux
         println!("cargo:rustc-link-arg=-Wl,--no-undefined");
         println!("cargo:rustc-link-arg=-Wl,--as-needed"); 
-        // Amankan relocations (Read-Only After Relocation)
         println!("cargo:rustc-link-arg=-Wl,-z,relro,-z,now"); 
+
+        // PERBAIKAN: Termux/Android NDK membutuhkan c++_shared untuk internal BoringSSL
+        println!("cargo:rustc-link-lib=dylib=c++_shared");
+    } else {
+        // Untuk Linux murni (Debian/Ubuntu), gunakan stdc++
+        println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
     // =========================================================================

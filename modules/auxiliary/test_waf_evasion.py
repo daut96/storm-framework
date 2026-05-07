@@ -20,14 +20,15 @@ def execute(options):
     smf.printf(f"[*] Status      : Sending requests through the Rust engine...\n")
 
     # Simulasi header browser yang natural
-    
+
     start_time = time.time()
 
     try:
         # Menembak target menggunakan GET method
-        response = stls.get(target_url,
-                            headers = {"Content-Type": "application/json"},
-                            body = {"Platform": "Chrome"}
+        response = stls.get(
+            target_url,
+            headers={"Content-Type": "application/json"},
+            body={"Platform": "Chrome"},
         )
         elapsed_time = time.time() - start_time
 

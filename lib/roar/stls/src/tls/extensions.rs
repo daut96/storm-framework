@@ -16,7 +16,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
 
         // 2. ALPN (Wajib untuk HTTP/2)
         let alpn_protos = b"\x02h2\x08http/1.1";
-        bssl::SSL_CTX_set_alpn_protos(ctx, alpn_protos.as_ptr(), alpn_protos.len() as u32);
+        bssl::SSL_CTX_set_alpn_protos(ctx, alpn_protos.as_ptr(), alpn_protos.len() as usize);
 
         // 3. Sertifikat Transparansi & OCSP
         bssl::SSL_CTX_enable_ocsp_stapling(ctx);

@@ -1,0 +1,3 @@
+# List of assigned trustvalues, created 2026-05-07 20:37:46 +0700 WIB
+# (Use "gpg --import-ownertrust" to restore them)
+1AE073E62909B209288111E2439CEB822F3EA380:6:

@@ -1,15 +1,11 @@
-use std::mem;
-use std::mem::MaybeUninit;
+use crate::{Interest, Token};
+use std::mem::{self, MaybeUninit};
 use std::ops::{Deref, DerefMut};
-use std::os::fd::{AsFd, AsRawFd, BorrowedFd, FromRawFd, OwnedFd, RawFd};
-use std::slice;
+use std::os::unix::io::{AsRawFd, RawFd};
 #[cfg(debug_assertions)]
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use std::{cmp, io, ptr};
-
-use crate::Interest;
-use crate::Token;
+use std::{cmp, io, ptr, slice};
 
 /// Unique id for use as `SelectorId`.
 #[cfg(debug_assertions)]
@@ -28,7 +24,6 @@ type Filter = libc::c_short;
     target_os = "ios",
     target_os = "macos",
     target_os = "tvos",
-    target_os = "visionos",
     target_os = "watchos"
 ))]
 type Filter = i16;
@@ -42,7 +37,6 @@ type Flags = libc::c_ushort;
     target_os = "ios",
     target_os = "macos",
     target_os = "tvos",
-    target_os = "visionos",
     target_os = "watchos"
 ))]
 type Flags = u16;
@@ -50,7 +44,10 @@ type Flags = u16;
 type Flags = u32;
 
 // Type of the `udata` field in the `kevent` structure.
+#[cfg(not(target_os = "netbsd"))]
 type UData = *mut libc::c_void;
+#[cfg(target_os = "netbsd")]
+type UData = libc::intptr_t;
 
 macro_rules! kevent {
     ($id: expr, $filter: expr, $flags: expr, $data: expr) => {
@@ -68,23 +65,24 @@ macro_rules! kevent {
 pub struct Selector {
     #[cfg(debug_assertions)]
     id: usize,
-    kq: OwnedFd,
+    kq: RawFd,
 }
 
 impl Selector {
     pub fn new() -> io::Result<Selector> {
-        // SAFETY: `kqueue(2)` ensures the fd is valid.
-        let kq = unsafe { OwnedFd::from_raw_fd(syscall!(kqueue())?) };
-        syscall!(fcntl(kq.as_raw_fd(), libc::F_SETFD, libc::FD_CLOEXEC))?;
-        Ok(Selector {
+        let kq = syscall!(kqueue())?;
+        let selector = Selector {
             #[cfg(debug_assertions)]
             id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
             kq,
-        })
+        };
+
+        syscall!(fcntl(kq, libc::F_SETFD, libc::FD_CLOEXEC))?;
+        Ok(selector)
     }
 
     pub fn try_clone(&self) -> io::Result<Selector> {
-        self.kq.try_clone().map(|kq| Selector {
+        syscall!(fcntl(self.kq, libc::F_DUPFD_CLOEXEC, super::LOWEST_FD)).map(|kq| Selector {
             // It's the same selector, so we use the same id.
             #[cfg(debug_assertions)]
             id: self.id,
@@ -94,7 +92,7 @@ impl Selector {
 
     pub fn select(&self, events: &mut Events, timeout: Option<Duration>) -> io::Result<()> {
         let timeout = timeout.map(|to| libc::timespec {
-            tv_sec: cmp::min(to.as_secs(), libc::time_t::MAX as u64) as libc::time_t,
+            tv_sec: cmp::min(to.as_secs(), libc::time_t::max_value() as u64) as libc::time_t,
             // `Duration::subsec_nanos` is guaranteed to be less than one
             // billion (the number of nanoseconds in a second), making the
             // cast to i32 safe. The cast itself is needed for platforms
@@ -108,10 +106,10 @@ impl Selector {
 
         events.clear();
         syscall!(kevent(
-            self.kq.as_raw_fd(),
+            self.kq,
             ptr::null(),
             0,
-            events.as_mut_ptr().cast(),
+            events.as_mut_ptr(),
             events.capacity() as Count,
             timeout,
         ))
@@ -122,7 +120,6 @@ impl Selector {
         })
     }
 
-    #[cfg_attr(not(feature = "os-ext"), allow(dead_code))]
     pub fn register(&self, fd: RawFd, token: Token, interests: Interest) -> io::Result<()> {
         let flags = libc::EV_CLEAR | libc::EV_RECEIPT | libc::EV_ADD;
         // At most we need two changes, but maybe we only need 1.
@@ -159,10 +156,9 @@ impl Selector {
             // the array.
             slice::from_raw_parts_mut(changes[0].as_mut_ptr(), n_changes)
         };
-        kevent_register(self.kq.as_raw_fd(), changes, &[libc::EPIPE as i64])
+        kevent_register(self.kq, changes, &[libc::EPIPE as i64])
     }
 
-    cfg_any_os_ext! {
     pub fn reregister(&self, fd: RawFd, token: Token, interests: Interest) -> io::Result<()> {
         let flags = libc::EV_CLEAR | libc::EV_RECEIPT;
         let write_flags = if interests.is_writable() {
@@ -190,7 +186,7 @@ impl Selector {
         //
         // For the explanation of ignoring `EPIPE` see `register`.
         kevent_register(
-            self.kq.as_raw_fd(),
+            self.kq,
             &mut changes,
             &[libc::ENOENT as i64, libc::EPIPE as i64],
         )
@@ -208,8 +204,7 @@ impl Selector {
         // the ENOENT error when it comes up. The ENOENT error informs us that
         // the filter wasn't there in first place, but we don't really care
         // about that since our goal is to remove it.
-        kevent_register(self.kq.as_raw_fd(), &mut changes, &[libc::ENOENT as i64])
-    }
+        kevent_register(self.kq, &mut changes, &[libc::ENOENT as i64])
     }
 
     // Used by `Waker`.
@@ -218,7 +213,6 @@ impl Selector {
         target_os = "ios",
         target_os = "macos",
         target_os = "tvos",
-        target_os = "visionos",
         target_os = "watchos"
     ))]
     pub fn setup_waker(&self, token: Token) -> io::Result<()> {
@@ -230,8 +224,7 @@ impl Selector {
             token.0
         );
 
-        let kq = self.kq.as_raw_fd();
-        syscall!(kevent(kq, &kevent, 1, &mut kevent, 1, ptr::null())).and_then(|_| {
+        syscall!(kevent(self.kq, &kevent, 1, &mut kevent, 1, ptr::null())).and_then(|_| {
             if (kevent.flags & libc::EV_ERROR) != 0 && kevent.data != 0 {
                 Err(io::Error::from_raw_os_error(kevent.data as i32))
             } else {
@@ -246,7 +239,6 @@ impl Selector {
         target_os = "ios",
         target_os = "macos",
         target_os = "tvos",
-        target_os = "visionos",
         target_os = "watchos"
     ))]
     pub fn wake(&self, token: Token) -> io::Result<()> {
@@ -258,8 +250,7 @@ impl Selector {
         );
         kevent.fflags = libc::NOTE_TRIGGER;
 
-        let kq = self.kq.as_raw_fd();
-        syscall!(kevent(kq, &kevent, 1, &mut kevent, 1, ptr::null())).and_then(|_| {
+        syscall!(kevent(self.kq, &kevent, 1, &mut kevent, 1, ptr::null())).and_then(|_| {
             if (kevent.flags & libc::EV_ERROR) != 0 && kevent.data != 0 {
                 Err(io::Error::from_raw_os_error(kevent.data as i32))
             } else {
@@ -321,43 +312,31 @@ cfg_io_source! {
     }
 }
 
-impl AsFd for Selector {
-    fn as_fd(&self) -> BorrowedFd<'_> {
-        self.kq.as_fd()
-    }
-}
-
 impl AsRawFd for Selector {
     fn as_raw_fd(&self) -> RawFd {
-        self.kq.as_raw_fd()
+        self.kq
     }
 }
 
-#[repr(transparent)]
-#[derive(Clone)]
-pub struct Event(libc::kevent);
-
-unsafe impl Send for Event {}
-unsafe impl Sync for Event {}
-
-impl Deref for Event {
-    type Target = libc::kevent;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl Drop for Selector {
+    fn drop(&mut self) {
+        if let Err(err) = syscall!(close(self.kq)) {
+            error!("error closing kqueue: {}", err);
+        }
     }
 }
 
-impl DerefMut for Event {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+pub type Event = libc::kevent;
+pub struct Events(Vec<libc::kevent>);
+
+impl Events {
+    pub fn with_capacity(capacity: usize) -> Events {
+        Events(Vec::with_capacity(capacity))
     }
 }
-
-pub struct Events(Vec<Event>);
 
 impl Deref for Events {
-    type Target = Vec<Event>;
+    type Target = Vec<libc::kevent>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -367,12 +346,6 @@ impl Deref for Events {
 impl DerefMut for Events {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-impl Events {
-    pub fn with_capacity(capacity: usize) -> Events {
-        Events(Vec::with_capacity(capacity))
     }
 }
 
@@ -393,17 +366,16 @@ pub mod event {
     use super::{Filter, Flags};
 
     pub fn token(event: &Event) -> Token {
-        Token(event.0.udata as usize)
+        Token(event.udata as usize)
     }
 
     pub fn is_readable(event: &Event) -> bool {
-        event.0.filter == libc::EVFILT_READ || {
+        event.filter == libc::EVFILT_READ || {
             #[cfg(any(
                 target_os = "freebsd",
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             // Used by the `Awakener`. On platforms that use `eventfd` or a unix
@@ -417,7 +389,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             )))]
             {
@@ -427,22 +398,22 @@ pub mod event {
     }
 
     pub fn is_writable(event: &Event) -> bool {
-        event.0.filter == libc::EVFILT_WRITE
+        event.filter == libc::EVFILT_WRITE
     }
 
     pub fn is_error(event: &Event) -> bool {
-        (event.0.flags & libc::EV_ERROR) != 0 ||
+        (event.flags & libc::EV_ERROR) != 0 ||
             // When the read end of the socket is closed, EV_EOF is set on
             // flags, and fflags contains the error if there is one.
-            (event.0.flags & libc::EV_EOF) != 0 && event.0.fflags != 0
+            (event.flags & libc::EV_EOF) != 0 && event.fflags != 0
     }
 
     pub fn is_read_closed(event: &Event) -> bool {
-        event.0.filter == libc::EVFILT_READ && event.0.flags & libc::EV_EOF != 0
+        event.filter == libc::EVFILT_READ && event.flags & libc::EV_EOF != 0
     }
 
     pub fn is_write_closed(event: &Event) -> bool {
-        event.0.filter == libc::EVFILT_WRITE && event.0.flags & libc::EV_EOF != 0
+        event.filter == libc::EVFILT_WRITE && event.flags & libc::EV_EOF != 0
     }
 
     pub fn is_priority(_: &Event) -> bool {
@@ -458,11 +429,10 @@ pub mod event {
             target_os = "ios",
             target_os = "macos",
             target_os = "tvos",
-            target_os = "visionos",
             target_os = "watchos",
         ))]
         {
-            event.0.filter == libc::EVFILT_AIO
+            event.filter == libc::EVFILT_AIO
         }
         #[cfg(not(any(
             target_os = "dragonfly",
@@ -470,7 +440,6 @@ pub mod event {
             target_os = "ios",
             target_os = "macos",
             target_os = "tvos",
-            target_os = "visionos",
             target_os = "watchos",
         )))]
         {
@@ -482,7 +451,7 @@ pub mod event {
     pub fn is_lio(event: &Event) -> bool {
         #[cfg(target_os = "freebsd")]
         {
-            event.0.filter == libc::EVFILT_LIO
+            event.filter == libc::EVFILT_LIO
         }
         #[cfg(not(target_os = "freebsd"))]
         {
@@ -509,7 +478,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::EVFILT_FS,
@@ -521,7 +489,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::EVFILT_USER,
@@ -535,7 +502,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::EVFILT_MACHPORT,
@@ -543,7 +509,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::EVFILT_VM,
@@ -569,14 +534,11 @@ pub mod event {
             libc::EV_FLAG1,
             libc::EV_ERROR,
             libc::EV_EOF,
-            // Not stable across OS versions on OpenBSD.
-            #[cfg(not(target_os = "openbsd"))]
             libc::EV_SYSFLAGS,
             #[cfg(any(
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::EV_FLAG0,
@@ -584,7 +546,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::EV_POLL,
@@ -592,7 +553,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::EV_OOBAND,
@@ -613,7 +573,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_TRIGGER,
@@ -623,7 +582,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFNOP,
@@ -633,7 +591,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFAND,
@@ -643,7 +600,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFOR,
@@ -653,7 +609,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFCOPY,
@@ -663,7 +618,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFCTRLMASK,
@@ -673,7 +627,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos",
             ))]
             libc::NOTE_FFLAGSMASK,
@@ -688,7 +641,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXTEND,
@@ -700,7 +652,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_NONE,
@@ -713,7 +664,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_SIGNAL,
@@ -721,7 +671,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXITSTATUS,
@@ -729,7 +678,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXIT_DETAIL,
@@ -760,7 +708,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXIT_DETAIL_MASK,
@@ -768,7 +715,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXIT_DECRYPTFAIL,
@@ -776,7 +722,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXIT_MEMORY,
@@ -784,7 +729,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_EXIT_CSERROR,
@@ -792,7 +736,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_VM_PRESSURE,
@@ -800,7 +743,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_VM_PRESSURE_TERMINATE,
@@ -808,7 +750,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_VM_PRESSURE_SUDDEN_TERMINATE,
@@ -816,7 +757,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_VM_ERROR,
@@ -825,7 +765,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_SECONDS,
@@ -836,7 +775,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_USECONDS,
@@ -845,7 +783,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_NSECONDS,
@@ -853,7 +790,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_ABSOLUTE,
@@ -861,7 +797,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_LEEWAY,
@@ -869,7 +804,6 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_CRITICAL,
@@ -877,33 +811,24 @@ pub mod event {
                 target_os = "ios",
                 target_os = "macos",
                 target_os = "tvos",
-                target_os = "visionos",
                 target_os = "watchos"
             ))]
             libc::NOTE_BACKGROUND,
         );
 
         // Can't reference fields in packed structures.
-        let ident = event.0.ident;
-        let data = event.0.data;
-        let udata = event.0.udata;
+        let ident = event.ident;
+        let data = event.data;
+        let udata = event.udata;
         f.debug_struct("kevent")
             .field("ident", &ident)
-            .field("filter", &FilterDetails(event.0.filter))
-            .field("flags", &FlagsDetails(event.0.flags))
-            .field("fflags", &FflagsDetails(event.0.fflags))
+            .field("filter", &FilterDetails(event.filter))
+            .field("flags", &FlagsDetails(event.flags))
+            .field("fflags", &FflagsDetails(event.fflags))
             .field("data", &data)
             .field("udata", &udata)
             .finish()
     }
-}
-
-// No special requirement from the implementation around waking.
-pub(crate) use crate::sys::unix::waker::Waker;
-
-cfg_io_source! {
-    mod stateless_io_source;
-    pub(crate) use stateless_io_source::IoSourceState;
 }
 
 #[test]

@@ -1,12 +1,7 @@
-use std::io;
-#[cfg(not(target_os = "hermit"))]
-use std::os::fd::RawFd;
-// TODO: once <https://github.com/rust-lang/rust/issues/126198> is fixed this
-// can use `std::os::fd` and be merged with the above.
-#[cfg(target_os = "hermit")]
-use std::os::hermit::io::RawFd;
-
 use crate::{event, Interest, Registry, Token};
+
+use std::io;
+use std::os::unix::io::RawFd;
 
 /// Adapter for [`RawFd`] providing an [`event::Source`] implementation.
 ///
@@ -41,12 +36,9 @@ use crate::{event, Interest, Registry, Token};
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// use mio::{Interest, Poll, Token};
-/// #[cfg(unix)]
 /// use mio::unix::SourceFd;
-/// #[cfg(target_os = "wasi")]
-/// use mio::wasi::SourceFd;
 ///
-/// use std::os::fd::AsRawFd;
+/// use std::os::unix::io::AsRawFd;
 /// use std::net::TcpListener;
 ///
 /// // Bind a std listener
@@ -68,12 +60,9 @@ use crate::{event, Interest, Registry, Token};
 #[cfg_attr(all(feature = "os-poll", feature = "os-ext"), doc = "```")]
 #[cfg_attr(not(all(feature = "os-poll", feature = "os-ext")), doc = "```ignore")]
 /// use mio::{event, Interest, Registry, Token};
-/// #[cfg(unix)]
 /// use mio::unix::SourceFd;
-/// #[cfg(target_os = "wasi")]
-/// use mio::wasi::SourceFd;
 ///
-/// use std::os::fd::RawFd;
+/// use std::os::unix::io::RawFd;
 /// use std::io;
 ///
 /// # #[allow(dead_code)]

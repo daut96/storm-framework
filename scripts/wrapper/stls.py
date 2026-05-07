@@ -24,16 +24,17 @@ _lib = ctypes.CDLL(_lib_path)
 
 # Mencegah Truncation MTE dengan c_void_p
 _lib.storm_request.argtypes = [
-    ctypes.c_char_p,  
-    ctypes.c_char_p,  
-    ctypes.c_char_p,  
-    ctypes.POINTER(ctypes.c_ubyte),  
-    ctypes.c_size_t,  
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.POINTER(ctypes.c_ubyte),
+    ctypes.c_size_t,
 ]
 _lib.storm_request.restype = ctypes.c_void_p
 
 _lib.storm_free_string.argtypes = [ctypes.c_void_p]
 _lib.storm_free_string.restype = None
+
 
 # ----------------------------------------------------------------------
 # Helper untuk memanggil fungsi Rust
@@ -57,7 +58,7 @@ def _request(
 
     body_ptr = ctypes.POINTER(ctypes.c_ubyte)()
     body_len = 0
-    
+
     if body is not None:
         body_bytes = body.encode("utf-8") if isinstance(body, str) else body
         body_len = len(body_bytes)
@@ -115,11 +116,15 @@ def _request(
     try:
         if encoding == "br":
             if brotli is None:
-                raise RuntimeError("Brotli encoding received but 'brotli' module is missing. (pip install brotli)")
+                raise RuntimeError(
+                    "Brotli encoding received but 'brotli' module is missing. (pip install brotli)"
+                )
             final_body = brotli.decompress(raw_body)
         elif encoding == "zstd":
             if zstd is None:
-                raise RuntimeError("Zstd encoding received but 'zstandard' module is missing. (pip install zstandard)")
+                raise RuntimeError(
+                    "Zstd encoding received but 'zstandard' module is missing. (pip install zstandard)"
+                )
             final_body = zstd.ZstdDecompressor().decompress(raw_body)
         elif encoding in ("gzip", "deflate"):
             # MAX_WBITS | 32 otomatis mendeteksi gzip atau zlib header
@@ -133,8 +138,9 @@ def _request(
     return {
         "status": status_code,
         "headers": resp_headers,
-        "body": final_body.decode("utf-8", errors="replace")
+        "body": final_body.decode("utf-8", errors="replace"),
     }
+
 
 # ----------------------------------------------------------------------
 # Public API: Mengembalikan Full Context (Status, Headers, Body)
@@ -142,21 +148,42 @@ def _request(
 def get(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     return _request("GET", url, headers)
 
-def post(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+
+def post(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    body: Optional[Union[bytes, str]] = None,
+) -> Dict[str, Any]:
     return _request("POST", url, headers, body)
 
-def put(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+
+def put(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    body: Optional[Union[bytes, str]] = None,
+) -> Dict[str, Any]:
     return _request("PUT", url, headers, body)
 
-def delete(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+
+def delete(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    body: Optional[Union[bytes, str]] = None,
+) -> Dict[str, Any]:
     return _request("DELETE", url, headers, body)
 
-def patch(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+
+def patch(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    body: Optional[Union[bytes, str]] = None,
+) -> Dict[str, Any]:
     return _request("PATCH", url, headers, body)
+
 
 def head(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     return _request("HEAD", url, headers)
 
+
 def options(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     return _request("OPTIONS", url, headers)
-            

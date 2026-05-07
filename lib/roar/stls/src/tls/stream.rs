@@ -1,6 +1,6 @@
 // src/tls/stream.rs
 use crate::bssl;
-use crate::stls::extensions;
+use crate::tls::extensions;
 
 use std::io;
 use std::os::fd::AsRawFd;

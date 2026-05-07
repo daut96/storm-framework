@@ -3,8 +3,6 @@
 /// Supported Groups (Curves) untuk proses Key Share
 pub fn chrome_curves_ffi() -> *const std::os::raw::c_char {
     concat!(
-        // PERBAIKAN 1: Tanda hubung sangat krusial untuk Post-Quantum
-        "X25519-MLKEM768:", 
         "X25519:",
         "P-256:",
         "P-384",

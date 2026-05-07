@@ -1,5 +1,7 @@
 // src/tls/stream.rs
 use crate::bssl;
+use crate::extensions;
+
 use std::io;
 use std::os::fd::AsRawFd;
 use std::pin::Pin;
@@ -25,6 +27,10 @@ impl StormTlsStream {
             if ssl.is_null() {
                 return Err(io::Error::new(io::ErrorKind::Other, "FATAL: Failed to create SSL object"));
             }
+
+            if let Err(e) = extensions::apply_alps_extension(ssl) {
+                bssl::SSL_free(ssl);
+                return Err(io::Error::new(io::ErrorKind::Other, e));
             
             // 2. Set SNI (Server Name Indication)
             let host_c = std::ffi::CString::new(hostname).unwrap();

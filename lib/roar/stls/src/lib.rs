@@ -203,6 +203,19 @@ async fn execute_dynamic_request(
     }
 
     let response = response_future.await?;
+    
+    // EKSTRAKSI STATUS CODE
+    let status_code = response.status().as_u16();
+
+    // EKSTRAKSI RESPONSE HEADERS
+    let mut resp_headers: HashMap<String, String> = HashMap::new();
+    for (k, v) in response.headers() {
+        resp_headers.insert(
+            k.as_str().to_string(),
+            String::from_utf8_lossy(v.as_bytes()).to_string()
+        );
+    }
+
     let mut resp_body = response.into_body();
     let mut response_bytes = Vec::new();
 
@@ -211,5 +224,17 @@ async fn execute_dynamic_request(
         response_bytes.extend_from_slice(&chunk);
     }
 
-    Ok(String::from_utf8_lossy(&response_bytes).to_string())
+    // BASE64 ENCODING UNTUK KEAMANAN FFI BINER
+    use base64::prelude::*;
+    let body_base64 = BASE64_STANDARD.encode(&response_bytes);
+
+    // BUNGKUS KE DALAM JSON KOMPREHENSIF
+    let result_json = serde_json::json!({
+        "status": status_code,
+        "headers": resp_headers,
+        "body_base64": body_base64
+    });
+
+    Ok(result_json.to_string())
+
 }

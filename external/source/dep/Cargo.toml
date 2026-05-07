@@ -35,21 +35,8 @@ walkdir = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
-base64 = "0.22"
+base64 = "0.21"
 
 pyo3 = { version = "0.21", features = ["extension-module", "abi3-py37"] }
 rayon = "1"
 rusqlite = { version = "0.31.0", features = ["bundled"] }
-
-boring = "4.4.0"
-tokio = { version = "1", features = ["full"] }
-hyper = "1.0"
-http = "1.0"
-tokio-boring = "4.4.0"
-h2 = "0.4"
-bytes = "1.5"
-libc = "0.2"
-
-anyhow = "1.0"
-cmake = "0.1"
-bindgen = "0.70.1"

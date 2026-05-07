@@ -28,7 +28,6 @@ def execute(options):
         response = stls.get(
             target_url,
             headers={"Content-Type": "application/json"},
-            body={"Platform": "Chrome"},
         )
         elapsed_time = time.time() - start_time
 

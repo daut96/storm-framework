@@ -43,7 +43,7 @@ impl StormTlsStream {
 
         // Langsung bungkus ke dalam struct. Jika terjadi error (?), Drop akan otomatis memanggil SSL_free!
         // Mencegah memory leak & MTE UAF.
-        let mut stream = Self { tcp, ssl: SslPtr(ssl_ptr) };
+        let stream = Self { tcp, ssl: SslPtr(ssl_ptr) };
 
         unsafe {
             if let Err(e) = extensions::apply_alps_extension(stream.ssl.0) {
@@ -93,12 +93,14 @@ impl AsyncRead for StormTlsStream {
         loop {
             // PERBAIKAN FATAL: Selalu panggil BoringSSL DULU sebelum cek socket Tokio!
             // Ini untuk menguras data yang tertinggal di internal buffer BoringSSL.
-            let slice = buf.unfilled_mut();
             let read_bytes = unsafe { 
+                let slice = buf.unfilled_mut();
                 bssl::SSL_read(this.ssl.0, slice.as_mut_ptr() as *mut _, slice.len() as i32) 
             };
 
             if read_bytes > 0 {
+                // Kita beri tahu Tokio bahwa memori sebesar read_bytes sudah 
+                // diinisialisasi (ditulis) dengan aman oleh BoringSSL
                 unsafe { buf.assume_init(read_bytes as usize); }
                 buf.advance(read_bytes as usize);
                 return Poll::Ready(Ok(()));

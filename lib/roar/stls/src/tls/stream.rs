@@ -63,7 +63,7 @@ impl StormTlsStream {
                 }
             }
 
-            Ok(Self { tcp, SslPtr(ssl) })
+            Ok(Self { tcp, ssl: SslPtr(ssl) })
         }
     }
 }

@@ -31,5 +31,5 @@ bindgen = "0.70.1"
 lto = true            # Optimasi lintas crate (Link Time Optimization)
 codegen-units = 1     # Maksimalisasi optimasi biner (mengurangi paralelisme kompilasi)
 panic = "abort"       # Memperkecil ukuran biner & mempercepat crash handling
-strip = true          # Menghapus simbol debug (Wajib untuk cdylib agar file .so ringan)
+# strip = true          # Menghapus simbol debug (Wajib untuk cdylib agar file .so ringan)
 opt-level = "z"       # Fokus pada ukuran biner terkecil (opsional, gunakan "3" jika butuh speed murni)

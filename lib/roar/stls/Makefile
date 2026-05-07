@@ -35,7 +35,7 @@ $(TARGET): $(SRC)
 	mkdir -p $(OUT)
 	cargo build --release --offline --quiet
 	cp $(CACHE)/release/lib$(RAW_NAME).so $(TARGET)
-	strip --strip-unneeded $(TARGET)
+#	strip --strip-unneeded $(TARGET)
 
 clean:
 	cargo clean --quiet

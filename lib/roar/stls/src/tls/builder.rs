@@ -1,6 +1,5 @@
 // src/tls/builder.rs
 use crate::bssl; 
-use std::ptr;
 use super::{ciphers, extensions}; 
 
 pub struct StormSslContext {

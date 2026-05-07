@@ -39,7 +39,7 @@ pub fn apply_chrome_extensions(ctx: *mut bssl::SSL_CTX) -> Result<(), String> {
             "rsa_pkcs1_sha512",
             "\0" // Null-terminator wajib
         );
-        let sig_res = bssl::SSL_CTX_set1_sigalgs_list(ctx, sigalgs.as_ptr() as *const i8);
+        let sig_res = bssl::SSL_CTX_set1_sigalgs_list(ctx, sigalgs.as_ptr() as *const _);
         if sig_res != 1 {
             return Err("FATAL: Failed to set Signature Algorithms".to_string());
         }

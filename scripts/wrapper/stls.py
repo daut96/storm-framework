@@ -5,12 +5,12 @@ from typing import Dict, Optional, Union, Any
 from lib.roar.callbin.calling import call_bin
 
 # ----------------------------------------------------------------------
-# Load shared object (sesuaikan nama file dan path)
+# Load shared object
 # ----------------------------------------------------------------------
 _lib_path = call_bin("libstls.so")
 _lib = ctypes.CDLL(_lib_path)
 
-# Definisikan signature fungsi C
+# 1. PERBAIKAN FATAL: Gunakan c_void_p untuk pointer yang dialokasikan secara manual
 _lib.storm_request.argtypes = [
     ctypes.c_char_p,  # url
     ctypes.c_char_p,  # method
@@ -18,11 +18,12 @@ _lib.storm_request.argtypes = [
     ctypes.POINTER(ctypes.c_ubyte),  # body_ptr
     ctypes.c_size_t,  # body_len
 ]
-_lib.storm_request.restype = ctypes.c_char_p
+# Jangan gunakan c_char_p di restype!
+_lib.storm_request.restype = ctypes.c_void_p
 
-_lib.storm_free_string.argtypes = [ctypes.c_char_p]
+# Menerima c_void_p murni
+_lib.storm_free_string.argtypes = [ctypes.c_void_p]
 _lib.storm_free_string.restype = None
-
 
 # ----------------------------------------------------------------------
 # Helper untuk memanggil fungsi Rust
@@ -33,16 +34,10 @@ def _request(
     headers: Optional[Dict[str, str]] = None,
     body: Optional[Union[bytes, str]] = None,
 ) -> Dict[str, Any]:
-    """
-    Melakukan request HTTP/2 melalui BoringSSL.
-    Mengembalikan dictionary response.
-    Jika response sukses -> {'success': True, 'data': str}
-    Jika gagal -> {'success': False, 'error': str}
-    """
+    
     if headers is None:
         headers = {}
 
-    # Encode ke bytes
     url_bytes = url.encode("utf-8")
     method_bytes = method.upper().encode("utf-8")
     headers_json_bytes = json.dumps(headers).encode("utf-8")
@@ -59,7 +54,7 @@ def _request(
         body_len = len(body_bytes)
         body_ptr = (ctypes.c_ubyte * body_len).from_buffer_copy(body_bytes)
 
-    # Panggil fungsi Rust
+    # 2. Panggil fungsi Rust (result_ptr sekarang adalah alamat memori 64-bit murni/int)
     result_ptr = _lib.storm_request(
         url_bytes,
         method_bytes,
@@ -71,10 +66,15 @@ def _request(
     if not result_ptr:
         raise RuntimeError("storm_request returned NULL pointer")
 
-    # Ambil string hasil
-    result_str = ctypes.string_at(result_ptr).decode("utf-8")
-    # Bebaskan memori dari Rust
-    _lib.storm_free_string(result_ptr)
+    try:
+        # 3. Cast pointer murni menjadi C-String, lalu baca valuenya menjadi bytes
+        result_bytes = ctypes.cast(result_ptr, ctypes.c_char_p).value
+        # Decode ke Python string
+        result_str = result_bytes.decode("utf-8")
+    finally:
+        # 4. SANGAT PENTING: Kembalikan pointer asli ke Rust untuk di-free!
+        # Blok finally memastikan memori tetap di-free meskipun terjadi error saat decode
+        _lib.storm_free_string(result_ptr)
 
     # Parse JSON response
     try:
@@ -83,7 +83,6 @@ def _request(
         raise RuntimeError(f"Invalid JSON response from Rust: {result_str}") from e
 
     return response
-
 
 # ----------------------------------------------------------------------
 # Public API: GET, POST, PUT, DELETE, dll.

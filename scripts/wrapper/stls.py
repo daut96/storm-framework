@@ -25,6 +25,7 @@ _lib.storm_request.restype = ctypes.c_void_p
 _lib.storm_free_string.argtypes = [ctypes.c_void_p]
 _lib.storm_free_string.restype = None
 
+
 # ----------------------------------------------------------------------
 # Helper untuk memanggil fungsi Rust
 # ----------------------------------------------------------------------
@@ -34,7 +35,7 @@ def _request(
     headers: Optional[Dict[str, str]] = None,
     body: Optional[Union[bytes, str]] = None,
 ) -> Dict[str, Any]:
-    
+
     if headers is None:
         headers = {}
 
@@ -83,6 +84,7 @@ def _request(
         raise RuntimeError(f"Invalid JSON response from Rust: {result_str}") from e
 
     return response
+
 
 # ----------------------------------------------------------------------
 # Public API: GET, POST, PUT, DELETE, dll.

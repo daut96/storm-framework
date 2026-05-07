@@ -1,5 +1,4 @@
 // src/http2/fingerprint.rs
-use std::collections::HashMap;
 use std::env;
 
 pub struct ChromeH2Settings;

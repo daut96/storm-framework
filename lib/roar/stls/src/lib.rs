@@ -7,6 +7,7 @@ pub mod bssl {
     include!(concat!(env!("OUT_DIR"), "/bssl_bindings.rs"));
 }
 
+use std::panic::catch_unwind;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
@@ -44,46 +45,77 @@ pub extern "C" fn storm_request(
     body_ptr: *const u8,
     body_len: usize,
 ) -> *mut c_char {
-    if url_ptr.is_null() || method_ptr.is_null() {
-        return CString::new("ERROR: Null pointer on mandatory fields").unwrap().into_raw();
-    }
-
-    let url = unsafe { CStr::from_ptr(url_ptr).to_string_lossy().into_owned() };
-    let method = unsafe { CStr::from_ptr(method_ptr).to_string_lossy().into_owned() };
-    
-    let headers_json = if headers_json_ptr.is_null() {
-        "{}".to_string() 
-    } else {
-        unsafe { CStr::from_ptr(headers_json_ptr).to_string_lossy().into_owned() }
-    };
-
-    let body_bytes = if body_ptr.is_null() || body_len == 0 {
-        None
-    } else {
-        unsafe { Some(std::slice::from_raw_parts(body_ptr, body_len).to_vec()) }
-    };
-
-    let rt = get_runtime();
-
-    let result = rt.block_on(async move {
-        match execute_dynamic_request(&url, &method, &headers_json, body_bytes).await {
-            Ok(response_body) => {
-                serde_json::json!({
-                    "success": true,
-                    "data": response_body
-                }).to_string()
-            },
-            Err(e) => {
-                serde_json::json!({
-                    "success": false,
-                    "error": e.to_string()
-                }).to_string()
-            }
+    // 1. Cegah Rust Panic merusak stack C-ABI
+    let result = catch_unwind(|| {
+        if url_ptr.is_null() || method_ptr.is_null() {
+            return CString::new(r#"{"success":false,"error":"Null pointer error"}"#).unwrap();
         }
+
+        // 2. Validasi panjang maksimal string (Sanity check mencegah buffer over-read MTE)
+        // Helper function yang diimplementasikan di bawah
+        let url = match safe_c_str_to_string(url_ptr, 8192) {
+            Ok(s) => s,
+            Err(_) => return CString::new(r#"{"success":false,"error":"URL string is malformed or not null-terminated"}"#).unwrap(),
+        };
+
+        let method = match safe_c_str_to_string(method_ptr, 16) {
+            Ok(s) => s,
+            Err(_) => return CString::new(r#"{"success":false,"error":"Method string malformed"}"#).unwrap(),
+        };
+
+        let headers_json = if headers_json_ptr.is_null() {
+            "{}".to_string()
+        } else {
+            safe_c_str_to_string(headers_json_ptr, 65536).unwrap_or_else(|_| "{}".to_string())
+        };
+
+        let body_bytes = if body_ptr.is_null() || body_len == 0 {
+            None
+        } else {
+            // 3. Batasi alokasi maksimal untuk mencegah OOM / invalid len
+            if body_len > 10 * 1024 * 1024 { // Misal: limit 10MB
+                return CString::new(r#"{"success":false,"error":"Body length exceeds maximum allowed"}"#).unwrap();
+            }
+            unsafe { Some(std::slice::from_raw_parts(body_ptr, body_len).to_vec()) }
+        };
+
+        let rt = get_runtime();
+        let exec_result = rt.block_on(async move {
+            match execute_dynamic_request(&url, &method, &headers_json, body_bytes).await {
+                Ok(response_body) => serde_json::json!({"success": true, "data": response_body}).to_string(),
+                Err(e) => serde_json::json!({"success": false, "error": e.to_string()}).to_string(),
+            }
+        });
+
+        CString::new(exec_result).unwrap_or_else(|_| CString::new(r#"{"success":false,"error":"Encoding failed"}"#).unwrap())
     });
 
-    CString::new(result).unwrap_or_else(|_| CString::new("ERROR: Encoding failed").unwrap()).into_raw()
+    match result {
+        Ok(c_string) => c_string.into_raw(),
+        Err(_) => {
+            // Jika terjadi panic di Rust, kita cegah unwinding ke C dan return error yang aman
+            CString::new(r#"{"success":false,"error":"RUST_PANIC_CAUGHT"}"#).unwrap().into_raw()
+        }
+    }
 }
+
+// =========================================================================
+// HELPER: SAFE C-STR PARSING
+// =========================================================================
+
+/// Membaca raw pointer dengan batasan panjang memori untuk mencegah MTE fault
+fn safe_c_str_to_string(ptr: *const c_char, max_len: isize) -> Result<String, ()> {
+    unsafe {
+        // Linear scan manual dengan batas maksimal untuk mencegah over-read
+        for i in 0..max_len {
+            if *ptr.offset(i) == 0 {
+                return Ok(CStr::from_ptr(ptr).to_string_lossy().into_owned());
+            }
+        }
+    }
+    Err(()) // Null terminator tidak ditemukan dalam limit
+}
+
 
 #[unsafe(no_mangle)]
 pub extern "C" fn storm_free_string(s: *mut c_char) {

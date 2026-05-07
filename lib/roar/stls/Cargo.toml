@@ -18,6 +18,7 @@ bytes = "1.5"
 # DATA HANDLING
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+base64 = "0.22"
 # SYSTEM & FFI
 libc = "0.2"
 anyhow = "1.0" 

@@ -4,7 +4,7 @@ use std::env;
 pub struct ChromeH2Settings;
 
 impl ChromeH2Settings {
-    // Tetap pertahankan konstanta L4/L6 sebagai baseline
+    // 1. HTTP/2 SETTINGS Frame (Presisi Chrome 145+)
     pub const HEADER_TABLE_SIZE: u32 = 65536;
     pub const ENABLE_PUSH: bool = false;
     pub const MAX_CONCURRENT_STREAMS: u32 = 1000;
@@ -12,7 +12,10 @@ impl ChromeH2Settings {
     pub const MAX_HEADER_LIST_SIZE: u32 = 262144;
     pub const CONNECTION_WINDOW_UPDATE: u32 = 15663105;
 
+    // 2. Membungkam linter Rust untuk fungsi utilitas yang disiapkan
+    #[allow(dead_code)]
     pub fn get_pseudo_header_order() -> Vec<&'static str> {
+        // Susunan standar Chrome: method, authority, scheme, path
         vec![":method", ":authority", ":scheme", ":path"]
     }
 
@@ -20,29 +23,29 @@ impl ChromeH2Settings {
     /// Versi target: Chrome 145 (Mei 2026).
     pub fn generate_dynamic_headers() -> Vec<(String, String)> {
         let os = env::consts::OS;
-        let chrome_v = "145"; // Target versi Mei 2026
+        let chrome_v = "145"; 
         
-        // Deteksi spesifik untuk Android (Termux) vs Linux Desktop/Server
         let (platform, ua, mobile) = match os {
             "android" => (
                 "\"Android\"",
                 format!("Mozilla/5.0 (Linux; Android 15; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Mobile Safari/537.36", chrome_v),
                 "?1"
             ),
-            "linux" => (
-                "\"Linux\"",
-                format!("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36", chrome_v),
-                "?0"
-            ),
-            _ => (
+            _ => ( // Default ke Linux Desktop behavior
                 "\"Linux\"",
                 format!("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36", chrome_v),
                 "?0"
             ),
         };
 
-        let sec_ch_ua = format!("\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"{0}\", \"Chromium\";v=\"{0}\"", chrome_v);
+        // 3. GREASE Syntax Patch: Lebih aman secara standar HTTP Header
+        let sec_ch_ua = format!(
+            "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"{0}\", \"Chromium\";v=\"{0}\"", 
+            chrome_v
+        );
 
+        // Menggunakan Vec<(String, String)> agar urutan (order) header tetap terjaga.
+        // Di HTTP/2, Akamai/Cloudflare melakukan hashing pada URUTAN header ini.
         vec![
             ("sec-ch-ua".to_string(), sec_ch_ua),
             ("sec-ch-ua-mobile".to_string(), mobile.to_string()),

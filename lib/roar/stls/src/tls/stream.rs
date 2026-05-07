@@ -31,6 +31,7 @@ impl StormTlsStream {
             if let Err(e) = extensions::apply_alps_extension(ssl) {
                 bssl::SSL_free(ssl);
                 return Err(io::Error::new(io::ErrorKind::Other, e));
+            }
             
             // 2. Set SNI (Server Name Indication)
             let host_c = std::ffi::CString::new(hostname).unwrap();

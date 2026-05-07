@@ -89,12 +89,11 @@ fn main() {
     if target.contains("android") {
         // Jika di Termux, kita tahu jalurnya pasti di sini
         println!("cargo:rustc-link-search=native=/data/data/com.termux/files/usr/lib");
-        println!("cargo:rustc-link-arg=-Wl,--no-as-needed");
-        println!("cargo:rustc-link-arg=-Wl,--copy-dt-needed-entries");
         println!("cargo:rustc-link-lib=dylib=c++_shared");
-        
-        // Force link simbol NDK
-        println!("cargo:rustc-link-arg=-lc++_shared");
+
+        // Gunakan flag yang dipahami lld untuk memastikan semua simbol terjahit
+        println!("cargo:rustc-link-arg=-Wl,--no-undefined");
+        println!("cargo:rustc-link-arg=-Wl,--as-needed"); 
     } else {
         // Jika di Linux biasa, gunakan library standar sistem
         println!("cargo:rustc-link-lib=dylib=stdc++");

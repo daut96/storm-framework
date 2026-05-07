@@ -1,7 +1,6 @@
 import ctypes
 import ctypes.util
 import json
-import os
 from typing import Dict, Optional, Union, Any
 from lib.roar.callbin.calling import call_bin
 
@@ -13,11 +12,11 @@ _lib = ctypes.CDLL(_lib_path)
 
 # Definisikan signature fungsi C
 _lib.storm_request.argtypes = [
-    ctypes.c_char_p,          # url
-    ctypes.c_char_p,          # method
-    ctypes.c_char_p,          # headers_json
+    ctypes.c_char_p,  # url
+    ctypes.c_char_p,  # method
+    ctypes.c_char_p,  # headers_json
     ctypes.POINTER(ctypes.c_ubyte),  # body_ptr
-    ctypes.c_size_t,          # body_len
+    ctypes.c_size_t,  # body_len
 ]
 _lib.storm_request.restype = ctypes.c_char_p
 
@@ -176,4 +175,3 @@ def options(
         return resp["data"]
     else:
         raise RuntimeError(resp.get("error", "Unknown error"))
-

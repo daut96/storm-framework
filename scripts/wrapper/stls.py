@@ -1,8 +1,20 @@
 import ctypes
-import ctypes.util
 import json
+import base64
+import zlib
 from typing import Dict, Optional, Union, Any
 from lib.roar.callbin.calling import call_bin
+
+# Import opsional untuk kompresi modern (standar Chrome)
+try:
+    import brotli
+except ImportError:
+    brotli = None
+
+try:
+    import zstandard as zstd
+except ImportError:
+    zstd = None
 
 # ----------------------------------------------------------------------
 # Load shared object
@@ -10,21 +22,18 @@ from lib.roar.callbin.calling import call_bin
 _lib_path = call_bin("libstls.so")
 _lib = ctypes.CDLL(_lib_path)
 
-# 1. PERBAIKAN FATAL: Gunakan c_void_p untuk pointer yang dialokasikan secara manual
+# Mencegah Truncation MTE dengan c_void_p
 _lib.storm_request.argtypes = [
-    ctypes.c_char_p,  # url
-    ctypes.c_char_p,  # method
-    ctypes.c_char_p,  # headers_json
-    ctypes.POINTER(ctypes.c_ubyte),  # body_ptr
-    ctypes.c_size_t,  # body_len
+    ctypes.c_char_p,  
+    ctypes.c_char_p,  
+    ctypes.c_char_p,  
+    ctypes.POINTER(ctypes.c_ubyte),  
+    ctypes.c_size_t,  
 ]
-# Jangan gunakan c_char_p di restype!
 _lib.storm_request.restype = ctypes.c_void_p
 
-# Menerima c_void_p murni
 _lib.storm_free_string.argtypes = [ctypes.c_void_p]
 _lib.storm_free_string.restype = None
-
 
 # ----------------------------------------------------------------------
 # Helper untuk memanggil fungsi Rust
@@ -35,7 +44,10 @@ def _request(
     headers: Optional[Dict[str, str]] = None,
     body: Optional[Union[bytes, str]] = None,
 ) -> Dict[str, Any]:
-
+    """
+    Melakukan request HTTP/2 melalui Evasion Engine BoringSSL.
+    Mengembalikan dict: {'status': int, 'headers': dict, 'body': str}
+    """
     if headers is None:
         headers = {}
 
@@ -45,17 +57,13 @@ def _request(
 
     body_ptr = ctypes.POINTER(ctypes.c_ubyte)()
     body_len = 0
-    body_bytes = None
-
+    
     if body is not None:
-        if isinstance(body, str):
-            body_bytes = body.encode("utf-8")
-        else:
-            body_bytes = body
+        body_bytes = body.encode("utf-8") if isinstance(body, str) else body
         body_len = len(body_bytes)
         body_ptr = (ctypes.c_ubyte * body_len).from_buffer_copy(body_bytes)
 
-    # 2. Panggil fungsi Rust (result_ptr sekarang adalah alamat memori 64-bit murni/int)
+    # Eksekusi FFI
     result_ptr = _lib.storm_request(
         url_bytes,
         method_bytes,
@@ -68,111 +76,87 @@ def _request(
         raise RuntimeError("storm_request returned NULL pointer")
 
     try:
-        # 3. Cast pointer murni menjadi C-String, lalu baca valuenya menjadi bytes
+        # Cast ke string dan decode
         result_bytes = ctypes.cast(result_ptr, ctypes.c_char_p).value
-        # Decode ke Python string
         result_str = result_bytes.decode("utf-8")
     finally:
-        # 4. SANGAT PENTING: Kembalikan pointer asli ke Rust untuk di-free!
-        # Blok finally memastikan memori tetap di-free meskipun terjadi error saat decode
+        # GARANSI BEBAS LEAK: Selalu kembalikan pointer ke Rust
         _lib.storm_free_string(result_ptr)
 
-    # Parse JSON response
+    # ------------------------------------------------------------------
+    # Parsing & Dekompresi Logika
+    # ------------------------------------------------------------------
     try:
-        response = json.loads(result_str)
+        response_wrapper = json.loads(result_str)
     except json.JSONDecodeError as e:
         raise RuntimeError(f"Invalid JSON response from Rust: {result_str}") from e
 
-    return response
+    if not response_wrapper.get("success"):
+        raise RuntimeError(response_wrapper.get("error", "Unknown Rust error"))
 
+    # Karena Rust membungkus data dalam string JSON (via to_string()), kita parse lagi
+    inner_data = response_wrapper.get("data", "{}")
+    if isinstance(inner_data, str):
+        try:
+            inner_data = json.loads(inner_data)
+        except json.JSONDecodeError:
+            # Fallback jika Rust hanya mengembalikan body raw
+            return {"status": 200, "headers": {}, "body": inner_data}
+
+    status_code = inner_data.get("status", 200)
+    resp_headers = inner_data.get("headers", {})
+    body_b64 = inner_data.get("body_base64", "")
+
+    # Decode Base64 ke raw bytes
+    raw_body = base64.b64decode(body_b64)
+
+    # Dekompresi otomatis berdasarkan Header dari Server Target
+    encoding = resp_headers.get("content-encoding", "").lower()
+    try:
+        if encoding == "br":
+            if brotli is None:
+                raise RuntimeError("Brotli encoding received but 'brotli' module is missing. (pip install brotli)")
+            final_body = brotli.decompress(raw_body)
+        elif encoding == "zstd":
+            if zstd is None:
+                raise RuntimeError("Zstd encoding received but 'zstandard' module is missing. (pip install zstandard)")
+            final_body = zstd.ZstdDecompressor().decompress(raw_body)
+        elif encoding in ("gzip", "deflate"):
+            # MAX_WBITS | 32 otomatis mendeteksi gzip atau zlib header
+            final_body = zlib.decompress(raw_body, zlib.MAX_WBITS | 32)
+        else:
+            final_body = raw_body
+    except Exception as e:
+        raise RuntimeError(f"Decompression failed for encoding '{encoding}': {e}")
+
+    # Kembalikan sebagai Dictionary komprehensif
+    return {
+        "status": status_code,
+        "headers": resp_headers,
+        "body": final_body.decode("utf-8", errors="replace")
+    }
 
 # ----------------------------------------------------------------------
-# Public API: GET, POST, PUT, DELETE, dll.
+# Public API: Mengembalikan Full Context (Status, Headers, Body)
 # ----------------------------------------------------------------------
-def get(url: str, headers: Optional[Dict[str, str]] = None) -> str:
-    """
-    Melakukan HTTP GET request.
-    Mengembalikan response body sebagai string jika success.
-    Melempar exception jika gagal.
-    """
-    resp = _request("GET", url, headers)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
+def get(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    return _request("GET", url, headers)
 
+def post(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+    return _request("POST", url, headers, body)
 
-def post(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-    body: Optional[Union[bytes, str]] = None,
-) -> str:
-    """HTTP POST request."""
-    resp = _request("POST", url, headers, body)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
+def put(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+    return _request("PUT", url, headers, body)
 
+def delete(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+    return _request("DELETE", url, headers, body)
 
-def put(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-    body: Optional[Union[bytes, str]] = None,
-) -> str:
-    """HTTP PUT request."""
-    resp = _request("PUT", url, headers, body)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
+def patch(url: str, headers: Optional[Dict[str, str]] = None, body: Optional[Union[bytes, str]] = None) -> Dict[str, Any]:
+    return _request("PATCH", url, headers, body)
 
+def head(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    return _request("HEAD", url, headers)
 
-def delete(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-    body: Optional[Union[bytes, str]] = None,
-) -> str:
-    """HTTP DELETE request."""
-    resp = _request("DELETE", url, headers, body)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
-
-
-def patch(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-    body: Optional[Union[bytes, str]] = None,
-) -> str:
-    """HTTP PATCH request."""
-    resp = _request("PATCH", url, headers, body)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
-
-
-def head(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-) -> str:
-    """HTTP HEAD request. Response body biasanya kosong."""
-    resp = _request("HEAD", url, headers)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
-
-
-def options(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-) -> str:
-    """HTTP OPTIONS request."""
-    resp = _request("OPTIONS", url, headers)
-    if resp.get("success"):
-        return resp["data"]
-    else:
-        raise RuntimeError(resp.get("error", "Unknown error"))
+def options(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    return _request("OPTIONS", url, headers)
+            

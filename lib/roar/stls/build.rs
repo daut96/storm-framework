@@ -85,8 +85,8 @@ fn main() {
         .write_to_file(out_path.join("bssl_bindings.rs"))
         .expect("Failed to write FFI bindings file");
 
-    println!("cargo:rustc-link-lib=c++");
-    println!("cargo:rustc-link-lib=stdc++");
+    println!("cargo:rustc-link-lib=static=c++_static");
+    println!("cargo:rustc-link-lib=static=c++abi");
     
 }
 

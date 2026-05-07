@@ -90,6 +90,8 @@ fn main() {
         // Jika di Termux, kita tahu jalurnya pasti di sini
         println!("cargo:rustc-link-search=native=/data/data/com.termux/files/usr/lib");
         println!("cargo:rustc-link-lib=dylib=c++_shared");
+        println!("cargo:rustc-link-arg=-Wl,--no-as-needed");
+        println!("cargo:rustc-link-arg=-lc++_shared");
     } else {
         // Jika di Linux biasa, gunakan library standar sistem
         println!("cargo:rustc-link-lib=dylib=stdc++");

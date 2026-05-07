@@ -85,8 +85,14 @@ fn main() {
         .write_to_file(out_path.join("bssl_bindings.rs"))
         .expect("Failed to write FFI bindings file");
 
-    println!("cargo:rustc-link-lib=static=c++_static");
-    println!("cargo:rustc-link-lib=static=c++abi");
-    
+    let target = env::var("TARGET").unwrap_or_default();
+    if target.contains("android") {
+        // Jika di Termux, kita tahu jalurnya pasti di sini
+        println!("cargo:rustc-link-search=native=/data/data/com.termux/files/usr/lib");
+        println!("cargo:rustc-link-lib=dylib=c++_shared");
+    } else {
+        // Jika di Linux biasa, gunakan library standar sistem
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+    }
 }
 

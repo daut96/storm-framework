@@ -26,7 +26,7 @@ def execute(options):
     try:
         # Menembak target menggunakan GET method
         response = stls.get(target_url,
-                            headers = {"Content-Type": "application/json"}
+                            headers = {"Content-Type": "application/json"},
                             body = {"Platform": "Chrome"}
         )
         elapsed_time = time.time() - start_time

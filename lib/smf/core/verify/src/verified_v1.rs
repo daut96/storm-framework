@@ -3,7 +3,7 @@
 // See LICENSE file in the project root for full license information.
 use rayon::prelude::*;
 use sha2::{Sha256, Digest};
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 use std::fs;
 use std::io::{self, Write};
 use std::collections::{BTreeMap, HashSet};
@@ -118,12 +118,16 @@ fn main() {
 
     let (tx, rx) = mpsc::channel();
 
-    // OPTIMISASI 2: Pindahkan proses Rayon ke OS Thread terpisah (Producer).
-    // Ini membebaskan Thread utama (Main) untuk langsung memproses GUI/Console di rx.recv().
-    let manifest_files = manifest.files; // Move ownership agar thread aman
+    // [PERBAIKAN 1]: Bungkus manifest.files dengan Arc (alokasi memori utama)
+    let manifest_files = Arc::new(manifest.files);
+    
+    // [PERBAIKAN 2]: Buat duplikat pointer untuk diserahkan ke worker thread
+    let manifest_files_worker = Arc::clone(&manifest_files); 
+
     std::thread::spawn(move || {
         target_files.into_par_iter().for_each_with(tx, |sender, (path_buf, clean_path)| {
-            let result = match manifest_files.get(&clean_path) {
+            // Gunakan manifest_files_worker di dalam thread paralel ini
+            let result = match manifest_files_worker.get(&clean_path) {
                 Some(info) => {
                     let calculated_hash = calculate_hash(&path_buf).unwrap_or_default();
                     if calculated_hash == info.sha256 {
@@ -136,10 +140,9 @@ fn main() {
             };
             let _ = sender.send(result);
         });
-        // `tx` otomatis di-drop di sini setelah iterator selesai, sehingga loop `rx` di bawah bisa break.
     });
 
-    // Thread utama bertindak sebagai Consumer. Progress bar sekarang berjalan mulus.
+    // Thread utama mengeksekusi UI loop dengan lancar
     while let Ok(message) = rx.recv() {
         match message {
             VerifyResult::Verified(path) => {
@@ -161,7 +164,7 @@ fn main() {
     }
 
     // --- TAHAP 4: IDENTIFIKASI MISSING FILES ---
-    // Gunakan manifest_files yang sudah di-move ke atas
+    // [PERBAIKAN 3]: Thread utama tetap memiliki akses via manifest_files yang asli
     let missing_files: Vec<String> = manifest_files.keys()
         .filter(|json_path| !found_in_disk.contains(*json_path))
         .cloned()

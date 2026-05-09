@@ -6,9 +6,9 @@ from lib.roar.callbin.calling import call_bin
 
 def run_sign():
     try:
-        sign = call_bin("libsigned.so")
+        from external.source.out.core.integrity import libsigned
 
-        sign.storm_sign()
+        libsigned.storm_sign()
         return True
     except ImportError as e:
         smf.printf(

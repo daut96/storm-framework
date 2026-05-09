@@ -8,7 +8,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
-use walkdir::WalkDir;
+use walkdir::{WalkDir, DirEntry};
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
 use base64::{engine::general_purpose, Engine as _};
@@ -18,6 +18,7 @@ struct Manifest {
     metadata: Metadata,
     files: BTreeMap<String, FileInfo>,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Metadata {
     version: String,
@@ -30,7 +31,6 @@ struct FileInfo {
     size_bytes: u64,
 }
 
-// Enum untuk passing data antar thread worker ke thread UI
 enum VerifyResult {
     Verified(String),
     Modified(String),
@@ -44,10 +44,19 @@ fn calculate_hash(path: &Path) -> io::Result<String> {
     Ok(format!("{:x}", hasher.finalize()))
 }
 
+// Fungsi helper untuk filter WalkDir agar tidak masuk ke folder yang di-ignore
+fn is_ignored(entry: &DirEntry, ignored: &HashSet<&str>) -> bool {
+    entry.file_name()
+        .to_str()
+        .map(|s| ignored.contains(s))
+        .unwrap_or(false)
+}
+
 fn main() {
     let db_path = "lib/core/database/signed_manifest.json";
     let env_path = ".env";
 
+    // --- SETUP & SIGNATURE VERIFICATION ---
     let env_content = fs::read_to_string(env_path).expect("[-] ERROR: .env not found");
     let pub_key_raw = env_content.lines()
         .find(|line| line.starts_with("STORM_PUBKEY="))
@@ -80,8 +89,7 @@ fn main() {
 
     println!("[+] Digital Signature Verified. Manifest is authentic.");
 
-    // TAHAP 1: I/O BOUND (Filter File)
-    // Hindari iterasi array manual berulang kali, gunakan HashSet untuk pencarian O(1)
+    // --- TAHAP 1: I/O BOUND (Filter File dengan Directory Pruning) ---
     let ignored_items: HashSet<&str> = [
         ".git", "__pycache__", ".pytest_cache", ".github", 
         "sqlite", "signed_manifest.json", ".gitignore", 
@@ -90,29 +98,19 @@ fn main() {
 
     let mut target_files = Vec::new();
 
-    for entry in WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
+    // OPTIMISASI 1: Pruning di level entry. WalkDir tidak akan membaca isi folder yang diabaikan.
+    let walker = WalkDir::new(".").into_iter().filter_entry(|e| !is_ignored(e, &ignored_items));
+
+    for entry in walker.filter_map(|e| e.ok()) {
         let path = entry.path();
         if path.is_file() {
-            let mut should_ignore = false;
-            for comp in path.components() {
-                if let Some(name) = comp.as_os_str().to_str() {
-                    if ignored_items.contains(name) {
-                        should_ignore = true;
-                        break;
-                    }
-                }
-            }
-            if should_ignore { continue; }
-
             let path_str = path.to_str().unwrap_or("");
             let clean_path = path_str.strip_prefix("./").unwrap_or(path_str).to_string();
-            
-            // Simpan tuple (Path aktual untuk dibaca, String Path bersih untuk dilacak)
             target_files.push((path.to_path_buf(), clean_path));
         }
     }
 
-    // TAHAP 3: PERSIAPAN VARIABLE
+    // --- TAHAP 2 & 3: MULTITHREADING HASHING & UI REALTIME ---
     let mut verified_count = 0;
     let mut modified_files = Vec::new();
     let mut untracked_files = Vec::new();
@@ -120,32 +118,28 @@ fn main() {
 
     let (tx, rx) = mpsc::channel();
 
-    // 1. TAHAP PRODUCER: Rayon Scope hanya untuk menjalankan worker
-    // Kita pindahkan manifest dan target_files ke sini
-    rayon::scope(|s| {
-        s.spawn(|_| {
-            target_files.into_par_iter().for_each_with(tx, |sender, (path_buf, clean_path)| {
-                let result = match manifest.files.get(&clean_path) {
-                    Some(info) => {
-                        let calculated_hash = calculate_hash(&path_buf).unwrap_or_default();
-                        if calculated_hash == info.sha256 {
-                            VerifyResult::Verified(clean_path)
-                        } else {
-                            VerifyResult::Modified(clean_path)
-                        }
+    // OPTIMISASI 2: Pindahkan proses Rayon ke OS Thread terpisah (Producer).
+    // Ini membebaskan Thread utama (Main) untuk langsung memproses GUI/Console di rx.recv().
+    let manifest_files = manifest.files; // Move ownership agar thread aman
+    std::thread::spawn(move || {
+        target_files.into_par_iter().for_each_with(tx, |sender, (path_buf, clean_path)| {
+            let result = match manifest_files.get(&clean_path) {
+                Some(info) => {
+                    let calculated_hash = calculate_hash(&path_buf).unwrap_or_default();
+                    if calculated_hash == info.sha256 {
+                        VerifyResult::Verified(clean_path)
+                    } else {
+                        VerifyResult::Modified(clean_path)
                     }
-                    None => VerifyResult::Untracked(clean_path),
-                };
-                let _ = sender.send(result);
-            });
+                }
+                None => VerifyResult::Untracked(clean_path),
+            };
+            let _ = sender.send(result);
         });
-        
-        // Transmitter (tx) asli di thread ini harus di-drop agar channel bisa tertutup
-        // saat semua worker selesai.
-    }); 
+        // `tx` otomatis di-drop di sini setelah iterator selesai, sehingga loop `rx` di bawah bisa break.
+    });
 
-    // 2. TAHAP CONSUMER: Jalankan DI LUAR scope
-    // rx sekarang aman karena digunakan di thread utama secara sekuensial
+    // Thread utama bertindak sebagai Consumer. Progress bar sekarang berjalan mulus.
     while let Ok(message) = rx.recv() {
         match message {
             VerifyResult::Verified(path) => {
@@ -166,19 +160,18 @@ fn main() {
         io::stdout().flush().unwrap();
     }
 
-    // TAHAP 4: IDENTIFIKASI MISSING FILES
-    let mut missing_files = Vec::new();
-    for json_path in manifest.files.keys() {
-        if !found_in_disk.contains(json_path) {
-            missing_files.push(json_path.clone());
-        }
-    }
+    // --- TAHAP 4: IDENTIFIKASI MISSING FILES ---
+    // Gunakan manifest_files yang sudah di-move ke atas
+    let missing_files: Vec<String> = manifest_files.keys()
+        .filter(|json_path| !found_in_disk.contains(*json_path))
+        .cloned()
+        .collect();
 
     if !modified_files.is_empty() || !missing_files.is_empty() || !untracked_files.is_empty() {
         println!("\n\n[!] INTEGRITY BREACH DETECTED!");
         for f in &modified_files { println!("    [MODIFIED]  -> {}", f); }
-        for f in &missing_files { println!("    [MISSING]  -> {}", f); }
-        for f in &untracked_files { println!("    [UNTRACKED]  -> {}", f); }
+        for f in &missing_files { println!("    [MISSING]   -> {}", f); }
+        for f in &untracked_files { println!("    [UNTRACKED] -> {}", f); }
 
         if !modified_files.is_empty() || !missing_files.is_empty() {
             println!("\nSTATUS: WARNING - Run 'storm update' to re-sign!!");

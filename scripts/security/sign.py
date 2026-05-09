@@ -3,6 +3,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
+
 def run_sign():
     try:
         sign = call_bin("libsigned.so")

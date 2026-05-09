@@ -1,12 +1,13 @@
 import sys
 import smf
 
+from lib.roar.callbin.calling import call_bin
 
 def run_sign():
     try:
-        from external.source.out.core.integrity import libsigned
+        sign = call_bin("libsigned.so")
 
-        libsigned.storm_sign()
+        sign.storm_sign()
         return True
     except ImportError as e:
         smf.printf(

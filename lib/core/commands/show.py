@@ -34,9 +34,7 @@ def execute(args: list[str], ctx: Context) -> None:
             smf.printf(f"  - {CC.YELLOW}{cat}{CC.RESET}")
 
         smf.printf()
-        smf.printf(
-            f"[!] INFO => show <category_name> to see modules."
-        )
+        smf.printf(f"[!] INFO => show <category_name> to see modules.")
         smf.printf()
 
     # 2. show options
@@ -90,7 +88,7 @@ def execute(args: list[str], ctx: Context) -> None:
                 color = CC.BLUE
 
             smf.printf(f"{CC.YELLOW}{name:<25}{CC.RESET} {color}{status:<10}{CC.RESET}")
-            
+
         smf.printf()
 
     # 4. show <category_name>

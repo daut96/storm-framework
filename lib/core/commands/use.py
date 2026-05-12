@@ -2,6 +2,9 @@
 # -- SMF License
 import smf
 import apps.utility.utils as utils
+
+from apps.utility.colors import *
+
 from lib.smf.core.console.engine import Context
 
 
@@ -20,4 +23,4 @@ def execute(args: list[str], ctx: Context) -> None:
         ctx.current_module = mod
         ctx.current_module_name = module_name
     else:
-        smf.printf(f"[!] WARN => {module_name} > Not found.")
+        smf.printf(f"{CC.YELLOW}[!] WARN =>{CC.RESET} {module_name} {CC.YELLOW}> Not found.{CC.RESET}")

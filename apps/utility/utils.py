@@ -11,28 +11,54 @@ from lib.roar.cache import cache_modules as cache
 
 
 # LOGIC GLOBAL WORDLIST
-def resolve_path(kata_kunci):
-    if not kata_kunci:
+def resolve_path(options):
+    if not options:
         return None
+
+    # Input Normalization (Expansion of tilde '~' and env vars like '$HOME')
+    normalized_path = os.path.expandvars(os.path.expanduser(options))
+
+    # Explicit Path Validation (Check Absolute path or Current Working Directory)
+    if os.path.exists(normalized_path) and os.path.isfile(normalized_path):
+        return os.path.abspath(normalized_path)
+
+    # Search in Internal wordlist
     assets_dir = os.path.join(ROOT, "assets/wordlist")
-
-    # Check manual input first
-    if os.path.exists(kata_kunci):
-        return os.path.abspath(kata_kunci)
-
+    
     try:
-        # Search in assets
         if os.path.exists(assets_dir):
+            matched_substring_path = None
+            
             for root, dirs, files in os.walk(assets_dir):
                 for file in files:
-                    if kata_kunci.lower() in file.lower():
+                    file_lower = file.lower()
+                    option_lower = options.lower()
+                    
+                    # Highest Priority: Exact Match
+                    if option_lower == file_lower:
                         return os.path.join(root, file)
+                    
+                    # Save the first substring match result for fallback.
+                    if matched_substring_path is None and option_lower in file_lower:
+                        matched_substring_path = os.path.join(root, file)
+            
+            # If there is no exact match, return the substring match (if any)
+            if matched_substring_path:
+                return matched_substring_path
 
     except Exception as e:
-        smf.printd("Wordlist utils global logic error", e, level="ERROR")
-        return None
+        smf.printd("Wordlist utils asset search error", e, level="ERROR")
 
+    # Check directly in $HOME (Only 1 level, NOT recursive os.walk)
+    home_dir = os.path.expanduser("~")
+    home_target = os.path.join(home_dir, options)
+    
+    if os.path.exists(home_target) and os.path.isfile(home_target):
+        return os.path.abspath(home_target)
+
+    # Return None if all resolution chains fail
     return None
+    
 
 
 # LOGIC USE
@@ -86,7 +112,11 @@ def load_module_dynamically(module_name):
 
 
 # UI MODULES
-EXT = (".py", ".go", ".rs", ".c", ".cpp", ".rb", ".php", ".sh", ".js", ".ts", ".html")
+EXT = (".py", ".go", ".rs",
+       ".c", ".cpp", ".rb",
+       ".php", ".sh", ".js",
+       ".ts", ".html"
+)
 
 
 def count_modules():

@@ -2,6 +2,7 @@
 # -- SMF License
 import smf
 
+from apps.utility.colors import *
 from apps.utility.update import run_update as update
 from apps.utility.verify import run_verif as verify
 from apps.utility.restart import run_restart as restart
@@ -19,7 +20,7 @@ def execute(args: list[str], ctx: Context) -> None:
     options = ctx.options
 
     if not cmd:
-        smf.printf("[!] ERROR => Not module selected.")
+        smf.printf(f"{CC.YELLOW}[!] WARN => Incorrect input, Run (help) for complete information.{CC.RESET}")
         return
 
     # I don't understand this update command, which sometimes happens when there is a big and sensitive update.
@@ -41,7 +42,9 @@ def execute(args: list[str], ctx: Context) -> None:
     # by storing old variable data, it is very profitable and speeds up the time
     elif cmd == "restart":
         restart(options)
+
+    # Fallback not found
     else:
-        smf.printf(f"[!] WARN => {cmd} > Not found.")
+        smf.printf(f"{CC.YELLOW}[!] WARN =>{CC.RESET} {cmd} {CC.YELLOW}> Not found.{CC.RESET}")
 
     return

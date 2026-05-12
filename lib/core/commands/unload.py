@@ -2,6 +2,8 @@
 # -- SMF License
 import smf
 
+from apps.utility.colors import *
+
 from lib.smf.core.console.engine import Context
 
 

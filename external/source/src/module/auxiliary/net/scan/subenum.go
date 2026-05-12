@@ -64,7 +64,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
 			// Format output linear agar mudah di-pipe ke bash/python
-			fmt.Printf("[+] FOUND | %d | %s\n", resp.StatusCode, job.URL)
+			fmt.Printf("FOUND | %d | %s\n", resp.StatusCode, job.URL)
 			atomic.AddInt32(counter, 1) // Operasi increment thread-safe
 		}
 		resp.Body.Close()
@@ -75,7 +75,7 @@ func main() {
 	// Parameter Command-Line
 	domainFlag := flag.String("d", "", "Target domain (example: example.com)")
 	wordlistFlag := flag.String("w", "", "Path to wordlist .txt file")
-	concurrency := flag.Int("c", 100, "Number of concurrent workers")
+	concurrency := flag.Int("c", 10, "Number of concurrent workers")
 	flag.Parse()
 
 	if *domainFlag == "" || *wordlistFlag == "" {

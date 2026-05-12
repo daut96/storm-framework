@@ -21,7 +21,9 @@ def execute(args: list[str], ctx: Context) -> None:
     options = ctx.options
 
     if not current_module:
-        smf.printf(f"{CC.YELLOW}[!] No modules selected. (use <module>) first.{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] No modules selected. (use <module>) first.{CC.RESET}"
+        )
         smf.printf()
         return
 
@@ -49,7 +51,7 @@ def execute(args: list[str], ctx: Context) -> None:
     except AttributeError as e:
         smf.printd("ERROR COMMAND RUN", e, level="ERROR")
         smf.printf(f"{CC.RED}[!] RUN ATTRIBUTE ERROR.{CC.RESET}")
-        
+
     except Exception as e:
         smf.printd("ERROR COMMAND RUN EXCEPTION", e, level="ERROR")
         smf.printf(f"{CC.RED}[!] Error during execution.{CC.RESET}")

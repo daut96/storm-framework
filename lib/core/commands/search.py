@@ -17,7 +17,7 @@ from lib.smf.core.console.engine import Context
 # then all module names containing the word scan will appear completely.
 def execute(args: list[str], ctx: Context) -> None:
     query = args[0] if args else ""
-    
+
     if not query:
         smf.printf(f"{CC.YELLOW}[!] Enter file name to search!{CC.RESET}")
     else:

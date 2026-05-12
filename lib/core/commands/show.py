@@ -21,14 +21,14 @@ def execute(args: list[str], ctx: Context) -> None:
     plugin = ctx.plugin
 
     if not target_show:
-        smf.printf(f"{CC.YELLOW}[!] No modules selected.{CC.YELLOW}")
+        smf.printf(f"{CC.YELLOW}[!] No modules selected.{CC.RESET}")
         return
 
     # 1. show modules
     if target_show == "modules":
         categories = utils.get_categories()
         smf.printf()
-        smf.printf(f"[ {CC.MAGENTA}--- Categories ---{CC.RESET} ]")
+        smf.printf(f"[ {CC.CYAN}--- Categories ---{CC.RESET} ]")
         smf.printf()
         for cat in categories:
             smf.printf(f"  - {CC.YELLOW}{cat}{CC.RESET}")
@@ -52,11 +52,11 @@ def execute(args: list[str], ctx: Context) -> None:
             req = getattr(current_module, "REQUIRED_OPTIONS", {})
             for var_name, desc in req.items():
                 val = options.get(var_name, "unset")
-                smf.printf(f"{CC.YELLOW}{var_name:<12} {val:<25} {desc}{CC.RESET}")
+                smf.printf(f"{CC.GREEN}{var_name:<12} {CC.YELLOW}{val:<25}{CC.RESET} {desc}")
         else:
             for k, v in options.items():
                 val = v if v else "unset"
-                smf.printf(f"{k:<12} {val:<25} Global Variable")
+                smf.printf(f"{CC.GREEN}{k:<12} {CC.YELLOW}{val:<25}{CC.RESET} Global Variable")
         smf.printf()
 
     # 3. show plugin

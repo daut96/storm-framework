@@ -20,7 +20,9 @@ def execute(args: list[str], ctx: Context) -> None:
     options = ctx.options
 
     if not cmd:
-        smf.printf(f"{CC.YELLOW}[!] WARN => Incorrect input, Run (help) for complete information.{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] WARN => Incorrect input, Run (help) for complete information.{CC.RESET}"
+        )
         return
 
     # I don't understand this update command, which sometimes happens when there is a big and sensitive update.
@@ -45,6 +47,8 @@ def execute(args: list[str], ctx: Context) -> None:
 
     # Fallback not found
     else:
-        smf.printf(f"{CC.YELLOW}[!] WARN =>{CC.RESET} {cmd} {CC.YELLOW}> Not found.{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] WARN =>{CC.RESET} {cmd} {CC.YELLOW}> Not found.{CC.RESET}"
+        )
 
     return

@@ -24,24 +24,24 @@ def resolve_path(options):
 
     # Search in Internal wordlist
     assets_dir = os.path.join(ROOT, "assets/wordlist")
-    
+
     try:
         if os.path.exists(assets_dir):
             matched_substring_path = None
-            
+
             for root, dirs, files in os.walk(assets_dir):
                 for file in files:
                     file_lower = file.lower()
                     option_lower = options.lower()
-                    
+
                     # Highest Priority: Exact Match
                     if option_lower == file_lower:
                         return os.path.join(root, file)
-                    
+
                     # Save the first substring match result for fallback.
                     if matched_substring_path is None and option_lower in file_lower:
                         matched_substring_path = os.path.join(root, file)
-            
+
             # If there is no exact match, return the substring match (if any)
             if matched_substring_path:
                 return matched_substring_path
@@ -52,13 +52,12 @@ def resolve_path(options):
     # Check directly in $HOME (Only 1 level, NOT recursive os.walk)
     home_dir = os.path.expanduser("~")
     home_target = os.path.join(home_dir, options)
-    
+
     if os.path.exists(home_target) and os.path.isfile(home_target):
         return os.path.abspath(home_target)
 
     # Return None if all resolution chains fail
     return None
-    
 
 
 # LOGIC USE
@@ -112,11 +111,7 @@ def load_module_dynamically(module_name):
 
 
 # UI MODULES
-EXT = (".py", ".go", ".rs",
-       ".c", ".cpp", ".rb",
-       ".php", ".sh", ".js",
-       ".ts", ".html"
-)
+EXT = (".py", ".go", ".rs", ".c", ".cpp", ".rb", ".php", ".sh", ".js", ".ts", ".html")
 
 
 def count_modules():

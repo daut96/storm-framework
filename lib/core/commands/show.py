@@ -28,14 +28,14 @@ def execute(args: list[str], ctx: Context) -> None:
     if target_show == "modules":
         categories = utils.get_categories()
         smf.printf()
-        smf.printf(f"[{CC.MAGENTA}--- Categories ---{CC.RESET}]")
+        smf.printf(f"[ {CC.MAGENTA}--- Categories ---{CC.RESET} ]")
         smf.printf()
         for cat in categories:
-            smf.printf(f"{CC.YELLOW}  - {cat}{CC.YELLOW}")
+            smf.printf(f"  - {CC.YELLOW}{cat}{CC.RESET}")
 
         smf.printf()
         smf.printf(
-            f"{CC.YELLOW}[!] INFO => show <category_name> to see modules.{CC.RESET}"
+            f"[!] INFO => show <category_name> to see modules."
         )
         smf.printf()
 
@@ -46,9 +46,9 @@ def execute(args: list[str], ctx: Context) -> None:
         smf.printf(f"{CC.YELLOW}MODULE OPTIONS{CC.RESET} ({header_name})")
         smf.printf()
         smf.printf(
-            f"{CC.MAGENTA}{'Name':<12} {'Current Setting':<25} {'Description'}{CC.RESET}"
+            f"{CC.CYAN}{'Name':<12} {'Current Setting':<25} {'Description'}{CC.RESET}"
         )
-        smf.printf(f"{CC.CYAN}{'-'*12} {'-'*25} {'-'*15}{CC.RESET}")
+        smf.printf(f"{CC.MAGENTA}{'-'*12} {'-'*25} {'-'*15}{CC.RESET}")
 
         if current_module:
             req = getattr(current_module, "REQUIRED_OPTIONS", {})
@@ -58,8 +58,8 @@ def execute(args: list[str], ctx: Context) -> None:
         else:
             for k, v in options.items():
                 val = v if v else "unset"
-                smf.printf(f"{CC.YELLOW}{k:<12} {val:<25} Global Variable")
-        smf.printf(CC.RESET)
+                smf.printf(f"{k:<12} {val:<25} Global Variable")
+        smf.printf()
 
     # 3. show plugin
     elif target_show == "plugin":
@@ -89,9 +89,8 @@ def execute(args: list[str], ctx: Context) -> None:
             elif status == "ORPHANED":
                 color = CC.BLUE
 
-            smf.printf(f"{name:<25} {color}{status:<10}{CC.RESET}")
-
-        smf.printf(f"{CC.MAGENTA}{'-' * 36}{CC.RESET}")
+            smf.printf(f"{CC.YELLOW}{name:<25}{CC.RESET} {color}{status:<10}{CC.RESET}")
+            
         smf.printf()
 
     # 4. show <category_name>
@@ -99,10 +98,10 @@ def execute(args: list[str], ctx: Context) -> None:
         module_files = utils.get_modules_in_category(target_show)
         if module_files:
             smf.printf()
-            smf.printf(f"{CC.MAGENTA}Modules in {CC.RESET}({target_show}):")
+            smf.printf(f"{CC.CYAN}Modules in {CC.RESET}({target_show}):")
             smf.printf()
             for mod in module_files:
-                smf.printf(f"{CC.YELLOW}  - {mod}{CC.RESET}")
+                smf.printf(f"  - {CC.YELLOW}{mod}{CC.RESET}")
             smf.printf()
         else:
             smf.printf(

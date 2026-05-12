@@ -2,6 +2,7 @@ import subprocess
 import threading
 import smf
 
+from apps.utility.colors import *
 from lib.roar.callbin.calling import call_bin
 
 MOD_INFO = {
@@ -46,7 +47,7 @@ def execute(options):
         def read_stdout(pipe):
             for line in iter(pipe.readline, ""):
                 if line:
-                    smf.printf(f"[✓] {line.strip()}")
+                    smf.printf(f"{CC.GREEN}[✓] {line.strip()}{CC.RESET}")
             pipe.close()
 
         # Thread untuk parsing info/error (stderr)

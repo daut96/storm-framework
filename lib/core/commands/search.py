@@ -1,7 +1,10 @@
 # -- https://github.com/StormWorld0/storm-framework
 # -- SMF License
 import smf
+
+from apps.utility.colors import *
 from apps.utility.search import search_modules
+
 from lib.smf.core.console.engine import Context
 
 
@@ -14,7 +17,8 @@ from lib.smf.core.console.engine import Context
 # then all module names containing the word scan will appear completely.
 def execute(args: list[str], ctx: Context) -> None:
     query = args[0] if args else ""
+    
     if not query:
-        smf.printf("[!] Enter file name to search!")
+        smf.printf(f"{CC.YELLOW}[!] Enter file name to search!{CC.RESET}")
     else:
         search_modules(query)

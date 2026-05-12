@@ -27,11 +27,11 @@ def execute(args: list[str], ctx: Context) -> None:
     # 1. show modules
     if target_show == "modules":
         categories = utils.get_categories()
-        
+
         smf.printf()
         smf.printf(f"[ {CC.CYAN}--- Categories ---{CC.RESET} ]")
         smf.printf()
-        
+
         for cat in categories:
             smf.printf(f"  - {CC.YELLOW}{cat}{CC.RESET}")
 
@@ -40,7 +40,7 @@ def execute(args: list[str], ctx: Context) -> None:
     # 2. show options
     elif target_show == "options":
         header_name = current_module_name if current_module else "GLOBAL"
-        
+
         smf.printf()
         smf.printf(f"{CC.YELLOW}MODULE OPTIONS{CC.RESET} ({header_name})")
         smf.printf()
@@ -51,18 +51,14 @@ def execute(args: list[str], ctx: Context) -> None:
 
         if current_module:
             req = getattr(current_module, "REQUIRED_OPTIONS", {})
-            
+
             for var_name, desc in req.items():
                 val = options.get(var_name, "unset")
-                smf.printf(
-                    f"{CC.YELLOW}{var_name:<12} {val:<25}{CC.RESET} {desc}"
-                )
+                smf.printf(f"{CC.YELLOW}{var_name:<12} {val:<25}{CC.RESET} {desc}")
         else:
             for k, v in options.items():
                 val = v if v else "unset"
-                smf.printf(
-                    f"{CC.YELLOW}{k:<12} {val:<25}{CC.RESET} Global Variable"
-                )
+                smf.printf(f"{CC.YELLOW}{k:<12} {val:<25}{CC.RESET} Global Variable")
         smf.printf()
 
     # 3. show plugin
@@ -100,12 +96,12 @@ def execute(args: list[str], ctx: Context) -> None:
     # 4. show <category_name>
     else:
         module_files = utils.get_modules_in_category(target_show)
-        
+
         if module_files:
             smf.printf()
             smf.printf(f"{CC.CYAN}Modules in {CC.RESET}({target_show}):")
             smf.printf()
-            
+
             for mod in module_files:
                 smf.printf(f"  - {CC.YELLOW}{mod}{CC.RESET}")
             smf.printf()

@@ -34,7 +34,9 @@ def execute(args: list[str], ctx: Context) -> None:
             smf.printf(f"{CC.YELLOW}  - {cat}{CC.YELLOW}")
 
         smf.printf()
-        smf.printf(f"{CC.YELLOW}[!] INFO => show <category_name> to see modules.{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] INFO => show <category_name> to see modules.{CC.RESET}"
+        )
         smf.printf()
 
     # 2. show options
@@ -43,7 +45,9 @@ def execute(args: list[str], ctx: Context) -> None:
         smf.printf()
         smf.printf(f"{CC.YELLOW}MODULE OPTIONS{CC.RESET} ({header_name})")
         smf.printf()
-        smf.printf(f"{CC.MAGENTA}{'Name':<12} {'Current Setting':<25} {'Description'}{CC.RESET}")
+        smf.printf(
+            f"{CC.MAGENTA}{'Name':<12} {'Current Setting':<25} {'Description'}{CC.RESET}"
+        )
         smf.printf(f"{CC.CYAN}{'-'*12} {'-'*25} {'-'*15}{CC.RESET}")
 
         if current_module:
@@ -101,4 +105,6 @@ def execute(args: list[str], ctx: Context) -> None:
                 smf.printf(f"{CC.YELLOW}  - {mod}{CC.RESET}")
             smf.printf()
         else:
-            smf.printf(f"{CC.YELLOW}[!] WARN => {CC.RESET}{target_show}{CC.YELLOW} > not found.{CC.RESET}")
+            smf.printf(
+                f"{CC.YELLOW}[!] WARN => {CC.RESET}{target_show}{CC.YELLOW} > not found.{CC.RESET}"
+            )

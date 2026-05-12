@@ -33,7 +33,9 @@ def execute(options):
         smf.printf(f"{CC.YELLOW}[!] WARN => Binary not found at >{CC.RESET}", binary)
         return
 
-    smf.printf(f"\n{CC.YELLOW}[*] Starting SUBDOMAIN ENUMERATION for {target_domain}{CC.RESET}")
+    smf.printf(
+        f"\n{CC.YELLOW}[*] Starting SUBDOMAIN ENUMERATION for {target_domain}{CC.RESET}"
+    )
     smf.printf()
 
     cmd = [binary, "-d", target_domain, "-w", wordlist_path, "-c", threads]
@@ -42,7 +44,7 @@ def execute(options):
         process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
         )
-        
+
         # Thread for parsing valid results (stdout)
         def read_stdout(pipe):
             for line in iter(pipe.readline, ""):

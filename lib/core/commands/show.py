@@ -2,7 +2,7 @@
 # -- SMF License
 import smf
 import apps.utility.utils as utils
-from apps.utility.colors import CC
+from apps.utility.colors import *
 from lib.smf.core.console.engine import Context
 
 
@@ -21,54 +21,54 @@ def execute(args: list[str], ctx: Context) -> None:
     plugin = ctx.plugin
 
     if not target_show:
-        smf.printf("[!] No modules selected.")
+        smf.printf(f"{CC.YELLOW}[!] No modules selected.{CC.YELLOW}")
         return
 
     # 1. show modules
     if target_show == "modules":
         categories = utils.get_categories()
         smf.printf()
-        smf.printf("[--- Categories ---]")
+        smf.printf(f"[{CC.MAGENTA}--- Categories ---{CC.RESET}]")
         smf.printf()
         for cat in categories:
-            smf.printf(f"  - {cat}")
+            smf.printf(f"{CC.YELLOW}  - {cat}{CC.YELLOW}")
 
         smf.printf()
-        smf.printf("[!] INFO => show <category_name> to see modules.")
+        smf.printf(f"{CC.YELLOW}[!] INFO => show <category_name> to see modules.{CC.RESET}")
         smf.printf()
 
     # 2. show options
     elif target_show == "options":
         header_name = current_module_name if current_module else "GLOBAL"
         smf.printf()
-        smf.printf(f"MODULE OPTIONS ({header_name})")
+        smf.printf(f"{CC.YELLOW}MODULE OPTIONS{CC.RESET} ({header_name})")
         smf.printf()
-        smf.printf(f"{'Name':<12} {'Current Setting':<25} {'Description'}")
-        smf.printf(f"{'-'*12} {'-'*25} {'-'*15}")
+        smf.printf(f"{CC.MAGENTA}{'Name':<12} {'Current Setting':<25} {'Description'}{CC.RESET}")
+        smf.printf(f"{CC.CYAN}{'-'*12} {'-'*25} {'-'*15}{CC.RESET}")
 
         if current_module:
             req = getattr(current_module, "REQUIRED_OPTIONS", {})
             for var_name, desc in req.items():
                 val = options.get(var_name, "unset")
-                smf.printf(f"{var_name:<12} {val:<25} {desc}")
+                smf.printf(f"{CC.YELLOW}{var_name:<12} {val:<25} {desc}{CC.RESET}")
         else:
             for k, v in options.items():
                 val = v if v else "unset"
-                smf.printf(f"{k:<12} {val:<25} Global Variable")
-        smf.printf()
+                smf.printf(f"{CC.YELLOW}{k:<12} {val:<25} Global Variable")
+        smf.printf(CC.RESET)
 
     # 3. show plugin
     elif target_show == "plugin":
         status_list = plugin.monitor()
 
         if not status_list:
-            smf.printf("[!] No plugins available.")
+            smf.printf(f"{CC.YELLOW}[!] No plugins available.{CC.RESET}")
             return
 
         # Header Tabel
         smf.printf()
-        smf.printf(f"{'PLUGIN NAME':<25} {'STATUS':<10}")
-        smf.printf(f"{'-' * 36}")
+        smf.printf(f"{CC.CYAN}{'PLUGIN NAME':<25} {'STATUS':<10}{CC.RESET}")
+        smf.printf(f"{CC.MAGENTA}{'-' * 36}{CC.RESET}")
 
         for item in status_list:
             name = item["name"]
@@ -87,7 +87,7 @@ def execute(args: list[str], ctx: Context) -> None:
 
             smf.printf(f"{name:<25} {color}{status:<10}{CC.RESET}")
 
-        smf.printf(f"{'-' * 36}")
+        smf.printf(f"{CC.MAGENTA}{'-' * 36}{CC.RESET}")
         smf.printf()
 
     # 4. show <category_name>
@@ -95,10 +95,10 @@ def execute(args: list[str], ctx: Context) -> None:
         module_files = utils.get_modules_in_category(target_show)
         if module_files:
             smf.printf()
-            smf.printf(f"Modules in {target_show}:")
+            smf.printf(f"{CC.MAGENTA}Modules in {CC.RESET}({target_show}):")
             smf.printf()
             for mod in module_files:
-                smf.printf(f"  - {mod}")
+                smf.printf(f"{CC.YELLOW}  - {mod}{CC.RESET}")
             smf.printf()
         else:
-            smf.printf(f"[!] WARN => {target_show} > not found.")
+            smf.printf(f"{CC.YELLOW}[!] WARN => {CC.RESET}{target_show}{CC.YELLOW} > not found.{CC.RESET}")

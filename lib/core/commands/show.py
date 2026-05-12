@@ -52,11 +52,15 @@ def execute(args: list[str], ctx: Context) -> None:
             req = getattr(current_module, "REQUIRED_OPTIONS", {})
             for var_name, desc in req.items():
                 val = options.get(var_name, "unset")
-                smf.printf(f"{CC.GREEN}{var_name:<12} {CC.YELLOW}{val:<25}{CC.RESET} {desc}")
+                smf.printf(
+                    f"{CC.GREEN}{var_name:<12} {CC.YELLOW}{val:<25}{CC.RESET} {desc}"
+                )
         else:
             for k, v in options.items():
                 val = v if v else "unset"
-                smf.printf(f"{CC.GREEN}{k:<12} {CC.YELLOW}{val:<25}{CC.RESET} Global Variable")
+                smf.printf(
+                    f"{CC.GREEN}{k:<12} {CC.YELLOW}{val:<25}{CC.RESET} Global Variable"
+                )
         smf.printf()
 
     # 3. show plugin

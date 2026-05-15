@@ -24,7 +24,6 @@ def execute(args: list[str], ctx: Context) -> None:
         smf.printf(
             f"{CC.YELLOW}[!] No modules selected. (use <module>) first.{CC.RESET}"
         )
-        smf.printf()
         return
 
     # Get the list of required variables from the selected module.

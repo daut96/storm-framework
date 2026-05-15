@@ -20,7 +20,7 @@ def execute(args: list[str], ctx: Context) -> None:
     if not args:
         smf.printf(f"{CC.YELLOW}[!] Enter file name!{CC.RESET}")
         return
-        
+
     module_name = args[0].lower() if args else ""
     mod = utils.load_module_dynamically(module_name)
 

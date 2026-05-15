@@ -18,7 +18,9 @@ def execute(args: list[str], ctx: Context) -> None:
 
     # Input validation
     if not args:
-        smf.printf(f"{CC.YELLOW}[!] WARN => Use the command > load <plugin_name>{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] WARN => Use the command > load <plugin_name>{CC.RESET}"
+        )
         return
 
     # Get plugin name from input

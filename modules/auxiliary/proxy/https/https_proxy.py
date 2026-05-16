@@ -1,7 +1,5 @@
 import subprocess
-import sys
 import smf
-import threading
 
 from apps.utility.colors import *
 
@@ -42,8 +40,9 @@ def output_stream(line: str) -> str:
         return f"{CC.MAGENTA}{line}{CC.RESET}"
     elif "========== INCOMING" in line or "====================" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
-    
-    return line # return line = Standard output
+
+    return line  # return line = Standard output
+
 
 def execute(options):
     bin_path = call_bin("https_prox")
@@ -58,14 +57,10 @@ def execute(options):
     # bufsize=1 (Line buffered) ensures every \n is sent directly to Python's stdout
     # without waiting for the OS memory buffer to fill up.
     process = subprocess.Popen(
-        cmd, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.STDOUT,
-        text=True, 
-        bufsize=1 
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
 
-    try: # Loop of output stream
+    try:  # Loop of output stream
         for line in process.stdout:
             stream_line = output_stream(line)
             smf.printf(stream_line, end="", flush=True)
@@ -81,12 +76,13 @@ def execute(options):
 
     # Stop the binary process
     finally:
-        if process.poll() is None: # Check the process in the background
+        if process.poll() is None:  # Check the process in the background
             process.terminate()
             try:
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
 
-        smf.printf(f"{CC.GREEN}[*] Proxy daemon successfully stopped and cleaned up.{CC.RESET}")
-            
+        smf.printf(
+            f"{CC.GREEN}[*] Proxy daemon successfully stopped and cleaned up.{CC.RESET}"
+        )

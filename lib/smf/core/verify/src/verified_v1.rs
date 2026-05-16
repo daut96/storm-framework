@@ -191,15 +191,17 @@ fn main() {
         .collect();
 
     if !modified_files.is_empty() || !missing_files.is_empty() || !untracked_files.is_empty() {
-        println!("\n\n[!] INTEGRITY BREACH DETECTED!");
+        println!("\n\n[!] INTEGRITY BREACH DETECTED [!]");
         for f in &modified_files { println!("    [MODIFIED]  -> {}", f); }
         for f in &missing_files { println!("    [MISSING]   -> {}", f); }
         for f in &untracked_files { println!("    [UNTRACKED] -> {}", f); }
 
         if !modified_files.is_empty() || !missing_files.is_empty() {
-            println!("\nSTATUS: WARNING - Run 'storm --update' to re-sign!!");
+            println!("\nSTATUS: WARNING");
+            println!("MESSAGE: Run the command (storm --update) to re-sign");
         } else {
-            println!("\nSTATUS: CRITICAL - File injection detected.");
+            println!("\nSTATUS: CRITICAL");
+            println!("MESSAGE: File injection detected");
             std::process::exit(203);
         }
     } else {

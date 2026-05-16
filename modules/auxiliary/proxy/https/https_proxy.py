@@ -1,8 +1,9 @@
 import subprocess
 import smf
+import os
 
+from rootmap import ROOT
 from apps.utility.colors import *
-
 from lib.roar.callbin.calling import call_bin
 
 MOD_INFO = {
@@ -23,7 +24,10 @@ in the network and can be implemented more dynamically.
     "DefaultAction": "Forward Proxy",
     "License": "SMF License",
 }
-
+REQUIRED_OPTIONS = {
+    "IP": "ip address standar = 0.0.0.0",
+    "PORT": "standar port = 6443"
+}
 
 def output_stream(line: str) -> str:
     """
@@ -32,12 +36,18 @@ def output_stream(line: str) -> str:
     """
     if "[ERROR]" in line or "[FATAL]" in line:
         return f"{CC.RED}{line}{CC.RESET}"
+    elif "[WARN]" in line or "[WARNING]" in line:
+        return f"{CC.YELLOW}{line}{CC.RESET}"
     elif "[INIT]" in line or "[START]" in line:
         return f"{CC.GREEN}{line}{CC.RESET}"
     elif "[DPI-REQ]" in line:
         return f"{CC.CYAN}{line}{CC.RESET}"
     elif "[DPI-RES]" in line:
-        return f"{CC.MAGENTA}{line}{CC.RESET}"
+        return f"\n{CC.CYAN}{line}{CC.RESET}"
+    elif "[DPI-BYPASS]" in line:
+        return f"{CC.WHITE}{line}{CC.RESET}"
+    elif "[DPI-INFO]" in line:
+        return f"{CC.YELLOW}{line}{CC.RESET}"
     elif "========== INCOMING" in line or "====================" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
 
@@ -45,6 +55,12 @@ def output_stream(line: str) -> str:
 
 
 def execute(options):
+
+    # Take input
+    ip_addr = options.get("IP")
+    port = options.get("PORT")
+
+    # Binary path
     bin_path = call_bin("https_prox")
 
     # Binary validation
@@ -52,7 +68,18 @@ def execute(options):
         smf.printf(f"{CC.RED}[!] Binary not found.{CC.RESET}", bin_path)
         return
 
-    cmd = [bin_path]
+    # Storm Framework internal CA Root Path
+    ca_cert_path = os.path.join(ROOT, "data", "smf_ca.crt")
+    ca_key_path = os.path.join(ROOT, "data", "smf_ca.key")
+
+    # Enter the required data
+    cmd = [
+        bin_path,
+        "-cert", ca_cert_path, 
+        "-key", ca_key_path,
+        "-ip", ip,
+        "-port", port
+    ]
 
     # bufsize=1 (Line buffered) ensures every \n is sent directly to Python's stdout
     # without waiting for the OS memory buffer to fill up.

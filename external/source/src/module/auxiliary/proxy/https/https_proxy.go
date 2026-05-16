@@ -1,12 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 
 	"github.com/elazarl/goproxy"
 )
+
 
 func main() {
 	port := "0.0.0.0:6880"
@@ -27,32 +32,66 @@ func main() {
 
 	// 3. Logika DPI: Request Inspection (Mencegat & Membaca Request Plaintext)
 	// Hook ini dieksekusi SETELAH TLS didekripsi. Paket yang Anda baca di sini sudah berupa plaintext.
-	proxy.OnRequest().DoFunc(
-		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			log.Printf("[DPI-REQ] Intercept packets from: %s -> %s", req.RemoteAddr, req.Host)
+	proxy.OnResponse().DoFunc(
+	func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		if resp == nil || resp.Body == nil {
+			return resp
+		}
 
-			// Menggunakan httputil.DumpRequest untuk membaca seluruh header dan body.
-			// Secara internal, fungsi ini aman digunakan karena setelah membaca stream body,
-			// ia akan mengalokasikan ulang buffer (ReadCloser) sehingga stream tidak terputus (drained).
-			requestDump, err := httputil.DumpRequest(req, true)
+		log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
+
+		// 1. DUMP HEADER SAJA
+		// Set false agar httputil tidak membaca body biner dan merusak terminal
+		responseHeaders, _ := httputil.DumpResponse(resp, false)
+		log.Printf("\n========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
+
+		// 2. EKSTRAK BODY STREAM KE MEMORI (RAM)
+		rawBodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("[ERROR] Failed to read response body: %v\n", err)
+			return resp
+		}
+		resp.Body.Close()
+
+		// [KRITIKAL] KEMBALIKAN STREAM KE STATE SEMULA
+		// Kita membuat objek ReadCloser baru dari raw bytes yang sudah kita salin,
+		// lalu memasukkannya kembali ke resp.Body agar goproxy bisa mengirimnya ke klien.
+		resp.Body = io.NopCloser(bytes.NewBuffer(rawBodyBytes))
+
+		// 3. MESIN INSPEKSI PAYLOAD (DPI ENGINE)
+		contentType := resp.Header.Get("Content-Type")
+		contentEncoding := resp.Header.Get("Content-Encoding")
+
+		if contentEncoding == "gzip" {
+			// Logika Dekompresi
+			gzipReader, err := gzip.NewReader(bytes.NewReader(rawBodyBytes))
 			if err != nil {
-				log.Printf("[ERROR] Failed to perform request inspection: %v\n", err)
-				// Kembalikan request asli agar traffic tidak drop jika terjadi error logis
-				return req, nil 
+				log.Printf("[WARN] Failed to initialize gzip decompressor: %v\n", err)
+				return resp
 			}
-			
-			// Output payload ke stdout
-			log.Printf("\n========== INCOMING DECRYPTED REQUEST ==========\n%s\n================================================\n", string(requestDump))
+			defer gzipReader.Close()
 
-			// CONTOH IMPLEMENTASI DPI RULE ENGINE:
-			// Di sini Anda bisa melakukan inspeksi signature/pattern matching pada payload mentah.
-			// if bytes.Contains(requestDump, []byte("XSS-Payload-Attack")) {
-			//     log.Printf("[ALERT] Serangan terdeteksi! Memblokir request.")
-			//     return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusForbidden, "Blocked by DPI Engine")
-			// }
+			uncompressedBytes, err := io.ReadAll(gzipReader)
+			if err != nil {
+				log.Printf("[WARN] Failed to read gzip contents: %v\n", err)
+				return resp
+			}
 
-			return req, nil
-		})
+			// Tampilkan hasil yang sudah didekode menjadi UTF-8
+			log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", string(uncompressedBytes))
+				
+		} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/json") {
+			// Jika payload aslinya memang sudah plaintext (tidak di-gzip)
+			log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", string(rawBodyBytes))
+				
+		} else {
+			// Jika yang lewat adalah gambar (.jpg), video, atau binary file (.apk), 
+			// kita abaikan untuk mencegah terminal/Python loader Anda crash.
+			log.Printf("[DPI-INFO] Ignore binary payloads with type: %s\n", contentType)
+		}
+
+		return resp
+	})
 
 	// 4. Logika DPI: Response Inspection (Mencegat & Membaca Response dari Target Server)
 	// Hook ini memungkinkan Anda menginspeksi data yang dikembalikan oleh server tujuan sebelum di-enkripsi

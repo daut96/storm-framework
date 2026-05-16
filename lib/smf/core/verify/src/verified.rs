@@ -157,6 +157,6 @@ fn main() {
             std::process::exit(203);
         }
     } else {
-        println!("\n\n[✓] Successfully Starting Storm Framework");
+        println!("\n\nSTATUS: SUCCESS");
     }
 }

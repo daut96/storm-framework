@@ -38,7 +38,7 @@ func main() {
 			return resp
 		}
 
-		log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
+		log.Printf("\n[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 		// 1. DUMP HEADER SAJA
 		// Set false agar httputil tidak membaca body biner dan merusak terminal
@@ -77,16 +77,17 @@ func main() {
 				return resp
 			}
 
-			// Tampilkan hasil yang sudah didekode menjadi UTF-8
-			log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", string(uncompressedBytes))
+			safeGzipText := strings.ToValidUTF8(string(uncompressedBytes), "")
+				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", safeGzipText)
 				
 		} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/json") {
-			// Jika payload aslinya memang sudah plaintext (tidak di-gzip)
-			log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", string(rawBodyBytes))
+			// [UPDATE] Sanitasi plaintext payload
+			// Jika ada byte biner yang menyusup di dalam teks, ubah menjadi ''
+			safePlainText := strings.ToValidUTF8(string(rawBodyBytes), "")
+				
+			log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", safePlainText)
 				
 		} else {
-			// Jika yang lewat adalah gambar (.jpg), video, atau binary file (.apk), 
-			// kita abaikan untuk mencegah terminal/Python loader Anda crash.
 			log.Printf("[DPI-INFO] Ignore binary payloads with type: %s\n", contentType)
 		}
 

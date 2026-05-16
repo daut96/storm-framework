@@ -12,7 +12,6 @@ from lib.roar.callbin import calling
 
 def boot():
     smf.printd("Boot starting...", level="INFO")
-    smf.printd("Start checking the core...", level="INFO")
 
     # Check core startup security
     check_critical_files()
@@ -33,12 +32,3 @@ def boot():
     # Verify file integrity
     run_verif()
     smf.printd("Verification of integrity check success", level="INFO")
-
-    # Countdown to pause and start
-    try:
-        for i in range(6, 0, -1):
-            sys.stdout.write(f"\r[✓] Verification Success! Start Storm: [{i}]")
-            sys.stdout.flush()
-            time.sleep(1)
-    except KeyboardInterrupt:
-        return

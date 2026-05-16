@@ -62,18 +62,6 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
-			
-
-			if strings.Contains(contentType, "text/css") {
-				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
-				return resp
-			}
-
-			if strings.Contains(contentType, "application/x-javascript") {
-				log.Printf("[DPI-BYPASS] Ignoring JavaScript payload from: %s", ctx.Req.Host)
-				return resp
-			}
-
 			log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 			// Dump Header
@@ -89,6 +77,16 @@ func main() {
 			resp.Body.Close()
 			resp.Body = io.NopCloser(bytes.NewBuffer(rawBodyBytes))
 
+			if strings.Contains(contentType, "text/css") {
+				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
+				return resp
+			}
+
+			if strings.Contains(contentType, "application/x-javascript") {
+				log.Printf("[DPI-BYPASS] Ignoring JavaScript payload from: %s", ctx.Req.Host)
+				return resp
+			}
+			
 			// Logika Dekompresi dan Sanitasi UTF-8
 			if contentEncoding == "gzip" {
 				gzipReader, err := gzip.NewReader(bytes.NewReader(rawBodyBytes))
@@ -106,7 +104,7 @@ func main() {
 
 				safeGzipText := strings.ToValidUTF8(string(uncompressedBytes), "")
 				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", safeGzipText)
-
+			
 			} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/") {
 				safePlainText := strings.ToValidUTF8(string(rawBodyBytes), "")
 				log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", safePlainText)

@@ -1,7 +1,5 @@
 # -- https://github.com/StormWorld0/storm-framework
 # -- SMF License
-import sys
-import time
 import smf
 
 from apps.utility.verify import *

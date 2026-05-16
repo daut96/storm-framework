@@ -4,7 +4,6 @@ import smf
 
 from apps.utility.colors import *
 from apps.utility.update import run_update as update
-from apps.utility.verify import run_verif as verify
 from apps.utility.restart import run_restart as restart
 
 from lib.smf.core.console.engine import Context

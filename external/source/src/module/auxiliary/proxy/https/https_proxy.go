@@ -62,10 +62,7 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
-			if strings.Contains(contentType, "text/html") {
-				log.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
-				return resp
-			}
+			
 
 			if strings.Contains(contentType, "text/css") {
 				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)

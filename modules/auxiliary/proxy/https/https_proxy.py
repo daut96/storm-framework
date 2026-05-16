@@ -33,13 +33,13 @@ def output_stream(line: str) -> str:
     based on the log pattern (keyword).
     """
     if "[ERROR]" in line or "[FATAL]" in line:
-        return f"{CC.RED}{line}{CC.RESET}"
+        return f"\n{CC.RED}{line}{CC.RESET}"
     elif "[WARN]" in line or "[WARNING]" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
     elif "[INIT]" in line or "[START]" in line:
-        return f"{CC.GREEN}{line}{CC.RESET}"
+        return f"{CC.GREEN}{line}{CC.RESET}\n"
     elif "[DPI-REQ]" in line:
-        return f"{CC.CYAN}{line}{CC.RESET}"
+        return f"\n{CC.CYAN}{line}{CC.RESET}"
     elif "[DPI-RES]" in line:
         return f"\n{CC.CYAN}{line}{CC.RESET}"
     elif "[DPI-BYPASS]" in line:
@@ -47,7 +47,7 @@ def output_stream(line: str) -> str:
     elif "[DPI-INFO]" in line or "INFO" in line or "[DPI-REQ-INFO]" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
     elif "==========" in line or "====================" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}"
+        return f"\n{CC.YELLOW}{line}{CC.RESET}"
 
     return line  # return line = Standard output
 

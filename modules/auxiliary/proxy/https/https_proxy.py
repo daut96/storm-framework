@@ -24,10 +24,8 @@ in the network and can be implemented more dynamically.
     "DefaultAction": "Forward Proxy",
     "License": "SMF License",
 }
-REQUIRED_OPTIONS = {
-    "IP": "ip address standar = 0.0.0.0",
-    "PORT": "standar port = 6443"
-}
+REQUIRED_OPTIONS = {"IP": "ip address standar = 0.0.0.0", "PORT": "standar port = 6443"}
+
 
 def output_stream(line: str) -> str:
     """
@@ -75,10 +73,14 @@ def execute(options):
     # Enter the required data
     cmd = [
         bin_path,
-        "-cert", ca_cert_path, 
-        "-key", ca_key_path,
-        "-ip", ip,
-        "-port", port
+        "-cert",
+        ca_cert_path,
+        "-key",
+        ca_key_path,
+        "-ip",
+        ip,
+        "-port",
+        port,
     ]
 
     # bufsize=1 (Line buffered) ensures every \n is sent directly to Python's stdout

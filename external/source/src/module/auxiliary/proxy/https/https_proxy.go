@@ -77,6 +77,11 @@ func main() {
 			resp.Body.Close()
 			resp.Body = io.NopCloser(bytes.NewBuffer(rawBodyBytes))
 
+			if strings.Contains(contentType, "text/html") {
+				log.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
+				return resp
+			}
+
 			if strings.Contains(contentType, "text/css") {
 				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
 				return resp
@@ -103,11 +108,15 @@ func main() {
 				}
 
 				safeGzipText := strings.ToValidUTF8(string(uncompressedBytes), "")
-				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", safeGzipText)
+				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n\n", safeGzipText)
+			
+			} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") || strings.HasPrefix(contentType, "application/") {
+				urlEncoded := strings.ToValidUTF8(string(rawBodyBytes), "")
+				log.Printf("========== URLENCODED PAYLOAD ==========\n%s\n=======================================\n\n", urlEncoded)
 			
 			} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/") {
 				safePlainText := strings.ToValidUTF8(string(rawBodyBytes), "")
-				log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", safePlainText)
+				log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n\n", safePlainText)
 
 			} else {
 				log.Printf("[DPI-INFO] Ignore binary payloads with type: %s\n", contentType)

@@ -6,6 +6,7 @@ import smf
 from rootmap import ROOT
 from lib.roar.callbin.calling import call_bin
 
+
 # Verify starting to run integrity check
 def run_verif():
     # Call binary verification
@@ -16,8 +17,8 @@ def run_verif():
         smf.printd("Binary verification missing", lib, level="CRITICAL")
         smf.printf("[!] WARN => Rust binary not found in", lib)
         sys.exit(202)
-        
-    try: # Run verification
+
+    try:  # Run verification
         result = subprocess.run([lib])
 
         # Stop if the binary issues a command
@@ -33,6 +34,7 @@ def run_verif():
         smf.printd("INTEGRITY VERIFICATION", e, level="CRITICAL")
         smf.printf("[!] ERROR =>", e, file=sys.stderr, flush=True)
         sys.exit(201)
+
 
 # Check the binary integrity check file
 def validate_binary_files():
@@ -61,6 +63,7 @@ def validate_binary_files():
 
     return failed
 
+
 # Check the Storm Framework core binary logging
 def validate_binary_core():
     # Path to root folder
@@ -87,6 +90,7 @@ def validate_binary_core():
             failed = True
 
     return failed
+
 
 # Validate all core runtime files
 def check_critical_files():

@@ -36,8 +36,10 @@ def output_stream(line: str) -> str:
         return f"\n{CC.RED}{line}{CC.RESET}"
     elif "[WARN]" in line or "[WARNING]" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
-    elif "[INIT]" in line or "[START]" in line:
+    elif "[START]" in line:
         return f"{CC.GREEN}{line}{CC.RESET}\n"
+    elif "[INIT]" in line:
+        return f"{CC.GREEN}{line}{CC.RESET}"
     elif "[DPI-REQ]" in line:
         return f"\n{CC.CYAN}{line}{CC.RESET}"
     elif "[DPI-RES]" in line:

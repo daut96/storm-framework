@@ -36,17 +36,15 @@ def stream_reader(pipe, color, is_error=False):
 
             # debug stderr
             if is_error:
-                smf.printf(f"{color}{line}{CC.RESET}", file=sys.stdout, flush=True, end="")
-                smf.printd(
-                    "Stderr https_proxy",
-                    line,
-                    level="DEBUG"
+                smf.printf(
+                    f"{color}{line}{CC.RESET}", file=sys.stdout, flush=True, end=""
                 )
+                smf.printd("Stderr https_proxy", line, level="DEBUG")
 
     except Exception as e:
         smf.printf(f"{CC.RED}Error exception https_proxy =>{CC.RESET}", e)
         smf.printd("Exception https_proxy", e, level="ERROR")
-        
+
     finally:
         pipe.close()
 
@@ -92,7 +90,6 @@ def execute(options):
 
     except KeyboardInterrupt:
         smf.printf(f"{CC.YELLOW}[*] Stopping proxy...{CC.RESET}")
-        
+
         process.terminate()
         process.wait()
-        

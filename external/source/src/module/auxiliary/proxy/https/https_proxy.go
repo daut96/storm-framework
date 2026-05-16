@@ -62,12 +62,6 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
-			// [UPDATE] Bypass HTML Payload untuk mencegah polusi terminal
-			if strings.Contains(contentType, "text/html") {
-				log.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
-				return resp
-			}
-
 			log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 			// Dump Header

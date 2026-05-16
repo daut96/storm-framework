@@ -6,19 +6,23 @@ import smf
 from rootmap import ROOT
 from lib.roar.callbin.calling import call_bin
 
-
+# Verify starting to run integrity check
 def run_verif():
+    # Call binary verification
     lib = call_bin("verified")
+
+    # Check the validation of the binary file verification
     if not lib:
         smf.printd("Binary verification missing", lib, level="CRITICAL")
-        smf.printf("[!] ERROR => Rust binary not found in", lib)
-        sys.exit(1)
-    smf.printf("[∆] [INTEGRITY STORM RUNNING] [∆]")
-    try:
+        smf.printf("[!] WARN => Rust binary not found in", lib)
+        sys.exit(202)
+        
+    try: # Run verification
         result = subprocess.run([lib])
 
+        # Stop if the binary issues a command
         if result.returncode != 0:
-            smf.printf("\n[-] CRITICAL => Reinstall Storm for security.)")
+            smf.printf("\n[!] INFO => Reinstall Storm for security.")
             smf.printd("Binary verification", result, level="CRITICAL")
             sys.exit(result.returncode)
 
@@ -28,9 +32,9 @@ def run_verif():
     except Exception as e:
         smf.printd("INTEGRITY VERIFICATION", e, level="CRITICAL")
         smf.printf("[!] ERROR =>", e, file=sys.stderr, flush=True)
-        sys.exit(1)
+        sys.exit(201)
 
-
+# Check the binary integrity check file
 def validate_binary_files():
     # Path to bin folder
     smf_dir = os.path.join(ROOT, "external", "source", "out", "core")
@@ -57,9 +61,9 @@ def validate_binary_files():
 
     return failed
 
-
+# Check the Storm Framework core binary logging
 def validate_binary_core():
-    # Path to root
+    # Path to root folder
     bin_dir = os.path.abspath(ROOT)
     bin_names = ["smf.so"]
 
@@ -84,19 +88,23 @@ def validate_binary_core():
 
     return failed
 
-
+# Validate all core runtime files
 def check_critical_files():
     error = False
 
+    # Check binary core
     if validate_binary_core():
         error = True
 
+    # Check binary integrity
     if validate_binary_files():
         error = True
 
+    # Check the startup key .env file
     if not os.path.exists(".env"):
         smf.printd("FILES KEY MISSING", ".env", level="CRITICAL")
-        smf.printf("[!] CRITICAL => Integrity Key (.env) is missing!")
+        smf.printf("STATUS: CRITICAL")
+        smf.printf("MESSAGE: Integrity Key (.env) is missing!")
         smf.printf(
             "[*] Storm cannot verify the database signature without your unique keys."
         )
@@ -105,5 +113,6 @@ def check_critical_files():
         )
         error = True
 
+    # Stop startup if one is missing
     if error:
-        sys.exit(1)
+        sys.exit(201)

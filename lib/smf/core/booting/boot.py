@@ -1,6 +1,8 @@
 # -- https://github.com/StormWorld0/storm-framework
 # -- SMF License
 import smf
+import time
+import sys
 
 from apps.utility.verify import *
 from lib.roar.plugin_api import plugin
@@ -30,3 +32,12 @@ def boot():
     # Verify file integrity
     run_verif()
     smf.printd("Verification of integrity check success", level="INFO")
+
+    # Countdown to pause and start
+    try:
+        for i in range(5, 0, -1):
+            sys.stdout.write(f"\r[✓] Berhasil Starting Storm Framework [{i}]")
+            sys.stdout.flush()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        return

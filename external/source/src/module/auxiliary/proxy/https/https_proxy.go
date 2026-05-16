@@ -113,7 +113,7 @@ func main() {
 		})
 
 	server := &http.Server{
-		Addr:    *ip + *port,
+		Addr:    *ip + ":" + *port,
 		Handler: proxy,
 	}
 

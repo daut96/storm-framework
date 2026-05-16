@@ -33,12 +33,6 @@ def execute(args: list[str], ctx: Context) -> None:
         if status == True:
             restart(options)
 
-    # This verify calls an integrity check to ensure there have been no code modifications.
-    # when executing the code, and if it detects an injection file without a clear identity
-    # This process will force the storm to stop, for the safety of the user.
-    elif cmd == "verify":
-        verify()
-
     # This is to restart and save the variables that were set before restarting and then restore them.
     # This is good if we experience a bug or error failure when we are ready to execute.
     # by storing old variable data, it is very profitable and speeds up the time
@@ -48,7 +42,7 @@ def execute(args: list[str], ctx: Context) -> None:
     # Fallback not found
     else:
         smf.printf(
-            f"{CC.YELLOW}[!] WARN =>{CC.RESET} {cmd} {CC.YELLOW}> Not found.{CC.RESET}"
+            f"{CC.YELLOW}[!] WARN =>{CC.RESET} {args} {CC.YELLOW}> Not found.{CC.RESET}"
         )
 
     return

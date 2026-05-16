@@ -203,6 +203,6 @@ fn main() {
             std::process::exit(203);
         }
     } else {
-        println!("\n");
+        // Just leave it empty and fill it with python
     }
 }

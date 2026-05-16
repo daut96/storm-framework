@@ -25,7 +25,7 @@ func main() {
 	log.Printf("[INIT] Initializing HTTPS Intercepting Proxy on 0.0.0.0:%s...", *port)
 
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = false
+	proxy.Verbose = true
 
 	// 2. Logika Injeksi Custom Root CA
 	if *certPath != "" && *keyPath != "" {
@@ -75,7 +75,7 @@ func main() {
 			log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 			// Dump Header
-			responseHeaders, _ := httputil.DumpResponse(resp, true)
+			responseHeaders, _ := httputil.DumpResponse(resp, false)
 			log.Printf("\n========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
 
 			// Ekstrak Stream Body

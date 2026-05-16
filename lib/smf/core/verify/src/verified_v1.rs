@@ -8,6 +8,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
+use std::time::{Instant, Duration};
 use walkdir::{WalkDir, DirEntry};
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};

@@ -18,6 +18,7 @@ func main() {
 	// 1. Definisi Command Line Flags
 	certPath := flag.String("cert", "", "Path to custom Root CA certificate (.crt)")
 	keyPath := flag.String("key", "", "Path to custom Root CA private key (.key)")
+	ip := flag.String("ip", "0.0.0.0", "IP address determines network traffic")
 	port := flag.String("port", "6880", "Port for the proxy server")
 	flag.Parse() // Mengeksekusi parser argumen
 
@@ -112,7 +113,7 @@ func main() {
 		})
 
 	server := &http.Server{
-		Addr:    "0.0.0.0:" + *port,
+		Addr:    *ip + *port,
 		Handler: proxy,
 	}
 

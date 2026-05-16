@@ -22,7 +22,7 @@ func main() {
 	port := flag.String("port", "6880", "Port for the proxy server")
 	flag.Parse() // Mengeksekusi parser argumen
 
-	log.Printf("[INIT] Initializing HTTPS Intercepting Proxy on 0.0.0.0:%s...", *port)
+	log.Printf("[INIT] Initializing HTTPS Intercepting Proxy on %s:%s", *ip, *port)
 
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = true
@@ -69,6 +69,11 @@ func main() {
 
 			if strings.Contains(contentType, "text/css") {
 				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
+				return resp
+			}
+
+			if strings.Contains(contentType, "application/x-javascript") {
+				log.Printf("[DPI-BYPASS] Ignoring JavaScript payload from: %s", ctx.Req.Host)
 				return resp
 			}
 

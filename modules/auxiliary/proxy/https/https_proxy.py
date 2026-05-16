@@ -44,9 +44,9 @@ def output_stream(line: str) -> str:
         return f"\n{CC.CYAN}{line}{CC.RESET}"
     elif "[DPI-BYPASS]" in line:
         return f"{CC.WHITE}{line}{CC.RESET}"
-    elif "[DPI-INFO]" in line:
+    elif "[DPI-INFO]" in line or "INFO" in line or "[INFO]" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
-    elif "========== INCOMING" in line or "====================" in line:
+    elif "==========" in line or "====================" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}"
 
     return line  # return line = Standard output

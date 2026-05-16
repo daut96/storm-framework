@@ -16,6 +16,6 @@ ed25519-dalek = { version = "2", features = ["rand_core"] }
 base64 = "0.21"
 
 # These are the required dependencies
-# by fast.rs as a backup if check.rs is already
+# by verified.rs as a backup if verified_v1.rs is already
 # feels slow because of the large number of files.
 # rayon = "1"

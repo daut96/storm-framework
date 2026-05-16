@@ -143,8 +143,15 @@ fn main() {
         });
     });
 
+    // Setup state untuk UI Spinner
+    let spinner_frames = ['|', '/', '-', '\\'];
+    let mut spinner_idx = 0;
+    let mut last_render = Instant::now();
+    let render_interval = Duration::from_millis(80);
+
     // The main thread executes the UI loop smoothly.
     while let Ok(message) = rx.recv() {
+        // 1. Kumpulkan state secara silent (tanpa mencetak angka)
         match message {
             VerifyResult::Verified(path) => {
                 verified_count += 1;
@@ -159,11 +166,22 @@ fn main() {
             }
         }
 
-        print!("\r\x1b[K[*] Verified: {} | Modified: {} | Untracked: {}",
-               verified_count, modified_files.len(), untracked_files.len());
-        io::stdout().flush().unwrap();
+        // 2. Render UI hanya ketika interval waktu tercapai (Throttling)
+        if last_render.elapsed() >= render_interval {
+            print!("\r\x1b[K[*] Starting Storm Framework ({})", spinner_frames[spinner_idx]);
+            io::stdout().flush().unwrap();
+            
+            // Rotasi frame spinner menggunakan modulo agar tidak out-of-bounds
+            spinner_idx = (spinner_idx + 1) % spinner_frames.len();
+            last_render = Instant::now(); // Reset timer
+        }
     }
 
+    // \r   : kembali ke kolom pertama
+    // \x1b[K : ANSI escape code untuk menghapus teks dari kursor sampai akhir baris
+    print!("\r\x1b[K");
+    io::stdout().flush().unwrap();
+    
     // --- IDENTIFICATION OF MISSING FILES ---
     // The main thread still has access via the original manifest_files
     let missing_files: Vec<String> = manifest_files.keys()
@@ -178,12 +196,12 @@ fn main() {
         for f in &untracked_files { println!("    [UNTRACKED] -> {}", f); }
 
         if !modified_files.is_empty() || !missing_files.is_empty() {
-            println!("\nSTATUS: WARNING - Run 'storm update' to re-sign!!");
+            println!("\nSTATUS: WARNING - Run 'storm --update' to re-sign!!");
         } else {
             println!("\nSTATUS: CRITICAL - File injection detected.");
             std::process::exit(203);
         }
     } else {
-        println!("\n\n[✓] System integrity 100% intact.");
+        println!("\n\n[✓] Successfully Starting Storm Framework");
     }
 }

@@ -87,9 +87,7 @@ fn main() {
         println!("\n[!] FATAL ERROR: DIGITAL SIGNATURE MISMATCH!");
         std::process::exit(1);
     }
-
-    println!("[+] Digital Signature Verified. Manifest is authentic.");
-
+    
     // --- I/O BOUND (Filter Files with Directory Pruning) ---
     let ignored_items: HashSet<&str> = [
         ".git", "__pycache__", ".pytest_cache", ".github", 
@@ -205,6 +203,6 @@ fn main() {
             std::process::exit(203);
         }
     } else {
-        println!("\n\nSTATUS: SUCCESS");
+        println!("\n");
     }
 }

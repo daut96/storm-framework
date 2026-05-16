@@ -55,7 +55,7 @@ def output_stream(line: str) -> str:
 def execute(options):
 
     # Take input
-    ip_addr = options.get("IP")
+    ip = options.get("IP")
     port = options.get("PORT")
 
     # Binary path

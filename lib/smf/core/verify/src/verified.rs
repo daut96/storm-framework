@@ -155,6 +155,6 @@ fn main() {
             std::process::exit(203);
         }
     } else {
-        println!("\n");
+        // just leave it empty and fill it with python
     }
 }

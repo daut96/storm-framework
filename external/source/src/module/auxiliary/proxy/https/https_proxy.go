@@ -62,10 +62,20 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
+			if strings.Contains(contentType, "text/html") {
+				log.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
+				return resp
+			}
+
+			if strings.Contains(contentType, "text/css") {
+				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
+				return resp
+			}
+
 			log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 			// Dump Header
-			responseHeaders, _ := httputil.DumpResponse(resp, false)
+			responseHeaders, _ := httputil.DumpResponse(resp, true)
 			log.Printf("\n========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
 
 			// Ekstrak Stream Body
@@ -95,7 +105,7 @@ func main() {
 				safeGzipText := strings.ToValidUTF8(string(uncompressedBytes), "")
 				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n", safeGzipText)
 
-			} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/json") {
+			} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/") {
 				safePlainText := strings.ToValidUTF8(string(rawBodyBytes), "")
 				log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n", safePlainText)
 

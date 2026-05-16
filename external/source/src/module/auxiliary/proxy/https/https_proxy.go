@@ -67,7 +67,7 @@ func main() {
 
 			// Dump request header
 			reqDump, _ := httputil.DumpRequestOut(req, false)
-			log.Printf("\n========== OUTGOING REQUEST HEADERS ==========\n%s\n", string(reqDump))
+			log.Printf("========== OUTGOING REQUEST HEADERS ==========\n%s\n", string(reqDump))
 
 			// Baca body jika ada
 			if req.Body != nil && req.Body != http.NoBody {
@@ -144,7 +144,7 @@ func main() {
 
 			// Dump Header
 			responseHeaders, _ := httputil.DumpResponse(resp, false)
-			log.Printf("\n========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
+			log.Printf("========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
 
 			// Ekstrak Stream Body
 			rawBodyBytes, err := io.ReadAll(resp.Body)

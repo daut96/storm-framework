@@ -89,7 +89,7 @@ fn main() {
 
     println!("[+] Digital Signature Verified. Manifest is authentic.");
 
-    // --- TAHAP 1: I/O BOUND (Filter File dengan Directory Pruning) ---
+    // --- I/O BOUND (Filter Files with Directory Pruning) ---
     let ignored_items: HashSet<&str> = [
         ".git", "__pycache__", ".pytest_cache", ".github", 
         "sqlite", "signed_manifest.json", ".gitignore", 
@@ -98,7 +98,7 @@ fn main() {
 
     let mut target_files = Vec::new();
 
-    // OPTIMISASI 1: Pruning di level entry. WalkDir tidak akan membaca isi folder yang diabaikan.
+    // Pruning at the entry level. WalkDir will not read the contents of ignored folders.
     let walker = WalkDir::new(".").into_iter().filter_entry(|e| !is_ignored(e, &ignored_items));
 
     for entry in walker.filter_map(|e| e.ok()) {
@@ -110,7 +110,7 @@ fn main() {
         }
     }
 
-    // --- TAHAP 2 & 3: MULTITHREADING HASHING & UI REALTIME ---
+    // --- MULTITHREADING HASHING & REALTIME UI ---
     let mut verified_count = 0;
     let mut modified_files = Vec::new();
     let mut untracked_files = Vec::new();
@@ -118,15 +118,16 @@ fn main() {
 
     let (tx, rx) = mpsc::channel();
 
-    // [PERBAIKAN 1]: Bungkus manifest.files dengan Arc (alokasi memori utama)
+    // Wrap manifest.files with Arc (main memory allocation)
     let manifest_files = Arc::new(manifest.files);
     
-    // [PERBAIKAN 2]: Buat duplikat pointer untuk diserahkan ke worker thread
+    // Create a duplicate pointer to hand to the worker thread.
     let manifest_files_worker = Arc::clone(&manifest_files); 
 
     std::thread::spawn(move || {
         target_files.into_par_iter().for_each_with(tx, |sender, (path_buf, clean_path)| {
-            // Gunakan manifest_files_worker di dalam thread paralel ini
+            
+            // Use manifest_files_worker in this parallel thread
             let result = match manifest_files_worker.get(&clean_path) {
                 Some(info) => {
                     let calculated_hash = calculate_hash(&path_buf).unwrap_or_default();
@@ -142,7 +143,7 @@ fn main() {
         });
     });
 
-    // Thread utama mengeksekusi UI loop dengan lancar
+    // The main thread executes the UI loop smoothly.
     while let Ok(message) = rx.recv() {
         match message {
             VerifyResult::Verified(path) => {
@@ -163,8 +164,8 @@ fn main() {
         io::stdout().flush().unwrap();
     }
 
-    // --- TAHAP 4: IDENTIFIKASI MISSING FILES ---
-    // [PERBAIKAN 3]: Thread utama tetap memiliki akses via manifest_files yang asli
+    // --- IDENTIFICATION OF MISSING FILES ---
+    // The main thread still has access via the original manifest_files
     let missing_files: Vec<String> = manifest_files.keys()
         .filter(|json_path| !found_in_disk.contains(*json_path))
         .cloned()

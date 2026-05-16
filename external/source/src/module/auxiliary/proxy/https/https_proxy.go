@@ -41,7 +41,7 @@ func main() {
 		goproxy.GoproxyCa = caCert
 		
 		// Set aturan MITM dengan CA yang baru
-		proxy.OnRequest().HandleConnect(goproxy.FuncWithConnect(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
+		proxy.OnRequest().HandleConnect(goproxy.FuncHttpsHandler(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 			return &goproxy.ConnectAction{
 				Action:    goproxy.ConnectMitm,
 				TLSConfig: goproxy.TLSConfigFromCA(&caCert),

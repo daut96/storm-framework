@@ -93,29 +93,6 @@ func main() {
 		return resp
 	})
 
-	// 4. Logika DPI: Response Inspection (Mencegat & Membaca Response dari Target Server)
-	// Hook ini memungkinkan Anda menginspeksi data yang dikembalikan oleh server tujuan sebelum di-enkripsi
-	// kembali oleh proxy dan dikirim ke client asal.
-	proxy.OnResponse().DoFunc(
-		func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-			if resp == nil {
-				return resp
-			}
-
-			log.Printf("[DPI-RES] Intercepting the return payload from: %s", ctx.Req.Host)
-
-			// DumpResponse membaca seluruh data HTTP response (Status, Header, dan Body plaintext)
-			responseDump, err := httputil.DumpResponse(resp, true)
-			if err != nil {
-				log.Printf("[ERROR] Failed to perform response inspection: %v\n", err)
-				return resp
-			}
-
-			log.Printf("\n========== INCOMING DECRYPTED RESPONSE ==========\n%s\n=================================================\n", string(responseDump))
-
-			return resp
-		})
-
 	// 5. Konfigurasi dan Penayangan Server
 	server := &http.Server{
 		Addr:    port,

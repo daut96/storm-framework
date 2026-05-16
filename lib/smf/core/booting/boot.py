@@ -36,7 +36,7 @@ def boot():
     # Countdown to pause and start
     try:
         for i in range(5, 0, -1):
-            sys.stdout.write(f"\rMESSAGE: Berhasil Starting Storm Framework [{i}]")
+            sys.stdout.write(f"\r[✓] Successfully Starting Storm Framework [{i}]")
             sys.stdout.flush()
             time.sleep(1)
     except KeyboardInterrupt:

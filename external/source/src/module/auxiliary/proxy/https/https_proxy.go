@@ -63,7 +63,7 @@ func main() {
 			contentType := req.Header.Get("Content-Type")
 			contentEncoding := req.Header.Get("Content-Encoding")
 
-			log.Printf("[DPI-REQ] Intercepting request to: %s%s", req.Host, req.URL.Path)
+			log.Printf("[DPI-REQ] Intercepting request from: %s%s", req.Host, req.URL.Path)
 
 			// Dump request header
 			reqDump, _ := httputil.DumpRequestOut(req, false)
@@ -140,7 +140,7 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
-			log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
+			log.Printf("[DPI-RES] Intercepting responses from: %s%s", ctx.Req.Host, ctx.Req.URL.Path)
 
 			// Dump Header
 			responseHeaders, _ := httputil.DumpResponse(resp, false)

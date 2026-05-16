@@ -116,6 +116,35 @@ fi
 
 # This ensures that the command always matches the environment.
 chmod 600 .env
+
+# Go to data folder
+cd "$INSTALL_DIR/data" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
+
+# Generate ROOT CA TRUST STORE
+if [ ! -f smf_ca.key ] || [ ! -f smf_ca.crt ]; then
+    echo "[*] CA already exists"
+else
+    echo "[+] Generate CA Trust Store..."
+
+    # Delete CA lama
+    rm -f smf_ca.key smf_ca.crt
+
+    # Generate CA private key
+    openssl genrsa -out smf_ca.key 2048
+
+    # Allow standard owner read/write
+    chmod 600 smf_ca.key
+
+    # Generate self-signed CA certificate
+    openssl req -x509 -new -nodes \
+        -key smf_ca.key \
+        -sha256 \
+        -days 3650 \
+        -out smf_ca.crt \
+        -subj "/CN=StormWorld0/O=Storm-Framework/OU=Network-Security-Lab"
+fi
+
+# Sign all files
 python3 -m scripts.security.sign
 
 # Creating a Dynamic Wrapper Script
@@ -129,14 +158,28 @@ cd \"\$PROJECT_DIR\" || { echo \"[x] ERROR: Failed to access project directory.\
 
 if [ \"\$1\" == \"--update\" ] && [ \$# -eq 1 ]; then
     exec ./smfupdate
+
+elif [ \"\$1\" == \"--cp\" ] && [ \"\$2\" == \"--crt\" ] && [ \$# -eq 2 ]; then
+
+    if [ ! -f \"./data/smf_ca.crt\" ]; then
+        echo \"[x] ERROR: smf_ca.crt not found.\"
+        exit 1
+    fi
+
+    cp ./data/smf_ca.crt \"\$HOME/smf_ca.crt\"
+
+    echo \"[+] Certificate copied to \$HOME/smf_ca.crt\"
+
 elif [ \$# -eq 0 ]; then
+
     if [ ! -f \"./smfstart\" ]; then
         exec ./smfupdate
     else
         exec ./smfstart
     fi
+
 else
-    echo \"[*] Command '\$@' not found.\"
+    echo \"Command '\$@' not found.\"
     exit 1
 fi"
 

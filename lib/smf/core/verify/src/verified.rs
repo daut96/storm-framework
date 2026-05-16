@@ -150,7 +150,7 @@ fn main() {
 
         if !modified_files.is_empty() || !missing_files.is_empty() {
             println!("\nSTATUS: WARNING");
-            println!("MESSAGE: Run the command (storm --update) to re-sign!!");
+            println!("MESSAGE: Run the command (storm --update) to re-sign");
         } else {
             println!("\nSTATUS: CRITICAL");
             println!("MESSAGE: File injection detected");

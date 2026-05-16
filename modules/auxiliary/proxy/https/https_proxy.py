@@ -8,9 +8,14 @@ from apps.utility.colors import *
 from lib.roar.callbin.calling import call_bin
 
 MOD_INFO = {
-    "Name": "Forward proxy http",
+    "Name": "Forward proxy https",
     "Description": """
+Performing MITM on network traffic
+using the Deep Packet Inspection (DPI) mechanism
+to disassemble the body and read it in plaintext.
 
+Using proxy logic to capture specific traffic
+in the network and can be implemented more dynamically.
 """,
     "Author": ["zxelzy"],
     "Action": [
@@ -22,74 +27,66 @@ MOD_INFO = {
 }
 
 
-def stream_reader(pipe, color, is_error=False):
-    try:
-        for line in iter(pipe.readline, ""):
-            if not line:
-                break
-
-            line = line.rstrip()
-
-            # custom color output
-            sys.stdout.write(f"{color}{line}{CC.RESET}\n")
-            sys.stdout.flush()
-
-            # debug stderr
-            if is_error:
-                smf.printf(
-                    f"{color}{line}{CC.RESET}", file=sys.stdout, flush=True, end=""
-                )
-                smf.printd("Stderr https_proxy", line, level="DEBUG")
-
-    except Exception as e:
-        smf.printf(f"{CC.RED}Error exception https_proxy =>{CC.RESET}", e)
-        smf.printd("Exception https_proxy", e, level="ERROR")
-
-    finally:
-        pipe.close()
-
+def output_stream(line: str) -> str:
+    """
+    Inspects each line of stdout and injects ANSI color codes
+    based on the log pattern (keyword).
+    """
+    if "[ERROR]" in line or "[FATAL]" in line:
+        return f"{CC.RED}{line}{CC.RESET}"
+    elif "[INIT]" in line or "[START]" in line:
+        return f"{CC.GREEN}{line}{CC.RESET}"
+    elif "[DPI-REQ]" in line:
+        return f"{CC.CYAN}{line}{CC.RESET}"
+    elif "[DPI-RES]" in line:
+        return f"{CC.MAGENTA}{line}{CC.RESET}"
+    elif "========== INCOMING" in line or "====================" in line:
+        return f"{CC.YELLOW}{line}{CC.RESET}"
+    
+    return line # return line = Standard output
 
 def execute(options):
-    binary = call_bin("https_prox")
+    bin_path = call_bin("https_prox")
 
-    if not binary:
-        smf.printf(f"{CC.YELLOW}[!] Binary not found =>{CC.RESET}", binary)
+    # Binary validation
+    if not bin_path:
+        smf.printf(f"{CC.RED}[!] Binary not found.{CC.RESET}", bin_path)
         return
 
-    cmd = [binary]
+    cmd = [bin_path]
 
+    # bufsize=1 (Line buffered) ensures every \n is sent directly to Python's stdout
+    # without waiting for the OS memory buffer to fill up.
     process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        bufsize=1,
-        universal_newlines=True,
+        cmd, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.STDOUT,
+        text=True, 
+        bufsize=1 
     )
 
-    try:
-        stdout_thread = threading.Thread(
-            target=stream_reader,
-            args=(process.stdout, CC.GREEN, False),
-            daemon=True,
-        )
+    try: # Loop of output stream
+        for line in process.stdout:
+            stream_line = output_stream(line)
+            smf.printf(stream_line, end="", flush=True)
 
-        stderr_thread = threading.Thread(
-            target=stream_reader,
-            args=(process.stderr, CC.RED, True),
-            daemon=True,
-        )
-
-        stdout_thread.start()
-        stderr_thread.start()
-
-        process.wait()
-
-        stdout_thread.join()
-        stderr_thread.join()
-
+    # Monitor CTRL + C
     except KeyboardInterrupt:
-        smf.printf(f"{CC.YELLOW}[*] Stopping proxy...{CC.RESET}")
+        smf.printf(f"\n{CC.YELLOW}[*] Proxy stopped.{CC.RESET}")
 
-        process.terminate()
-        process.wait()
+    # Catch error exception
+    except Exception as e:
+        smf.printf(f"\n{CC.RED}[!] Error https_proxy =>{CC.RESET}", e)
+        smf.printd(f"Exception https_proxy", e, level="ERROR")
+
+    # Stop the binary process
+    finally:
+        if process.poll() is None: # Check the process in the background
+            process.terminate()
+            try:
+                process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                process.kill()
+
+        smf.printf(f"{CC.GREEN}[*] Proxy daemon successfully stopped and cleaned up.{CC.RESET}")
+            

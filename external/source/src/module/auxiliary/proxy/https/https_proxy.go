@@ -38,7 +38,7 @@ func main() {
 			return resp
 		}
 
-		log.Printf("\n[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
+		log.Printf("[DPI-RES] Intercepting responses from: %s", ctx.Req.Host)
 
 		// 1. DUMP HEADER SAJA
 		// Set false agar httputil tidak membaca body biner dan merusak terminal

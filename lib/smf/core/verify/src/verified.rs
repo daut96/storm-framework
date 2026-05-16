@@ -6,6 +6,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
+use std::time::{Instant, Duration};
 use walkdir::WalkDir;
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
@@ -82,6 +83,12 @@ fn main() {
         ".env", "target", "res", "cache"
     ];
 
+    // --- SETUP STATE FOR UI SPINNER ---
+    let spinner_frames = ['|', '/', '-', '\\'];
+    let mut spinner_idx = 0;
+    let mut last_render = Instant::now();
+    let render_interval = Duration::from_millis(80);
+
     for entry in WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
         if path.is_file() {
@@ -101,6 +108,7 @@ fn main() {
             let clean_path = path_str.strip_prefix("./").unwrap_or(path_str);
             found_in_disk.insert(clean_path.to_string());
 
+            // Hashing Process (I/O Blocking)
             match manifest.files.get(clean_path) {
                 Some(info) => {
                     if calculate_hash(path).unwrap_or_default() == info.sha256 {
@@ -111,10 +119,21 @@ fn main() {
                 }
                 None => { untracked_files.push(clean_path.to_string()); }
             }
-            print!("\r\x1b[K[*] Verified: {} | Modified: {} | Untracked: {}", verified_count, modified_files.len(), untracked_files.len());
-            io::stdout().flush().unwrap();
+
+            // --- UI EXECUTION THROTTLING (SILENT LOG) ---
+            if last_render.elapsed() >= render_interval {
+                print!("\r\x1b[K[*] Starting Storm Framework ({})", spinner_frames[spinner_idx]);
+                io::stdout().flush().unwrap();
+                
+                spinner_idx = (spinner_idx + 1) % spinner_frames.len();
+                last_render = Instant::now();
+            }
         }
     }
+
+    // --- CLEANUP TERMINAL ---
+    print!("\r\x1b[K");
+    io::stdout().flush().unwrap();
 
     let mut missing_files = Vec::new();
     for json_path in manifest.files.keys() {
@@ -124,18 +143,20 @@ fn main() {
     }
 
     if !modified_files.is_empty() || !missing_files.is_empty() || !untracked_files.is_empty() {
-        println!("\n\n[!] INTEGRITY BREACH DETECTED!");
+        println!("\n\n[!] INTEGRITY BREACH DETECTED [!]");
         for f in &modified_files { println!("    [MODIFIED]  -> {}", f); }
         for f in &missing_files { println!("    [MISSING]  -> {}", f); }
         for f in &untracked_files { println!("    [UNTRACKED]  -> {}", f); }
 
         if !modified_files.is_empty() || !missing_files.is_empty() {
-            println!("\nSTATUS: WARNING - Run 'storm update' to re-sign!!");
+            println!("\nSTATUS: WARNING");
+            println!("MESSAGE: Run the command (storm --update) to re-sign!!");
         } else {
-            println!("\nSTATUS: CRITICAL - File injection detected.");
+            println!("\nSTATUS: CRITICAL");
+            println!("MESSAGE: File injection detected");
             std::process::exit(203);
         }
     } else {
-        println!("\n\n[✓] System integrity 100% intact.");
+        println!("\n\n[✓] Successfully Starting Storm Framework");
     }
 }

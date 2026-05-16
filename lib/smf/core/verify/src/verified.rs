@@ -70,8 +70,6 @@ fn main() {
         std::process::exit(1);
     }
 
-    println!("[+] Digital Signature Verified. Manifest is authentic.");
-
     let mut verified_count = 0;
     let mut modified_files = Vec::new();
     let mut untracked_files = Vec::new();
@@ -157,6 +155,6 @@ fn main() {
             std::process::exit(203);
         }
     } else {
-        println!("\n\nSTATUS: SUCCESS");
+        println!("\n");
     }
 }

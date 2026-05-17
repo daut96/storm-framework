@@ -185,7 +185,8 @@ else
     echo "Command '\$@' not found."
     exit 1
 fi
-EOF)
+EOF
+)
 
 write_to_file "$CREATE_WRAPPER" "$WRAPPER_DST" false
 

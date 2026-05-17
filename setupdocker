@@ -163,6 +163,36 @@ fi
 
 # This ensures that the command always matches the environment.
 sudo chmod 600 .env
+
+# Go to data folder
+cd "$INSTALL_DIR/data" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
+
+# Generate ROOT CA TRUST STORE
+if [ -f smf_ca.key ] && [ -f smf_ca.crt ]; then
+    echo "[*] CA already exists"
+else
+    echo "[+] Generate CA Trust Store..."
+
+    # Delete CA lama
+    rm -f smf_ca.key smf_ca.crt
+
+    # Generate CA private key
+    openssl genrsa -out smf_ca.key 2048
+
+    # Allow standard owner read/write
+    sudo chmod 600 smf_ca.key
+
+    # Generate self-signed CA certificate
+    openssl req -x509 -new -nodes \
+        -key smf_ca.key \
+        -sha256 \
+        -days 3650 \
+        -out smf_ca.crt \
+        -subj "/CN=StormWorld0/O=Storm-Framework/OU=Network-Security-Lab"
+fi
+
+cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
+
 # Sign dieksekusi di dalam Docker, karena librari kriptografinya ada di dalam image
 sudo docker run --rm -v "$INSTALL_DIR":"$INSTALL_DIR" -w "$INSTALL_DIR" "$REPO_NAME" python3 -m scripts.security.sign
 
@@ -170,32 +200,35 @@ sudo docker run --rm -v "$INSTALL_DIR":"$INSTALL_DIR" -w "$INSTALL_DIR" "$REPO_N
 WRAPPER_DST="$BIN_DIR/$TOOL_NAME"
 
 # Create wrapper content in variables for easy management
-CREATE_WRAPPER="${SHEBANG_PATH}
+CREATE_WRAPPER=$(cat << EOF
+${SHEBANG_PATH}
 
-PROJECT_DIR=\"$INSTALL_DIR\"
-cd \"\$PROJECT_DIR\" || { echo \"[x] ERROR: Failed to access project directory.\"; exit 1; }
+PROJECT_DIR="$INSTALL_DIR"
+cd "\$PROJECT_DIR" || { echo "[x] ERROR: Failed to access project directory."; exit 1; }
 
 # Cek apakah descriptor 1 (STDOUT) terhubung ke terminal asli (TTY)
 if [ -t 1 ]; then
-    TTY_FLAG=\"-it\"
+    TTY_FLAG="-it"
 else
-    TTY_FLAG=\"\"
+    TTY_FLAG=""
 fi
 
-DOCKER_CMD=\"sudo docker run \$TTY_FLAG --rm --network host -v \$PROJECT_DIR:\$PROJECT_DIR -w \$PROJECT_DIR $REPO_NAME\"
+DOCKER_CMD="sudo docker run \$TTY_FLAG --rm --network host -v \$PROJECT_DIR:\$PROJECT_DIR -w \$PROJECT_DIR $REPO_NAME"
 
-if [ \"\$1\" == \"--update\" ] && [ \$# -eq 1 ]; then
+if [ "\$1" = "--update" ] && [ \$# -eq 1 ]; then
     exec \$DOCKER_CMD ./smfupdate
 elif [ \$# -eq 0 ]; then
-    if [ ! -f \"./smfstart\" ]; then
+    if [ ! -f "./smfstart" ]; then
         exec \$DOCKER_CMD ./smfupdate
     else
         exec \$DOCKER_CMD ./smfstart
     fi
 else
-    echo \"[x] Error: Command '\$@' not found.\"
+    echo "[x] Error: Command '\$@' not found."
     exit 1
-fi"
+fi
+EOF
+)
 
 write_to_file "$CREATE_WRAPPER" "$WRAPPER_DST" false
 

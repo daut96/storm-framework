@@ -121,7 +121,7 @@ chmod 600 .env
 cd "$INSTALL_DIR/data" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
 # Generate ROOT CA TRUST STORE
-if [ ! -f smf_ca.key ] || [ ! -f smf_ca.crt ]; then
+if [ -f smf_ca.key ] && [ -f smf_ca.crt ]; then
     echo "[*] CA already exists"
 else
     echo "[+] Generate CA Trust Store..."
@@ -144,6 +144,8 @@ else
         -subj "/CN=StormWorld0/O=Storm-Framework/OU=Network-Security-Lab"
 fi
 
+cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
+
 # Sign all files
 python3 -m scripts.security.sign
 
@@ -151,37 +153,39 @@ python3 -m scripts.security.sign
 WRAPPER_DST="$BIN_DIR/$TOOL_NAME"
 
 # Create wrapper content in variables for easy management
-CREATE_WRAPPER="${SHEBANG_PATH}
+CREATE_WRAPPER=$(cat << EOF
+${SHEBANG_PATH}
 
-PROJECT_DIR=\"$INSTALL_DIR\"
-cd \"\$PROJECT_DIR\" || { echo \"[x] ERROR: Failed to access project directory.\"; exit 1; }
+PROJECT_DIR="$INSTALL_DIR"
+cd "\$PROJECT_DIR" || { echo "[x] ERROR: Failed to access project directory."; exit 1; }
 
-if [ \"\$1\" == \"--update\" ] && [ \$# -eq 1 ]; then
+if [ "\$1" = "--update" ] && [ \$# -eq 1 ]; then
     exec ./smfupdate
 
-elif [ \"\$1\" == \"--cp\" ] && [ \"\$2\" == \"--crt\" ] && [ \$# -eq 2 ]; then
+elif [ "\$1" = "--cp" ] && [ "\$2" = "--crt" ] && [ \$# -eq 2 ]; then
 
-    if [ ! -f \"./data/smf_ca.crt\" ]; then
-        echo \"[x] ERROR: smf_ca.crt not found.\"
+    if [ ! -f "./data/smf_ca.crt" ]; then
+        echo "[x] ERROR: smf_ca.crt not found."
         exit 1
     fi
 
-    cp ./data/smf_ca.crt \"\$HOME/smf_ca.crt\"
+    cp ./data/smf_ca.crt "\$HOME/smf_ca.crt"
 
-    echo \"[+] Certificate copied to \$HOME/smf_ca.crt\"
+    echo "[+] Certificate copied to \$HOME/smf_ca.crt"
 
 elif [ \$# -eq 0 ]; then
 
-    if [ ! -f \"./smfstart\" ]; then
+    if [ ! -f "./smfstart" ]; then
         exec ./smfupdate
     else
         exec ./smfstart
     fi
 
 else
-    echo \"Command '\$@' not found.\"
+    echo "Command '\$@' not found."
     exit 1
-fi"
+fi
+EOF)
 
 write_to_file "$CREATE_WRAPPER" "$WRAPPER_DST" false
 

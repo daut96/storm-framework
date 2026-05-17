@@ -188,7 +188,7 @@ else
         -sha256 \
         -days 3650 \
         -out smf_ca.crt \
-        -subj "/CN=StormWorld0/O=Storm-Framework/OU=Network-Security-Lab"
+        -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm"
 fi
 
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }

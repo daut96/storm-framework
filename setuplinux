@@ -175,7 +175,7 @@ else
     openssl genrsa -out smf_ca.key 2048
 
     # Allow standard owner read/write
-    chmod 600 smf_ca.key
+    sudo chmod 600 smf_ca.key
 
     # Generate self-signed CA certificate
     openssl req -x509 -new -nodes \

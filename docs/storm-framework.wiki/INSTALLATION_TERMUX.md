@@ -27,3 +27,25 @@ Use this if you want to perform updates outside the Storm interface.
 ```bash
 storm --update
 ```
+
+### 4. Copy Storm Trusted Root CA
+
+This Root CA can be copied from internal to `$HOME` and is usually used when you want to run a module `https_proxy`, the command is as below:
+
+```bash
+storm --cp --crt
+```
+
+Next after copying CA `$HOME` use the command below to copy to `sdcard` Android internal storage:
+
+```bash
+cp smf_ca.crt /sdcard
+```
+
+After the previous copy is complete, use it directly by:
+
+1. **Go to Android Settings**
+2. **Go to Privacy & Security**
+3. **Go to Install certificate from storage**
+4. **Install CA Certificate**
+5. **Import smf_ca.crt from storage**

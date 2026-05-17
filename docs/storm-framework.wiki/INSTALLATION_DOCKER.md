@@ -27,3 +27,31 @@ This will run updates outside of the Storm interface without having to startup.
 ```bash
 sudo storm --update
 ```
+
+### 4. Copy Storm Trusted Root CA
+
+This Root CA can be copied from internal to `$HOME` and is usually used when you want to run a module `https_proxy`, the command is as below:
+
+```bash
+storm --cp --crt
+```
+
+Alternative:
+
+```bash
+sudo storm --cp --crt
+```
+
+After finishing copying CA to `$HOME` use the following command to insert into the trust store certificate:
+
+```bash
+sudo cp smf_ca.crt /usr/local/share/ca-certificates/smf_ca.crt
+```
+
+Then confirm with the command:
+
+```bash
+sudo update-ca-certificates
+```
+
+You can also install Storm Trust Root CA to Firefox Browser and so on.

@@ -26,9 +26,8 @@ write_to_file() {
 # -----------------------------------------------------------------------------
 # --- AUTOMATIC ENVIRONMENT DETECTION & PATH CONFIGURATION ---
 # -----------------------------------------------------------------------------
-# Standard Linux Environment
-echo -e "${GREEN}[!] Environment detected: Standard Linux${NC}"
 
+# Standard Linux Environment
 BIN_DIR="/usr/local/bin"
 SHEBANG_PATH="#!/usr/bin/env bash"
 PYTHON_CMD="python3"
@@ -63,13 +62,10 @@ echo -e "${GREEN}[+] Create installation directory${NC}"
 
 # Mengecek apakah script sedang berjalan di dalam GitHub Actions
 if [ "$GITHUB_ACTIONS" == "true" ]; then
-    echo -e "${BLUE}[*] CI Environment detected. Injecting local branch code...${NC}"
-    # Salin semua file dari branch lokal (DevExperiment) ke folder instalasi
-    # Ini menghindari git clone yang secara otomatis menarik branch main
+    echo -e "${BLUE}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
 else
-    echo -e "${BLUE}[*] Production Environment detected. Cloning repository...${NC}"
-    # Pengguna asli tetap akan mengunduh dari internet
+    echo -e "${BLUE}[*] Production Environment detected${NC}"
     sudo mkdir -p "$INSTALL_DIR"
     sudo git clone "$GITHUB_REPO" "$INSTALL_DIR"
 fi
@@ -88,14 +84,11 @@ if [ ! -f "$INSTALL_DIR/pyproject.toml" ]; then
 fi
 
 # Install Python Dependencies
-if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
+if [ -f "$INSTALL_DIR/requirements.txt" ]; then
     echo -e "${GREEN}[+] Installing Python dependencies.${NC}"
 
-    # Create Virtual Environment first
     sudo "$PYTHON_CMD" -m venv "$VENV_DIR"
-
-    # Install using the isolated venv python
-    sudo "$VENV_PYTHON" -m pip install "$INSTALL_DIR/."
+    sudo "$VENV_PYTHON" -m pip install -r "$INSTALL_DIR/requirements.txt"
 
     if [ $? -ne 0 ]; then
         echo -e "${RED}[x] ERROR: Failed to install Python dependencies.${NC}"
@@ -103,12 +96,11 @@ if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
 fi
 
 # --- RUST TOOLCHAIN PREPARATION ---
-# Kita mengecek ketersediaan cargo menggunakan sudo agar mendeteksi environment root
+# Mengecek ketersediaan cargo menggunakan sudo agar mendeteksi environment root
 if ! sudo command -v cargo &> /dev/null || ! sudo cargo --version | grep -q "1.8"; then
     echo -e "${GREEN}[+] Installing modern Rust toolchain for ROOT environment...${NC}"
 
     # Paksa instalasi sepenuhnya menggunakan user ROOT
-    # Ini menghindari konflik $HOME antara user biasa dan euid sudo
     sudo bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 
     # Buat symlink biner Rust dari direktori root ke sistem global
@@ -189,8 +181,11 @@ else
         -days 3650 \
         -out smf_ca.crt \
         -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm"
+
+    echo "[✓] Success generate CA Trust Store"
 fi
 
+# Go to root folder
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
 # Sign using the isolated venv python
@@ -208,7 +203,6 @@ VENV_ACTIVATE="\$PROJECT_DIR/venv/bin/activate"
 
 cd "\$PROJECT_DIR" || { echo "[x] ERROR: Failed to access project directory."; exit 1; }
 
-# Automatically load virtual environment to ensure Python dependencies are injected into PATH
 if [ -f "\$VENV_ACTIVATE" ]; then
     source "\$VENV_ACTIVATE"
 fi

@@ -26,14 +26,14 @@ write_to_file() {
 # -----------------------------------------------------------------------------
 # --- AUTOMATIC ENVIRONMENT DETECTION & PATH CONFIGURATION ---
 # -----------------------------------------------------------------------------
-# Standard Linux Environment
-echo -e "${GREEN}[!] Environment detected: Standard Linux${NC}"
 
+# Standard Linux Environment
 BIN_DIR="/usr/local/bin"
 SHEBANG_PATH="#!/usr/bin/env bash"
 PYTHON_CMD="python3"
 INSTALL_DIR="/opt/$REPO_NAME"
 
+sudo apt update
 sudo apt install -y jq python3-full python3-venv python3-pip git golang build-essential cmake libpcap-dev clang ffmpeg openssl pkg-config libssl-dev
 
 # -----------------------------------------------------------------------------
@@ -61,13 +61,10 @@ echo -e "${GREEN}[+] Create installation directory${NC}"
 
 # Mengecek apakah script sedang berjalan di dalam GitHub Actions
 if [ "$GITHUB_ACTIONS" == "true" ]; then
-    echo -e "${BLUE}[*] CI Environment detected. Injecting local branch code...${NC}"
-    # Salin semua file dari branch lokal (DevExperiment) ke folder instalasi
-    # Ini menghindari git clone yang secara otomatis menarik branch main
+    echo -e "${BLUE}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
 else
-    echo -e "${BLUE}[*] Production Environment detected. Cloning repository...${NC}"
-    # Pengguna asli tetap akan mengunduh dari internet
+    echo -e "${BLUE}[*] Production Environment detected${NC}"
     sudo mkdir -p "$INSTALL_DIR"
     sudo git clone "$GITHUB_REPO" "$INSTALL_DIR"
 fi
@@ -87,11 +84,10 @@ fi
 
 
 # Install Python Dependencies
-if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
+if [ -f "$INSTALL_DIR/requirements.txt" ]; then
     echo -e "${GREEN}[+] Installing Python dependencies.${NC}"
 
-    # In Ubuntu/Kali, we add the flag --break-system-packages
-    sudo "$PYTHON_CMD" -m pip install "$INSTALL_DIR/." --break-system-packages
+    sudo "$PYTHON_CMD" -m pip install -r "$INSTALL_DIR/requirements.txt" --break-system-packages
 
     if [ $? -ne 0 ]; then
         echo -e "${RED}[x] ERROR: Failed to install Python dependencies.${NC}"
@@ -99,7 +95,7 @@ if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
 fi
 
 # --- RUST TOOLCHAIN PREPARATION ---
-# Kita mengecek ketersediaan cargo menggunakan sudo agar mendeteksi environment root
+# Mengecek ketersediaan cargo menggunakan sudo agar mendeteksi environment root
 if ! sudo command -v cargo &> /dev/null || ! sudo cargo --version | grep -q "1.8"; then
     echo -e "${GREEN}[+] Installing modern Rust toolchain for ROOT environment...${NC}"
 
@@ -184,6 +180,8 @@ else
         -days 3650 \
         -out smf_ca.crt \
         -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm"
+
+    echo "[✓] Success generate CA Trust Store"
 fi
 
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }

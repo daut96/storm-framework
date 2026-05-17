@@ -26,9 +26,8 @@ write_to_file() {
 # -----------------------------------------------------------------------------
 # --- AUTOMATIC ENVIRONMENT DETECTION & PATH CONFIGURATION ---
 # -----------------------------------------------------------------------------
-# Termux Environment
-echo -e "${GREEN}[!] Environment detected: Termux${NC}"
 
+# Termux Environment
 BIN_DIR="$PREFIX/bin"
 SHEBANG_PATH="#!/usr/bin/env bash"
 PYTHON_CMD="python"
@@ -69,11 +68,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # Install Python Dependencies
-if [ -f "$INSTALL_DIR/pyproject.toml" ]; then
+if [ -f "$INSTALL_DIR/requirements.txt" ]; then
     echo -e "${GREEN}[+] Installing Python dependencies.${NC}"
 
-    # In Termux, pip usually doesn't need additional flags.
-    "$PYTHON_CMD" -m pip install "$INSTALL_DIR/."
+    "$PYTHON_CMD" -m pip install -r "$INSTALL_DIR/requirements.txt"
 
     if [ $? -ne 0 ]; then
         echo -e "${RED}[x] ERROR: Failed to install Python dependencies.${NC}"
@@ -142,6 +140,8 @@ else
         -days 3650 \
         -out smf_ca.crt \
         -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm"
+
+    echo "[✓] Success generate CA Trust Store"
 fi
 
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }

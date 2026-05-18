@@ -3,7 +3,7 @@ import smf
 import whoisdomain as whois
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Searching for information",
     "Description": """
 Looking for specific information on whois data to

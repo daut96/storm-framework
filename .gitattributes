@@ -1,0 +1,7 @@
+# Detect all languages
+*.py linguist-detectable=true
+*.go linguist-detectable=true
+*.c linguist-detectable=true
+*.h linguist-detectable=true
+*.json linguist-detectable=true
+*.rs linguist-detectable=true

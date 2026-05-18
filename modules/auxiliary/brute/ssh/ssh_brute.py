@@ -5,7 +5,7 @@ import smf
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "SSH login bruteforce",
     "Description": """
 Tried thousands of passwords and passphrases for

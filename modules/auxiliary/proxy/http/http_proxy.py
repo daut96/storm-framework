@@ -4,7 +4,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "Forward proxy http",
     "Description": """
 Perform surveillance on http traffic

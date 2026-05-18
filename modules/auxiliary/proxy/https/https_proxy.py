@@ -6,7 +6,7 @@ from rootmap import ROOT
 from apps.utility.colors import *
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "Forward proxy https",
     "Description": """
 Performing MITM on network traffic

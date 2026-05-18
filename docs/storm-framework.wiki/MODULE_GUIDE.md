@@ -119,7 +119,7 @@ But before that, make sure you remember what the binary output is in the Makefil
 
 ### Message
 
-Make sure the binary source code is placed inside `external/source/src/module` and the binary result is directed to `external/source/out/module`.
+Make sure the binary source code is placed inside `internal/source/modules` and the binary result is directed to `external/source/out/module`.
 
 To save your python loader, place it in the modules folder because this is what will be executed first before running the binary.
 

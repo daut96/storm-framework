@@ -10,11 +10,11 @@ This is the standard that must be set so that all modules can run.
 from rootmap import ROOT  # noqa
 
 #
-# Apply MOD_INFO with this template in every module you create
+# Apply metadata with this template in every module you create
 # This serves to identify the module and provide information about its creator
 # valid license for the security of the code you create
 #
-MOD_INFO = {
+metadata = {
     "Name": "fill in the module name",
     "Description": """
 For a complete explanation

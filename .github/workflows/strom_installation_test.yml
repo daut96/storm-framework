@@ -10,8 +10,8 @@ on:
 jobs:
   # =================================================================
   # JOB 1: NATIVE DOCKER TEST (1 Job)
-  # Mengeksekusi setupdocker langsung di level Host OS (tanpa container)
-  # Memanfaatkan pre-installed Docker daemon dari GitHub Actions VM
+  # Execute setupdocker directly at the Host OS level (without containers)
+  # Leveraging the pre-installed Docker daemon from the GitHub Actions VM
   # =================================================================
   docker-test:
     name: Test docker on native ubuntu host
@@ -33,8 +33,8 @@ jobs:
 
   # =================================================================
   # JOB 2: CONTAINERIZED SCRIPT TEST (6 Jobs)
-  # Mengeksekusi setuplinux & setupvenv di dalam lingkungan yang terisolasi
-  # Total eksekusi: 3 OS x 2 Setup = 6 Jobs
+  # Executing setuplinux & setupvenv in an isolated environment
+  # Total execution: 3 OS x 2 Setup = 6 Jobs
   # =================================================================
   script-test:
     name: Test ${{ matrix.setup_type }} on ${{ matrix.os }}

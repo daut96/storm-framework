@@ -144,6 +144,7 @@ else
     echo "[✓] Success generate CA Trust Store"
 fi
 
+# Go to root folder
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
 # Sign all files

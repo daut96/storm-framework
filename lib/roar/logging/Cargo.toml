@@ -8,7 +8,7 @@ name = "smf"
 crate-type = ["cdylib"]
 
 [dependencies]
-# abi3-py37 memastikan biner Anda kompetibel dengan banyak versi Python
+# abi3-py37 memastikan biner kompatibel terhadap banyak versi python
 pyo3 = { version = "0.21", features = ["extension-module", "abi3-py37"] }
 rayon = "1"
 rusqlite = { version = "0.31.0", features = ["bundled"] }

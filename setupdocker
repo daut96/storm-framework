@@ -39,7 +39,7 @@ sudo apt install -y jq python3 git openssl docker.io
 
 echo -e "${GREEN}[!] Start Installation: ${REPO_NAME} [!] ${NC}"
 
-# Check Python and Git (Dan Docker)
+# Check Python and Git and Docker
 if ! command -v git &> /dev/null; then
     echo -e "${RED}[x] ERROR: Git not found. Install Git first.${NC}"
     exit 1
@@ -62,7 +62,7 @@ fi
 
 echo -e "${GREEN}[+] Create installation directory${NC}"
 
-# Mengecek apakah script sedang berjalan di dalam GitHub Actions
+# Checking if a script is running inside GitHub Actions
 if [ "$GITHUB_ACTIONS" == "true" ]; then
     echo -e "${GREEN}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
@@ -78,14 +78,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Validasi apakah folder berhasil terisi
+# Validate whether the folder is successfully filled
 if [ ! -f "$INSTALL_DIR/pyproject.toml" ]; then
     echo -e "${RED}[x] ERROR: Failed to prepare repository files.${NC}"
     sudo rm -rf "$INSTALL_DIR"
     exit 1
 fi
 
-# Install Python Dependencies (Diubah menjadi proses Build Docker Image)
+# Install Python Dependencies
+# Changed to Build Docker Image process
 if [ -f "$INSTALL_DIR/requirements.txt" ]; then
     echo -e "${GREEN}[+] Installing Python dependencies and Building Image.${NC}"
 
@@ -100,7 +101,7 @@ RUN pip install --no-cache-dir -r $INSTALL_DIR/requirements.txt"
 
     echo "[+] Initiating Docker Build Process..."
 
-    # Mengecek apakah script sedang berjalan di dalam GitHub Actions (CI/CD) atau di Produksi
+    # Check CI/CD or Production environment
     if [ "$GITHUB_ACTIONS" == "true" ]; then
         sudo -E docker buildx build -t "$REPO_NAME" \
             --cache-from type=gha \
@@ -110,7 +111,7 @@ RUN pip install --no-cache-dir -r $INSTALL_DIR/requirements.txt"
         sudo docker build -t "$REPO_NAME" "$INSTALL_DIR"
     fi
 
-    # PENERAPAN FAIL-FAST
+    # FAIL-FAST IMPLEMENTATION
     if [ $? -ne 0 ]; then
         echo -e "${RED}[x] FATAL ERROR: Failed to build Docker Image and Python dependencies.${NC}"
         echo -e "${RED}[x] Halting installation to prevent downstream failures.${NC}"
@@ -123,7 +124,7 @@ if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Cannot access $INSTALL_DIR${NC}"; }
 fi
 
-# Menyuntikkan -e GOFLAGS="-buildvcs=false" untuk mematikan VCS stamping
+# Inject -e GOFLAGS="-buildvcs=false" to turn off VCS stamping
 sudo docker run --rm -e GOFLAGS="-buildvcs=false" -v "$INSTALL_DIR":"$INSTALL_DIR" -w "$INSTALL_DIR" "$REPO_NAME" "$PYTHON_CMD" -m scripts.cpl.compiler
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
@@ -185,9 +186,10 @@ else
     echo "[✓] Success generate CA Trust Store"
 fi
 
+# Go to root folder
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
-# Sign dieksekusi di dalam Docker
+# Sign executed inside Docker
 sudo docker run --rm -v "$INSTALL_DIR":"$INSTALL_DIR" -w "$INSTALL_DIR" "$REPO_NAME" python3 -m scripts.security.sign
 
 # Creating a Dynamic Wrapper Script
@@ -200,7 +202,7 @@ ${SHEBANG_PATH}
 PROJECT_DIR="$INSTALL_DIR"
 cd "\$PROJECT_DIR" || { echo "[x] ERROR: Failed to access project directory."; exit 1; }
 
-# Cek apakah descriptor 1 (STDOUT) terhubung ke terminal asli (TTY)
+# Check descriptor 1 (STDOUT) is connected to the native terminal (TTY)
 if [ -t 1 ]; then
     TTY_FLAG="-it"
 else

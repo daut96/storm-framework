@@ -1,46 +1,16 @@
 {
-    "main-repo": "storm-framework",
+    "main-repo": "Storm Framework",
     "organization": "StormWorld0",
     "version": "3.9.6",
+    "license": "GPL-3.0",
     "author": {
         "name": "エルジー",
         "e-mail": "elzyproot@protonmail.com"
         },
-    "contributors": [
-        {
-            "name": "Deep Donald",
-            "e-mail": "albrexter@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "Andriana",
-            "e-mail": "andriana89@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "Angel",
-            "e-mail": "angela289@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "zrvha",
-            "e-mail": "zarsita00@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "stvanva",
-            "e-mail": "vanvanando@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "ZanDev",
-            "e-mail": "zanaforml@protonmail.com",
-            "role": "tester"
-        },
-        {
-            "name": "AvaStars",
-            "e-mail": "skypharita@protonmail.com",
-            "role": "tester"
-        }
-    ]
+    "wiki": "https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki",
+    "language": "Python",
+    "language": "Rust",
+    "language": "Golang",
+    "language": "Bash",
+    "language": "C/C++"
 }

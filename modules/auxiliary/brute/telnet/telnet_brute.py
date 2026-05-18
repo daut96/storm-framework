@@ -6,7 +6,7 @@ import os
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Bruteforce Telnet login",
     "Description": """
 Matching Telnet login username and password

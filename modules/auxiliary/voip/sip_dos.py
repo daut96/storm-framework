@@ -2,7 +2,7 @@ import socket
 import random
 import smf
 
-MOD_INFO = {
+metadata = {
     "Name": "Session Initiation Protocol DoS",
     "Description": """
 Send thousands of SIP requests to the connection

@@ -4,7 +4,7 @@ import sys
 import smf
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Searching for website header",
     "Description": """
 Send a request to get the headers of an active website

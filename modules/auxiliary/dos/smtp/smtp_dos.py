@@ -4,7 +4,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "DoS to SMTP network",
     "Description": """
 Flooding an SMTP network to disrupt email services

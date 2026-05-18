@@ -5,7 +5,7 @@
 # if the existing CVE category does not match the one you want to add
 # just create a new folder with the appropriate category name
 
-CVE_INFO = {
+metadata = {
     "cve": "CVE-XXXX-XXXX",
     "name": "Vulnerability name",
     "severity": "CRITICAL/HIGH/MEDIUM/LOW",

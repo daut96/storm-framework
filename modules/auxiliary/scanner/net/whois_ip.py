@@ -3,7 +3,7 @@ import smf
 from ipwhois import IPWhois
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Searching for information",
     "Description": """
 Finding information behind an IP Address using Whois

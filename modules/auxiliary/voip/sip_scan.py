@@ -5,7 +5,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "Session Initiation Protocol Scanning",
     "Description": """
 Monitor SIP systems before conducting DoS attacks on 

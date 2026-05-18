@@ -5,7 +5,7 @@ import smf
 from apps.utility.colors import *
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "Searching for subdomains",
     "Description": """
 Perform a scan on the specified subdomain

@@ -4,7 +4,7 @@ import smf
 from assets.wordlist.userpass import DEFAULT_CREDS, COMMON_USERS
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Grafana bruteforce login",
     "Description": """
 Trying to log in multiple times using the password

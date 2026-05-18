@@ -62,10 +62,10 @@ echo -e "${GREEN}[+] Create installation directory${NC}"
 
 # Mengecek apakah script sedang berjalan di dalam GitHub Actions
 if [ "$GITHUB_ACTIONS" == "true" ]; then
-    echo -e "${BLUE}[*] CI Environment detected${NC}"
+    echo -e "${GREEN}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
 else
-    echo -e "${BLUE}[*] Production Environment detected${NC}"
+    echo -e "${GREEN}[*] Production Environment detected${NC}"
     sudo mkdir -p "$INSTALL_DIR"
     sudo git clone "$GITHUB_REPO" "$INSTALL_DIR"
 fi

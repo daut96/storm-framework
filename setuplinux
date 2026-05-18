@@ -61,10 +61,10 @@ echo -e "${GREEN}[+] Create installation directory${NC}"
 
 # Mengecek apakah script sedang berjalan di dalam GitHub Actions
 if [ "$GITHUB_ACTIONS" == "true" ]; then
-    echo -e "${BLUE}[*] CI Environment detected${NC}"
+    echo -e "${GREEN}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
 else
-    echo -e "${BLUE}[*] Production Environment detected${NC}"
+    echo -e "${GREEN}[*] Production Environment detected${NC}"
     sudo mkdir -p "$INSTALL_DIR"
     sudo git clone "$GITHUB_REPO" "$INSTALL_DIR"
 fi
@@ -114,7 +114,7 @@ if ! sudo command -v cargo &> /dev/null || ! sudo cargo --version | grep -q "1.8
 fi
 
 # Validasi versi menggunakan konteks sudo
-echo -e "${BLUE}[*] Cargo version: $(sudo /usr/local/bin/cargo --version)${NC}"
+echo -e "${GREEN}[*] Cargo version: $(sudo /usr/local/bin/cargo --version)${NC}"
 # ----------------------------------
 
 

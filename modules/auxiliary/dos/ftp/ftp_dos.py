@@ -3,7 +3,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "DoS to FTP connection",
     "Description": """
 Flooding an FTP network to disrupt its functionality

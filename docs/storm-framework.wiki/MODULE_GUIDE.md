@@ -11,7 +11,7 @@ You just need to know that Storm uses the Python orchestrator, and the module is
 This is important as metadata to make it easier to find descriptions of modules and other information.
 
 ```python
-MOD_INFO = {
+metadata = {
     "Name": "fill in the module name",
     "Description": """
 For a complete explanation
@@ -22,7 +22,7 @@ For a complete explanation
         ["Function name", {"Description": "Brief explanation of the function"}],
     ],
     "DefaultAction": "Main function",
-    "License": "fill in your module license or match GPL-3.0",
+    "License": "SMF License",
 }
 ```
 

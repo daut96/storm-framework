@@ -59,7 +59,7 @@ fi
 
 echo -e "${GREEN}[+] Create installation directory${NC}"
 
-# Mengecek apakah script sedang berjalan di dalam GitHub Actions
+# Check CI/CD or Production environment
 if [ "$GITHUB_ACTIONS" == "true" ]; then
     echo -e "${GREEN}[*] CI Environment detected${NC}"
     sudo cp -a . "$INSTALL_DIR"
@@ -75,7 +75,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Validasi apakah folder berhasil terisi
+# Validate whether the folder is successfully filled
 if [ ! -f "$INSTALL_DIR/pyproject.toml" ]; then
     echo -e "${RED}[x] ERROR: Failed to prepare repository files.${NC}"
     sudo rm -rf "$INSTALL_DIR"
@@ -95,25 +95,25 @@ if [ -f "$INSTALL_DIR/requirements.txt" ]; then
 fi
 
 # --- RUST TOOLCHAIN PREPARATION ---
-# Mengecek ketersediaan cargo menggunakan sudo agar mendeteksi environment root
+# Check cargo availability using sudo to detect root environment
 if ! sudo command -v cargo &> /dev/null || ! sudo cargo --version | grep -q "1.8"; then
     echo -e "${GREEN}[+] Installing modern Rust toolchain for ROOT environment...${NC}"
 
-    # Paksa instalasi sepenuhnya menggunakan user ROOT
-    # Ini menghindari konflik $HOME antara user biasa dan euid sudo
+    # Force full installation using ROOT user
+    # This avoids $HOME conflicts between regular users and sudo euid
     sudo bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 
-    # Buat symlink biner Rust dari direktori root ke sistem global
+    # Create a Rust binary symlink from the root directory to the global system
     sudo ln -sf /root/.cargo/bin/cargo /usr/local/bin/cargo
     sudo ln -sf /root/.cargo/bin/rustc /usr/local/bin/rustc
     sudo ln -sf /root/.cargo/bin/rustup /usr/local/bin/rustup
 
-    # Atur default toolchain secara eksplisit khusus untuk user root
-    # Ini mengabulkan permintaan error: "run 'rustup default stable'"
+    # Set the default toolchain explicitly specifically for the root user.
+    # This grants the error request: "run 'rustup default stable'"
     sudo /usr/local/bin/rustup default stable
 fi
 
-# Validasi versi menggunakan konteks sudo
+# Version validation using sudo context
 echo -e "${GREEN}[*] Cargo version: $(sudo /usr/local/bin/cargo --version)${NC}"
 # ----------------------------------
 
@@ -184,6 +184,7 @@ else
     echo "[✓] Success generate CA Trust Store"
 fi
 
+# Go to root folder
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }
 
 # Sign all files

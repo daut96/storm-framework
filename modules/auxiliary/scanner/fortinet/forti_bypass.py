@@ -3,7 +3,7 @@ import sys
 import smf
 from lib.smf.ssl.netssl import *
 
-MOD_INFO = {
+metadata = {
     "Name": "Fortinet API login bypass",
     "Description": """
 Attempting to bypass the Fortinet login API using

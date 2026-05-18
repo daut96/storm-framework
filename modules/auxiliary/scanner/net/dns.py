@@ -6,7 +6,7 @@ import smf
 import sys
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Scanning DNS Records",
     "Description": """
 Scan the DNS Record to find out the DNS data in it

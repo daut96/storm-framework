@@ -2,7 +2,7 @@ import crypt
 import smf
 from apps.utility.colors import C
 
-MOD_INFO = {
+metadata = {
     "Name": "Bruteforce hashing MD5-Crypt",
     "Description": """
 Trying thousands of keywords to find a match against the hash

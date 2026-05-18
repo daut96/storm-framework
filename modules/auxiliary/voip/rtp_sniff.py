@@ -5,7 +5,7 @@ import smf
 
 from lib.roar.callbin.calling import call_bin
 
-MOD_INFO = {
+metadata = {
     "Name": "Real-Time Transport Protocol",
     "Description": """
 Capture and read audio or video call traffic

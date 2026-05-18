@@ -7,15 +7,13 @@ import smf
 
 from apps.utility.colors import *
 
-from lib.smf.core.console.engine import Context
-
 
 # For those who like CVE collections, this logic is definitely needed
 # Because this will produce output that is neat in structure and style.
 # For ease of reading, and to differentiate between Description, name, ID, etc.
 # The most important thing is to make sure that the CVE uses the example data format that has been provided.
 # Otherwise the output will be messy and not according to storm rules.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args: list[str], ctx: "Context") -> None:
     query = args[0] if args else ""
     if not query:
         smf.printf(f"{CC.YELLOW}[!] Enter file name to info!{CC.RESET}")
@@ -41,7 +39,7 @@ def execute(args: list[str], ctx: Context) -> None:
                 spec.loader.exec_module(mod)
 
                 # --- GET DICTIONARY CVE_INFO ---
-                info = mod.CVE_INFO
+                info = mod.metadata
                 width = 55
 
                 smf.printf()
@@ -89,7 +87,7 @@ def execute(args: list[str], ctx: Context) -> None:
                 spec.loader.exec_module(mod)
 
                 # --- GET DICTIONARY MOD_INFO ---
-                info = mod.MOD_INFO
+                info = mod.metadata
                 width = 55
                 label_w = 13
 

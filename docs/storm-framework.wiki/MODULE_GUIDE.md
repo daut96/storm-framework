@@ -16,7 +16,7 @@ metadata = {
     "Description": """
 For a complete explanation
 """,
-    "Author": ["fill in your name", "examples"],
+    "Author": ["zxelzy"],
     "Action": [
         ["Function name", {"Description": "Brief explanation of the function"}],
         ["Function name", {"Description": "Brief explanation of the function"}],

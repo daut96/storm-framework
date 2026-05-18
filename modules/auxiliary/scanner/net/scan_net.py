@@ -6,7 +6,7 @@ from apps.utility.colors import C
 STATUS_OPEN = "✅"
 STATUS_CLOSED = "❌"
 
-MOD_INFO = {
+metadata= {
     "Name": "Publicly accessible port scanning",
     "Description": """
 To scan public or local IPs to look for open ports

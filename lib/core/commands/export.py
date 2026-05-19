@@ -2,7 +2,7 @@
 # -- SMF License
 import smf
 from lib.smfdb_helpers.log_utils import extract_logs
-
+from lib.smf.core.console.engine import Context
 
 # This command is used to retrieve specific logs that are stored.
 # in the internal log database and differentiated using several log levels
@@ -16,7 +16,7 @@ from lib.smfdb_helpers.log_utils import extract_logs
 # and so forth.
 #
 # If the log is successfully retrieved, by default the resulting log file will be saved in HOME.
-def execute(args: list[str], ctx: "Context") -> None:
+def execute(args: list[str], ctx: Context) -> None:
     # Validate argument length.
     if len(args) >= 2:
         cmd = args[0].lower()
@@ -27,7 +27,7 @@ def execute(args: list[str], ctx: "Context") -> None:
             valid_levels = {"DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"}
             if val not in valid_levels:
                 smf.printf(
-                    f"{CC.YELLOW}[!] WARN => Unknown log level > {val}. Allowed => {', '.join(valid_levels)}{CC.RESET}"
+                    f"{CC.YELLOW}[!] Unknown log level => {val} >> Allowed => {', '.join(valid_levels)}{CC.RESET}"
                 )
                 # Monitor user typos
                 smf.printd("Invalid log extraction attempt", val, level="WARN")

@@ -26,6 +26,7 @@ def execute(args: list[str], ctx: "Context") -> None:
         )
         return
 
+    # 1. Validasi opsi wajib
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
     missing = [
         key for key in required_vars.keys() if not str(options.get(key, "")).strip()
@@ -41,20 +42,16 @@ def execute(args: list[str], ctx: "Context") -> None:
     metadata = getattr(current_module, "metadata", {})
     is_handled_by_plugin = False
 
-    # ==========================================
-    # [PERBAIKAN] Data Preparation & Sanitization
-    # ==========================================
-
-    # 1. Filtering: Hanya ambil options yang memiliki nilai (tidak string kosong)
-    # Ini mencegah pengiriman key irrelevant seperti "SUBDOM": "" ke plugin.
+    # 2. Data Preparation via Defensive Copying
     sanitized_options = {k: v for k, v in options.items() if str(v).strip()}
-
-    # 2. Defensive Copying: Buat instance baru yang terpisah di memori
-    # Menggunakan deepcopy jika ada nested data, atau sekadar copy() untuk flat dict
     payload_options = copy.deepcopy(sanitized_options)
 
+    # 3. Bangun objek runtime terisolasi dari Context Factory
+    #    Ini menghasilkan objek 'RuntimeContext' yang siap disuntikkan ke modul.
+    module_runtime = ctx.runtime(metadata=metadata, plugin_manager=plugin)
+
     try:
-        # Lempar payload_options yang sudah aman dan bersih ke plugin
+        # [PERBAIKAN]: Jalankan hook pre_execute via broadcast ke sistem plugin
         broadcast_results = plugin.broadcast(
             "pre_execute",
             metadata=metadata,
@@ -62,17 +59,16 @@ def execute(args: list[str], ctx: "Context") -> None:
             options=payload_options,
         )
 
+        # 4. Evaluasi hasil interupsi/mutasi dari plugin
         if isinstance(broadcast_results, dict):
             for plugin_name, result in broadcast_results.items():
                 if not isinstance(result, dict):
                     continue
 
-                # Evaluasi hasil mutasi yang sah (melalui kontrak kembalian)
+                # Cek jika ada modifikasi options statis dari pintu depan (pre_execute)
                 if "modified_options" in result and isinstance(
                     result["modified_options"], dict
                 ):
-                    # Update dict options UTAMA dengan hasil mutasi plugin
-                    # (Hanya menimpa key yang dimodifikasi, tidak menghilangkan key lain)
                     options.update(result["modified_options"])
                     smf.printd(
                         "PLUGIN",
@@ -80,6 +76,7 @@ def execute(args: list[str], ctx: "Context") -> None:
                         level="DEBUG",
                     )
 
+                # Short-circuit jika plugin mengambil alih eksekusi sepenuhnya
                 if result.get("handled") is True:
                     smf.printf(
                         f"{CC.GREEN}[+] Execution successfully handled by plugin: {plugin_name}{CC.RESET}"
@@ -91,7 +88,7 @@ def execute(args: list[str], ctx: "Context") -> None:
         smf.printd("PLUGIN BROADCAST ERROR", e, level="ERROR")
 
     # ==========================================
-    # Fallback Logic (Tidak berubah)
+    # Fallback Logic (Clean Injection)
     # ==========================================
 
     if is_handled_by_plugin:
@@ -103,11 +100,25 @@ def execute(args: list[str], ctx: "Context") -> None:
             if full_path:
                 options["PASS"] = full_path
 
-        current_module.execute(options)
+        # Jalankan modul dengan menyuntikkan options dan runtime terisolasi
+        current_module.execute(options, module_runtime)
+
+    except TypeError as e:
+        # Backward compatibility untuk modul-modul lama yang belum migrasi ke parameter runtime
+        if "execute() takes 1 positional argument but 2 were given" in str(e):
+            smf.printd(
+                "LEGACY MODULE DETECTED",
+                "Fallback to 1-parameter execution style.",
+                level="WARN",
+            )
+            current_module.execute(options)
+        else:
+            smf.printd("TYPE ERROR COMMAND RUN", e, level="ERROR")
 
     except AttributeError as e:
         smf.printd("ATTRIBUTE ERROR COMMAND RUN", e, level="ERROR")
         smf.printf(f"{CC.RED}[!] RUN ATTRIBUTE ERROR{CC.RESET}")
+
     except Exception as e:
         smf.printd("ERROR COMMAND RUN EXCEPTION", e, level="ERROR")
         smf.printf(f"{CC.RED}[!] ERROR DURING EXECUTION{CC.RESET}")

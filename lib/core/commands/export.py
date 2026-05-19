@@ -42,7 +42,9 @@ def execute(args: list[str], ctx: "Context") -> None:
             extract_logs(val, output_file=output_filename)
         else:
             # If the user types: take backup, take system, etc.
-            smf.printf(f"{CC.YELLOW}[!] Unknown subcommand => {cmd} for >> export{CC.RESET}")
+            smf.printf(
+                f"{CC.YELLOW}[!] Unknown subcommand => {cmd} for >> export{CC.RESET}"
+            )
     else:
         # If the user just types "take" or "take log" without a level argument
         smf.printf(f"{CC.YELLOW}[!] Syntax error. Usage: export log <level>{CC.RESET}")

@@ -2,7 +2,6 @@
 # -- SMF License
 import smf
 from lib.smfdb_helpers.log_utils import extract_logs
-from lib.smf.core.console.engine import Context
 
 
 # This command is used to retrieve specific logs that are stored.
@@ -17,7 +16,7 @@ from lib.smf.core.console.engine import Context
 # and so forth.
 #
 # If the log is successfully retrieved, by default the resulting log file will be saved in HOME.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args: list[str], ctx: "Context") -> None:
     # Validate argument length.
     if len(args) >= 2:
         cmd = args[0].lower()
@@ -28,7 +27,7 @@ def execute(args: list[str], ctx: Context) -> None:
             valid_levels = {"DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"}
             if val not in valid_levels:
                 smf.printf(
-                    f"[!] ERROR => Unknown log level > {val}. Allowed => {', '.join(valid_levels)}"
+                    f"{CC.YELLOW}[!] WARN => Unknown log level > {val}. Allowed => {', '.join(valid_levels)}{CC.RESET}"
                 )
                 # Monitor user typos
                 smf.printd("Invalid log extraction attempt", val, level="WARN")
@@ -43,9 +42,9 @@ def execute(args: list[str], ctx: Context) -> None:
             extract_logs(val, output_file=output_filename)
         else:
             # If the user types: take backup, take system, etc.
-            smf.printf(f"[!] WARN => Unknown subcommand '{cmd}' for 'export'")
+            smf.printf(f"{CC.YELLOW}[!] Unknown subcommand => {cmd} for >> export{CC.RESET}")
     else:
         # If the user just types "take" or "take log" without a level argument
-        smf.printf(f"[!] WARN => Syntax error. Usage: export log <level>")
+        smf.printf(f"{CC.YELLOW}[!] Syntax error. Usage: export log <level>{CC.RESET}")
         # Log syntax errors to the log database
-        smf.printd("CLI Syntax Error", args, level="DEBUG")
+        smf.printd("CLI Syntax Error", args, level="WARN")

@@ -13,7 +13,7 @@ from apps.utility.colors import *
 # For ease of reading, and to differentiate between Description, name, ID, etc.
 # The most important thing is to make sure that the CVE uses the example data format that has been provided.
 # Otherwise the output will be messy and not according to storm rules.
-def execute(args: list[str], ctx: "Context") -> None:
+def execute(args, ctx):
     query = args[0] if args else ""
     if not query:
         smf.printf(f"{CC.YELLOW}[!] Enter file name to info!{CC.RESET}")

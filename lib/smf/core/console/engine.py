@@ -22,7 +22,7 @@ class Context:
     options: dict = field(default_factory=ops.default_options)
     exit: bool = False
     plugin: typing.Any = plugin
-    runtime: typing.Any = runtime
+    runtime: typing.Any = RuntimeContext
 
     smf.printd("CONTEXT PLUGIN", plugin, level="DEBUG")
     smf.printd("CONTEXT RUNTIME", runtime, level="DEBUG")

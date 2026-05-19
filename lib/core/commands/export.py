@@ -5,7 +5,6 @@ from apps.utility.colors import *
 from lib.smfdb_helpers.log_utils import extract_logs
 
 
-
 # This command is used to retrieve specific logs that are stored.
 # in the internal log database and differentiated using several log levels
 # for example:

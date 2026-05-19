@@ -5,9 +5,6 @@ import apps.utility.utils as utils
 
 from apps.utility.colors import *
 
-from lib.smf.core.console.engine import Context
-
-
 # Command use to lock or use a module that you want to use.
 # here's an example as follows;
 # Command => use <val>
@@ -15,7 +12,7 @@ from lib.smf.core.console.engine import Context
 # Command => use scan
 # in the input zone it will change to lock the scan so we know again
 # using what module.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
 
     if not args:
         smf.printf(f"{CC.YELLOW}[!] Enter file name!{CC.RESET}")
@@ -29,5 +26,5 @@ def execute(args: list[str], ctx: Context) -> None:
         ctx.current_module_name = module_name
     else:
         smf.printf(
-            f"{CC.YELLOW}[!] WARN =>{CC.RESET} {module_name} {CC.YELLOW}> Not found.{CC.RESET}"
+            f"{CC.YELLOW}[!]{CC.RESET} {module_name} {CC.YELLOW}=> Not found.{CC.RESET}"
         )

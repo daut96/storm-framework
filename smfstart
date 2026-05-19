@@ -2,10 +2,15 @@
 
 import readline  # noqa: F401
 
-from apps.utility.colors import *
-from lib.smf.core.booting.boot import *
-from lib.ui.banner import *
-from lib.smf.core.console.engine import Context 
+try:
+    from apps.utility.colors import *
+    from lib.smf.core.booting.boot import *
+    from lib.ui.banner import *
+    from lib.smf.core.console.engine import Context 
+except ImportError as e:
+    print(f"Import error smfstart => {e}")
+    sys.exit(100)
+
 
 def main():
     boot()

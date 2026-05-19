@@ -8,9 +8,9 @@ class Plugin:
         smf.printd("DemoPlugin", "Plugin instance allocated in memory.", level="DEBUG")
         self.status = "Active"
 
-    def process_data(self, data):
+    def execute(self, data):
         """Fungsi normal yang berjalan dengan baik."""
-        return f"Data '{data}' telah diproses oleh DemoPlugin."
+        return f"Data '{data}' has been processed by DemoPlugin."
 
     def trigger_crash(self):
         """Fungsi cacat untuk menguji ketahanan framework (Fault Tolerance)."""

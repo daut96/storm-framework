@@ -4,7 +4,7 @@ import importlib
 
 from typing import List
 from rootmap import ROOT
-from lib.roar.cache import cache_modules as cache
+from .search_engine import show_modules
 
 # utils.py It all contains help logic to make it easier during repairs and updates.
 # This is included in the core category which cannot be modified.
@@ -178,4 +178,4 @@ def get_categories():
 def get_modules_in_category(category: str) -> List[str]:
     """Retrieves all .py files within a specified category"""
 
-    return cache.execute(category)
+    return show_modules(category)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import readline  # noqa: F401
+import sys
 
 try:
     from apps.utility.colors import *

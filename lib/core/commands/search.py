@@ -5,6 +5,7 @@ import smf
 from apps.utility.colors import *
 from apps.utility.search_engine import search_modules
 
+
 # Search command to search for the modules we want to search for
 # This is very dynamic as in general it does not require specific words.
 # if there is a module name scan_a, scan_b, and you run it like;

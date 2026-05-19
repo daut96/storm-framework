@@ -57,9 +57,9 @@ def search_modules(query_str):
 
     # Menyesuaikan rasio kolom agar deskripsi bisa masuk tanpa merusak format tabel
     smf.printf(
-        f"{CC.CYAN}{'Module Path':<30} {'Category':<12} {'Description'}{CC.RESET}"
+        f"{CC.CYAN}{'Module Path':<35} {'Category':<12} {'Description'}{CC.RESET}"
     )
-    smf.printf(f"{CC.MAGENTA}{'-'*30} {'-'*12} {'-'*40}{CC.RESET}")
+    smf.printf(f"{CC.MAGENTA}{'-'*35} {'-'*12} {'-'*45}{CC.RESET}")
 
     count = 0
 
@@ -127,12 +127,12 @@ def search_modules(query_str):
 
                 count += 1
                 smf.printf(
-                    f"{CC.YELLOW}{clean_path:<30} {category:<12} {clean_desc}{CC.RESET}"
+                    f"{CC.YELLOW}{clean_path:<35}{CC.RESET} {category:<12} {clean_desc}"
                 )
 
     if count == 0:
-        smf.printf(f"\n{CC.YELLOW}[*] {query_str} => Not found.{CC.RESET}")
+        smf.printf(f"\n{CC.YELLOW}[*] {query_str} => Not found{CC.RESET}")
     else:
-        smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module(s).{CC.RESET}")
+        smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module{CC.RESET}")
 
     smf.printf()

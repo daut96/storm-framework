@@ -3,7 +3,7 @@
 import smf
 from apps.utility.colors import *
 from lib.smfdb_helpers.log_utils import extract_logs
-from lib.smf.core.console.engine import Context
+
 
 
 # This command is used to retrieve specific logs that are stored.
@@ -18,7 +18,7 @@ from lib.smf.core.console.engine import Context
 # and so forth.
 #
 # If the log is successfully retrieved, by default the resulting log file will be saved in HOME.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
     # Validate argument length.
     if len(args) >= 2:
         cmd = args[0].lower()

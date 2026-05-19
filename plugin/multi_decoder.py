@@ -35,14 +35,16 @@ class Plugin:
             if transforms.get(transform_key) is True:
                 # Lakukan decode pada payload saat ini
                 decoded_result = decoder_func(current_payload)
-                
+
                 # Jika ada perubahan, perbarui payload untuk iterasi decoder selanjutnya
                 if decoded_result != current_payload:
                     current_payload = decoded_result
 
         # 3. Jika payload berhasil bermutasi, kirim balik ke engine
         if current_payload != payload:
-            smf.printd(f"[{self.name}] Payload successfully transformed.", level="DEBUG")
+            smf.printd(
+                f"[{self.name}] Payload successfully transformed.", level="DEBUG"
+            )
             return {"mutated_payload": current_payload}
 
         return {"handled": False}
@@ -72,4 +74,3 @@ class Plugin:
             return decoded_bytes.decode("utf-8", errors="ignore")
         except Exception:
             return data
-            

@@ -113,6 +113,7 @@ def sync_bin() -> None:
         smf.printd(
             f"An I/O error occurred during the DB sync transaction.", e, level="ERROR"
         )
+        raise
 
 
 def call_bin(binary_name: str) -> str:

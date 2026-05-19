@@ -6,6 +6,7 @@ import smf
 from .colors import *
 from rootmap import ROOT
 
+
 def parse_query(query):
     parts = query.split()
     base_queries = []
@@ -17,6 +18,7 @@ def parse_query(query):
         else:
             base_queries.append(part.lower())
     return " ".join(base_queries), filters
+
 
 def extract_metadata(file_path):
     try:
@@ -32,16 +34,19 @@ def extract_metadata(file_path):
         pass
     return {}
 
+
 def search_modules(query_str):
     # Sesuaikan path database Anda
-    db_path = os.path.join(ROOT, "sqlite", "cached", "cache.db") 
+    db_path = os.path.join(ROOT, "sqlite", "cached", "cache.db")
     base_query, filters = parse_query(query_str)
 
     smf.printf(f"\n{CC.YELLOW}[*] Searching for =>{CC.RESET} {query_str}")
     smf.printf()
-    smf.printf(f"{CC.CYAN}{'Module Path':<30} {'Category':<12} {'Description'}{CC.RESET}")
+    smf.printf(
+        f"{CC.CYAN}{'Module Path':<30} {'Category':<12} {'Description'}{CC.RESET}"
+    )
     smf.printf(f"{CC.MAGENTA}{'-'*30} {'-'*12} {'-'*40}{CC.RESET}")
-    
+
     count = 0
     supported_filters = {"author", "action", "defaction"}
 
@@ -54,13 +59,16 @@ def search_modules(query_str):
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        
+
         if base_query:
             # Gunakan LIKE untuk partial match pada module_name
-            cursor.execute("SELECT path, category, module_name FROM module_cache WHERE module_name LIKE ?", (f'%{base_query}%',))
+            cursor.execute(
+                "SELECT path, category, module_name FROM module_cache WHERE module_name LIKE ?",
+                (f"%{base_query}%",),
+            )
         else:
             cursor.execute("SELECT path, category, module_name FROM module_cache")
-            
+
         rows = cursor.fetchall()
         conn.close()
     except sqlite3.Error as e:
@@ -70,15 +78,15 @@ def search_modules(query_str):
     # 3. Filter Evaluation (hanya untuk file yang lolos query DB)
     for row in rows:
         file_path, category, module_name = row
-        
+
         # Jika ada filter, kita harus ekstrak metadata
         metadata = {}
-        if filters or True: # Kita tetap butuh metadata untuk menampilkan Description
+        if filters or True:  # Kita tetap butuh metadata untuk menampilkan Description
             metadata = extract_metadata(file_path)
-            
+
         if filters and not metadata:
             continue
-            
+
         is_valid = True
         for f_key, f_val in filters.items():
             if f_key == "author":
@@ -87,7 +95,11 @@ def search_modules(query_str):
                     is_valid = False
                     break
             elif f_key == "action":
-                actions = [str(a[0]).lower() for a in metadata.get("Action", []) if isinstance(a, list) and len(a) > 0]
+                actions = [
+                    str(a[0]).lower()
+                    for a in metadata.get("Action", [])
+                    if isinstance(a, list) and len(a) > 0
+                ]
                 if not any(f_val in act for act in actions):
                     is_valid = False
                     break
@@ -96,24 +108,25 @@ def search_modules(query_str):
                 if f_val not in def_action:
                     is_valid = False
                     break
-                    
+
         if not is_valid:
             continue
 
         # Format output
         raw_desc = metadata.get("Description", "No description provided.")
-        clean_desc = " ".join(raw_desc.split()) 
+        clean_desc = " ".join(raw_desc.split())
         if len(clean_desc) > 45:
             clean_desc = clean_desc[:42] + "..."
 
         count += 1
         # Menggunakan module_name dari DB (lebih bersih)
-        smf.printf(f"{CC.YELLOW}{module_name:<30} {category:<12} {clean_desc}{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}{module_name:<30} {category:<12} {clean_desc}{CC.RESET}"
+        )
 
     if count == 0:
         smf.printf(f"\n{CC.YELLOW}[*] {query_str} => Not found.{CC.RESET}")
     else:
         smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module(s).{CC.RESET}")
-    
+
     smf.printf()
-    

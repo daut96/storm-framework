@@ -4,6 +4,7 @@ import smf
 
 from apps.utility.colors import *
 
+
 # This command is used to turn off the plugin life cycle.
 # active, in the following way;
 #
@@ -14,9 +15,7 @@ def execute(args, ctx):
 
     # Input validation
     if not args:
-        smf.printf(
-            f"{CC.YELLOW}[!] Use the command =>{CC.RESET} unload <plugin_name>"
-        )
+        smf.printf(f"{CC.YELLOW}[!] Use the command =>{CC.RESET} unload <plugin_name>")
         return
 
     # Get plugin name command

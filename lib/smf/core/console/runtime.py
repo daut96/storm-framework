@@ -27,5 +27,3 @@ class RuntimeContext:
                     current_payload = res["mutated_payload"]
 
         return current_payload
-
-

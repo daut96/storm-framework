@@ -122,6 +122,6 @@ def search_modules(query):
         smf.printf(f"{CC.YELLOW}{module_name:<35} {category:<15} {desc}{CC.RESET}")
 
     if count == 0:
-        smf.printf(f"\n{CC.YELLOW}[*] {query_str} => Not found.{CC.RESET}\n")
+        smf.printf(f"\n{CC.YELLOW}[*] {query} => Not found.{CC.RESET}\n")
     else:
         smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module(s).{CC.RESET}\n")

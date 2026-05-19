@@ -3,7 +3,7 @@
 import smf
 
 from apps.utility.colors import *
-from apps.utility.search import search_modules
+from apps.utility.search_engine import search_modules
 
 from lib.smf.core.console.engine import Context
 

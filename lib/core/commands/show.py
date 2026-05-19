@@ -3,7 +3,6 @@
 import smf
 import apps.utility.utils as utils
 from apps.utility.colors import *
-from lib.smf.core.console.engine import Context
 
 
 # The show command is used to display data in modules.
@@ -12,7 +11,7 @@ from lib.smf.core.console.engine import Context
 # 2. Command => show auxiliary > will display all contents in the auxiliary.
 # 3. Command => show options > will display global variables.
 # 4. Command => show plugin > will display all existing plugins.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
     target_show = args[0].lower() if args else ""
 
     current_module = ctx.current_module

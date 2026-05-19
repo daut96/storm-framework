@@ -5,16 +5,13 @@ import apps.utility.utils as utils
 
 from apps.utility.colors import *
 
-from lib.smf.core.console.engine import Context
-
-
 # The set command is used to save data to global variables and module variables.
 # it seems like the following example
 # Command => set <var> <val>
 # or
 # Command => set ip 192.168.1.0
 # a command like this will insert value data into the variable we implement.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
     options = ctx.options
 
     if len(args) >= 2:

@@ -44,14 +44,26 @@ def execute(args: list[str], ctx: "Context") -> None:
 
                 smf.printf()
                 smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'STORM VULNERABILITY KNOWLEDGE BASE':^55}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'STORM VULNERABILITY KNOWLEDGE BASE':^55}{CC.RESET}"
+                )
                 smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
 
-                smf.printf(f"{CC.CYAN}{'ID CVE':<13} : {CC.YELLOW}{info['cve']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['name']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'LEVEL':<13} : {CC.YELLOW}{info['severity']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'PUBLISHED':<13} : {CC.YELLOW}{info['published']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'UPDATED':<13} : {CC.YELLOW}{info['updated']}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'ID CVE':<13} : {CC.YELLOW}{info['cve']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['name']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'LEVEL':<13} : {CC.YELLOW}{info['severity']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'PUBLISHED':<13} : {CC.YELLOW}{info['published']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'UPDATED':<13} : {CC.YELLOW}{info['updated']}{CC.RESET}"
+                )
                 smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
                 smf.printf(f"{CC.YELLOW}DESCRIPTION{CC.RESET}   :")
@@ -69,8 +81,12 @@ def execute(args: list[str], ctx: "Context") -> None:
                     smf.printf(f" - {CC.YELLOW}{link}{CC.RESET}")
                 smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
-                smf.printf(f"{CC.CYAN}{'SCANNER':<13} : {CC.YELLOW}{info['scanner']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'EXPLOIT':<13} : {CC.YELLOW}{info['exploit']}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'SCANNER':<13} : {CC.YELLOW}{info['scanner']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'EXPLOIT':<13} : {CC.YELLOW}{info['exploit']}{CC.RESET}"
+                )
                 smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
                 smf.printf()
 
@@ -96,7 +112,9 @@ def execute(args: list[str], ctx: "Context") -> None:
                 smf.printf(f"{CC.CYAN}{'STORM INFORMATION MODULES':^55}{CC.RESET}")
                 smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
 
-                smf.printf(f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['Name']}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['Name']}{CC.RESET}"
+                )
                 smf.printf(f"{CC.CYAN}DESCRIPTION{CC.RESET}   :")
                 desc = textwrap.fill(
                     info["Description"].strip(),
@@ -109,7 +127,9 @@ def execute(args: list[str], ctx: "Context") -> None:
                 smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
                 authors = info.get("Author", [])
                 first_auth = authors[0] if authors else "Unknown"
-                smf.printf(f"{CC.CYAN}{'AUTHOR':<{label_w}} : - {CC.YELLOW}{first_auth}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'AUTHOR':<{label_w}} : - {CC.YELLOW}{first_auth}{CC.RESET}"
+                )
                 for extra in authors[1:]:
                     smf.printf(f"{' '*(label_w)} : - {CC.YELLOW}{extra}{CC.RESET}")
 
@@ -121,8 +141,12 @@ def execute(args: list[str], ctx: "Context") -> None:
                     smf.printf(f"  > {CC.YELLOW}{name:<9} : {desc}{CC.RESET}")
 
                 smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'DefAction':<13} : {CC.YELLOW}{info['DefaultAction']}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'LICENSE':<13} : {CC.YELLOW}{info['License']}{CC.RESET}")
+                smf.printf(
+                    f"{CC.CYAN}{'DefAction':<13} : {CC.YELLOW}{info['DefaultAction']}{CC.RESET}"
+                )
+                smf.printf(
+                    f"{CC.CYAN}{'LICENSE':<13} : {CC.YELLOW}{info['License']}{CC.RESET}"
+                )
                 smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
                 smf.printf()
 

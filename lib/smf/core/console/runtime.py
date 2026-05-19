@@ -17,7 +17,7 @@ class RuntimeContext:
 
         # Lempar ke mesin broadcast yang sudah kita perbaiki kemarin
         results = self._plugin.broadcast(
-            "on_payload_ready", payload=payload, metadata=self.metadata
+            "execute", payload=payload, metadata=self.metadata
         )
 
         current_payload = payload

@@ -30,7 +30,7 @@ class StormSmartCache:
             smf.printd(
                 "Failed to connect or configure SQLite database", e, level="CRITICAL"
             )
-            sys.exit(201)
+            raise
 
     def _init_db(self):
         try:
@@ -52,7 +52,7 @@ class StormSmartCache:
             self.conn.commit()
         except Exception as e:
             smf.printd("Failed to initialize database schema", e, level="CRITICAL")
-            sys.exit(201)
+            raise
 
     def _extract_metadata(self, file_path: str) -> dict:
         try:
@@ -66,7 +66,7 @@ class StormSmartCache:
                                 return ast.literal_eval(node.value)
         except Exception as e:
             smf.printd("Extract metadata failed", e, level="CRITICAL")
-            sys.exit(201)
+            raise
 
     def _fast_scan(
         self,
@@ -156,7 +156,7 @@ class StormSmartCache:
                 smf.printd("No drift detected. Sync skipped.", level="INFO")
         except Exception as e:
             smf.printd("Fatal error during sync", e, level="CRITICAL")
-            sys.exit(201)
+            raise
 
 
 # Global register untuk sync saat booting

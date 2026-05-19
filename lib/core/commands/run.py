@@ -1,6 +1,5 @@
 # -- https://github.com/StormWorld0/storm-framework
 # -- SMF License
-import copy
 import smf
 import apps.utility.utils as utils
 
@@ -21,15 +20,21 @@ def execute(args: list[str], ctx: "Context") -> None:
     plugin = ctx.plugin
 
     if not current_module:
-        smf.printf(f"{CC.YELLOW}[!] No modules selected. (use <module>) first.{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] No modules selected. (use <module>) first.{CC.RESET}"
+        )
         return
 
     # Validate options
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
-    missing = [key for key in required_vars.keys() if not str(options.get(key, "")).strip()]
+    missing = [
+        key for key in required_vars.keys() if not str(options.get(key, "")).strip()
+    ]
 
     if missing:
-        smf.printf(f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}"
+        )
         return
 
     metadata = getattr(current_module, "metadata", {})
@@ -39,7 +44,7 @@ def execute(args: list[str], ctx: "Context") -> None:
         full_path = utils.resolve_path(options["PASS"])
         if full_path:
             options["PASS"] = full_path
-    
+
     # Runtime
     module_runtime = ctx.runtime(metadata=metadata, plugin_manager=plugin)
 

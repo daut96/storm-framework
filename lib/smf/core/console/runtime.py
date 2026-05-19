@@ -29,4 +29,4 @@ class RuntimeContext:
         return current_payload
 
 
-runtime = RuntimeContext()
+runtime = RuntimeContext(metadata, plugin_manager)

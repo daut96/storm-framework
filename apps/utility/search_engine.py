@@ -1,3 +1,4 @@
+import sys
 import os
 import sqlite3
 import smf
@@ -10,7 +11,7 @@ DB_PATH = os.path.join(ROOT, "lib", "sqlite", "cached", "cache.db")
 
 
 def _get_db_connection():
-    # Helper untuk mendapatkan koneksi DB Read-Only (aman untuk multi-threading)
+    # Helper for Read-Only DB connections
     return sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True, check_same_thread=False)
 
 
@@ -28,14 +29,14 @@ def parse_query(query):
 
 
 # ---------------------------------------------------------
-# FUNGSI EXECUTE YANG DIPINDAHKAN (API Pengganti Legacy)
+# SHOW FUNCTION
 # ---------------------------------------------------------
 def show_modules(category: str) -> List[str]:
     """
     Mengembalikan daftar module_name berdasarkan kategori.
     Sangat cepat karena menggunakan SQL Index 'idx_category'.
     """
-    smf.printd(f"Executing category fetch for:", category, level="DEBUG")
+    smf.printd(f"Executing category fetch for", category, level="DEBUG")
     try:
         conn = _get_db_connection()
         cursor = conn.cursor()
@@ -53,7 +54,7 @@ def show_modules(category: str) -> List[str]:
 
 
 # ---------------------------------------------------------
-# FUNGSI SEARCH DENGAN DYNAMIC SQL
+# SEARCH FUNCTION WITH DYNAMIC SQL
 # ---------------------------------------------------------
 def search_modules(query):
     base_query, filters = parse_query(query)
@@ -105,7 +106,8 @@ def search_modules(query):
         rows = cursor.fetchall()
         conn.close()
     except sqlite3.Error as e:
-        smf.printf(f"[!] Database Read Error: {e}\n")
+        smf.printf("{CC.RED}[!] Database Read Error{CC.RESET}")
+        smf.printd("Database Read Error", e, level="ERROR")
         return
 
     # Render Tabel
@@ -119,9 +121,9 @@ def search_modules(query):
             desc = desc[:47] + "..."
 
         count += 1
-        smf.printf(f"{CC.YELLOW}{module_name:<35} {category:<15} {desc}{CC.RESET}")
+        smf.printf(f"{CC.YELLOW}{module_name:<35}{CC.RESET} {category:<15} {desc}")
 
     if count == 0:
-        smf.printf(f"\n{CC.YELLOW}[*] {query} => Not found.{CC.RESET}\n")
+        smf.printf(f"\n{CC.YELLOW}[!] {query} => Not found{CC.RESET}\n")
     else:
-        smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module(s).{CC.RESET}\n")
+        smf.printf(f"\n{CC.GREEN}[✓] Found {count} modules{CC.RESET}\n")

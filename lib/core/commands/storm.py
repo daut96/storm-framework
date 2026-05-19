@@ -6,6 +6,7 @@ from apps.utility.colors import *
 from apps.utility.update import run_update as update
 from apps.utility.restart import run_restart as restart
 
+
 # This command storm is used for several specific command values.
 # for example give this;
 # 1. Command => storm update > to update the Storm Framework.
@@ -37,8 +38,6 @@ def execute(args, ctx):
 
     # Fallback not found
     else:
-        smf.printf(
-            f"{CC.YELLOW}[!]{CC.RESET} {args} {CC.YELLOW}> Not found.{CC.RESET}"
-        )
+        smf.printf(f"{CC.YELLOW}[!]{CC.RESET} {args} {CC.YELLOW}> Not found.{CC.RESET}")
 
     return

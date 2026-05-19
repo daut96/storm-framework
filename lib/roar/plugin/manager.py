@@ -141,15 +141,44 @@ def boot() -> None:
 
 
 def broadcast(event_name: str, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """
+    Mengirimkan event ke semua plugin yang terdaftar di REGISTRY secara dinamis.
+    
+    Returns:
+        Dict[str, Any]: Mapping antara nama plugin dan hasil return dari plugin tersebut.
+                        Contoh: {"decode_plugin": {"handled": True}}
+    """
     results: Dict[str, Any] = {}
-    for plugin_name, safe_proxy in REGISTRY.items():
+    
+    with _lock:
+        # Gunakan list(REGISTRY.items()) untuk menghindari RuntimeError
+        current_registry = list(REGISTRY.items())
+
+    for plugin_name, safe_proxy in current_registry:
+        # 1. Deteksi hook fungsi secara dinamis pada module/proxy.
+        #    Mendukung format 'pre_execute' langsung sebagai nama fungsi di dalam modul plugin.
         event_hook = getattr(safe_proxy, event_name, None)
-        if callable(event_hook):
+        
+        if event_hook and callable(event_hook):
             try:
-                results[plugin_name] = event_hook(*args, **kwargs)
+                # 2. Eksekusi hook dan simpan hasilnya
+                res = event_hook(*args, **kwargs)
+                
+                # Kita hanya mencatat plugin yang mengembalikan data (bukan None)
+                if res is not None:
+                    results[plugin_name] = res
+                    
             except Exception as e:
-                results[plugin_name] = None
+                # Log internal menggunakan sistem smf internal tanpa menghentikan broadcast ke plugin lain
+                smf.printd(
+                    f"Broadcast event [{event_name}] failed in plugin [{plugin_name}]", 
+                    e, 
+                    level="ERROR"
+                )
+                results[plugin_name] = {"handled": False, "error": str(e)}
+                
     return results
+
 
 
 # ==========================================

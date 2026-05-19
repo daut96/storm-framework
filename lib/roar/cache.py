@@ -5,7 +5,6 @@ import sqlite3
 import ast
 import json
 import smf
-import sys
 
 from typing import List, Set, Tuple, Dict
 from rootmap import ROOT

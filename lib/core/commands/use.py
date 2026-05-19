@@ -5,6 +5,7 @@ import apps.utility.utils as utils
 
 from apps.utility.colors import *
 
+
 # Command use to lock or use a module that you want to use.
 # here's an example as follows;
 # Command => use <val>

@@ -5,6 +5,7 @@ import apps.utility.utils as utils
 
 from apps.utility.colors import *
 
+
 # The set command is used to save data to global variables and module variables.
 # it seems like the following example
 # Command => set <var> <val>

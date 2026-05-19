@@ -9,6 +9,7 @@ import smf
 from typing import List, Set, Tuple, Dict
 from rootmap import ROOT
 
+
 class StormSmartCache:
     def __init__(self):
         self.db_path = os.path.join(ROOT, "lib", "sqlite", "cached", "cache.db")
@@ -25,7 +26,9 @@ class StormSmartCache:
             self.cursor.execute("PRAGMA synchronous=NORMAL;")
             self._init_db()
         except Exception as e:
-            smf.printd("Failed to connect or configure SQLite database", e, level="CRITICAL")
+            smf.printd(
+                "Failed to connect or configure SQLite database", e, level="CRITICAL"
+            )
             raise
 
     def _init_db(self):
@@ -42,7 +45,9 @@ class StormSmartCache:
                     default_action TEXT
                 )
             """)
-            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_category ON module_cache(category)")
+            self.cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_category ON module_cache(category)"
+            )
             self.conn.commit()
         except Exception as e:
             smf.printd("Failed to initialize database schema", e, level="ERROR")
@@ -62,35 +67,60 @@ class StormSmartCache:
             pass
         return {}
 
-    def _fast_scan(self, directory: str, db_state: Dict[str, float], current_disk_files: Set[str], to_upsert: List[Tuple]):
+    def _fast_scan(
+        self,
+        directory: str,
+        db_state: Dict[str, float],
+        current_disk_files: Set[str],
+        to_upsert: List[Tuple],
+    ):
         try:
             with os.scandir(directory) as it:
                 for entry in it:
                     if entry.is_dir(follow_symlinks=False):
-                        self._fast_scan(entry.path, db_state, current_disk_files, to_upsert)
+                        self._fast_scan(
+                            entry.path, db_state, current_disk_files, to_upsert
+                        )
                     elif entry.is_file(follow_symlinks=False):
                         if entry.name.endswith(".py") and entry.name != "__init__.py":
                             full_path = entry.path
                             current_disk_files.add(full_path)
                             mtime = entry.stat().st_mtime
 
-                            if full_path not in db_state or db_state[full_path] != mtime:
+                            if (
+                                full_path not in db_state
+                                or db_state[full_path] != mtime
+                            ):
                                 rel_path = os.path.relpath(full_path, self.modules_dir)
-                                module_name = rel_path.replace(os.sep, "/").replace(".py", "")
-                                category = module_name.split("/")[0] if "/" in module_name else module_name
+                                module_name = rel_path.replace(os.sep, "/").replace(
+                                    ".py", ""
+                                )
+                                category = (
+                                    module_name.split("/")[0]
+                                    if "/" in module_name
+                                    else module_name
+                                )
 
                                 meta = self._extract_metadata(full_path)
                                 raw_desc = meta.get("Description", "")
                                 clean_desc = " ".join(raw_desc.split())
-                                
+
                                 author_json = json.dumps(meta.get("Author", []))
                                 actions_json = json.dumps(meta.get("Action", []))
                                 def_action = str(meta.get("DefaultAction", ""))
 
-                                to_upsert.append((
-                                    full_path, mtime, category, module_name,
-                                    clean_desc, author_json, actions_json, def_action
-                                ))
+                                to_upsert.append(
+                                    (
+                                        full_path,
+                                        mtime,
+                                        category,
+                                        module_name,
+                                        clean_desc,
+                                        author_json,
+                                        actions_json,
+                                        def_action,
+                                    )
+                                )
         except Exception as e:
             smf.printd(f"Error scanning directory: {directory}", e, level="ERROR")
 
@@ -108,19 +138,24 @@ class StormSmartCache:
             if to_upsert or deleted_files:
                 with self.conn:
                     if to_upsert:
-                        self.cursor.executemany("""
+                        self.cursor.executemany(
+                            """
                             INSERT OR REPLACE INTO module_cache 
                             (path, mtime, category, module_name, description, author, actions, default_action) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """, to_upsert)
+                        """,
+                            to_upsert,
+                        )
                     if deleted_files:
                         delete_payload = [(path,) for path in deleted_files]
-                        self.cursor.executemany("DELETE FROM module_cache WHERE path = ?", delete_payload)
+                        self.cursor.executemany(
+                            "DELETE FROM module_cache WHERE path = ?", delete_payload
+                        )
             else:
                 smf.printd("No drift detected. Sync skipped.", level="INFO")
         except Exception as e:
             smf.printd("Fatal error during sync", e, level="CRITICAL")
 
+
 # Global register untuk sync saat booting
 cache_modules = StormSmartCache()
-                            

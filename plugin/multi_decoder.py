@@ -9,7 +9,7 @@ class Plugin:
         self.version = "1.0.0"
 
         # Register function decode machine
-        self._dispatch_table = {q
+        self._dispatch_table = {
             "Base64": self._decode_base64,
             "URL": self._decode_url,
             "Hex": self._decode_hex,

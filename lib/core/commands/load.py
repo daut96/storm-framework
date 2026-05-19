@@ -4,9 +4,6 @@ import smf
 
 from apps.utility.colors import *
 
-from lib.smf.core.console.engine import Context
-
-
 # This command is used to activate the plugin.
 # by loading it into memory manually
 # so that it can be immediately activated and used by the machine.
@@ -14,12 +11,12 @@ from lib.smf.core.console.engine import Context
 # Command => load <plugin_name>
 #
 # It will automatically load the plugin into memory.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
 
     # Input validation
     if not args:
         smf.printf(
-            f"{CC.YELLOW}[!] WARN => Use the command > load <plugin_name>{CC.RESET}"
+            f"{CC.YELLOW}[!] Use the command > load <plugin_name>{CC.RESET}"
         )
         return
 

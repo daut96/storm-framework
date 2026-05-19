@@ -58,7 +58,7 @@ def show_modules(category: str) -> List[str]:
 def search_modules(query):
     base_query, filters = parse_query(query)
 
-    smf.printf(f"\n{CC.YELLOW}[*] Searching for =>{CC.RESET} {query_str}")
+    smf.printf(f"\n{CC.YELLOW}[*] Searching for =>{CC.RESET} {query}")
     smf.printf()
     smf.printf(
         f"{CC.CYAN}{'Module Path':<35} {'Category':<15} {'Description'}{CC.RESET}"

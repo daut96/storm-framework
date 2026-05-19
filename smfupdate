@@ -4,6 +4,7 @@
 # -- SMF License
 import requests
 import subprocess
+import sys
 
 
 def update():
@@ -40,10 +41,10 @@ def update():
         compiler.start_build()
     except ImportError as e:
         print(f"Error import compiler => {e}")
-        return
+        sys.exit(100)
     except Exception as e:
         print(f"Error when running the compiler => {e}")
-        return
+        sys.exit(100)
 
     try:
         from scripts.security.sign import run_sign
@@ -51,10 +52,10 @@ def update():
         run_sign()
     except ImportError as e:
         print(f"Error import => {e}")
-        return
+        sys.exit(100)
     except Exception as e:
         print(f"Error executing signature => {e}")
-        return
+        sys.exit(100)
 
 if __name__ == "__main__":
     update()

@@ -14,7 +14,7 @@ from apps.utility.colors import *
 # Command => run
 #
 # After running the module will run and you just have to wait for it to finish.
-def execute(args: list[str], ctx: "Context") -> None:
+def execute(args, ctx):
     current_module = ctx.current_module
     options = ctx.options
     plugin = ctx.plugin

@@ -32,13 +32,15 @@ def execute(args: list[str], ctx: "Context") -> None:
     ]
 
     if missing:
-        smf.printf(f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}")
+        smf.printf(
+            f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}"
+        )
         smf.printf()
         return
 
     # 2. Ambil metadata dinamis dari module
     metadata = getattr(current_module, "metadata", {})
-    
+
     # Flag penanda apakah eksekusi sudah diambil alih oleh plugin
     is_handled_by_plugin = False
 
@@ -46,28 +48,31 @@ def execute(args: list[str], ctx: "Context") -> None:
         # 3. Lempar event 'pre_execute' ke semua plugin aktif.
         # Kita juga passing 'options' agar plugin bisa membaca atau memodifikasi payload.
         broadcast_results = plugin.broadcast(
-            "pre_execute", 
-            metadata=metadata, 
-            module=current_module,
-            options=options
+            "pre_execute", metadata=metadata, module=current_module, options=options
         )
-        
+
         # 4. Evaluasi kembalian dari manager.broadcast (Dict[plugin_name, plugin_result])
         if isinstance(broadcast_results, dict):
             for plugin_name, result in broadcast_results.items():
                 if not isinstance(result, dict):
                     continue
-                
+
                 # Jika plugin memodifikasi payload sebelum fallback ke module normal
-                if "modified_options" in result and isinstance(result["modified_options"], dict):
+                if "modified_options" in result and isinstance(
+                    result["modified_options"], dict
+                ):
                     options.update(result["modified_options"])
-                    smf.printd("PLUGIN", f"Options modified by {plugin_name}", level="DEBUG")
+                    smf.printd(
+                        "PLUGIN", f"Options modified by {plugin_name}", level="DEBUG"
+                    )
 
                 # Jika plugin mengambil alih eksekusi secara penuh
                 if result.get("handled") is True:
-                    smf.printf(f"{CC.GREEN}[+] Execution successfully handled by plugin: {plugin_name}{CC.RESET}")
+                    smf.printf(
+                        f"{CC.GREEN}[+] Execution successfully handled by plugin: {plugin_name}{CC.RESET}"
+                    )
                     is_handled_by_plugin = True
-                    break # Short-circuit, hentikan iterasi plugin lain
+                    break  # Short-circuit, hentikan iterasi plugin lain
 
     except Exception as e:
         smf.printd("PLUGIN BROADCAST ERROR", e, level="ERROR")
@@ -95,4 +100,3 @@ def execute(args: list[str], ctx: "Context") -> None:
     except Exception as e:
         smf.printd("ERROR COMMAND RUN EXCEPTION", e, level="ERROR")
         smf.printf(f"{CC.RED}[!] ERROR DURING EXECUTION{CC.RESET}")
-        

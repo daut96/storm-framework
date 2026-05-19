@@ -8,9 +8,11 @@ from typing import List
 
 DB_PATH = os.path.join(ROOT, "lib", "sqlite", "cached", "cache.db")
 
+
 def _get_db_connection():
     # Helper untuk mendapatkan koneksi DB Read-Only (aman untuk multi-threading)
     return sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True, check_same_thread=False)
+
 
 def parse_query(query):
     parts = query.split()
@@ -24,6 +26,7 @@ def parse_query(query):
             base_queries.append(part.lower())
     return " ".join(base_queries), filters
 
+
 # ---------------------------------------------------------
 # FUNGSI EXECUTE YANG DIPINDAHKAN (API Pengganti Legacy)
 # ---------------------------------------------------------
@@ -36,13 +39,18 @@ def show_modules(category: str) -> List[str]:
     try:
         conn = _get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT module_name FROM module_cache WHERE category = ?", (category,))
+        cursor.execute(
+            "SELECT module_name FROM module_cache WHERE category = ?", (category,)
+        )
         results = [row[0] for row in cursor.fetchall()]
         conn.close()
         return results
     except Exception as e:
-        smf.printd(f"Failed to execute lookup for category: {category}", e, level="ERROR")
+        smf.printd(
+            f"Failed to execute lookup for category: {category}", e, level="ERROR"
+        )
         return []
+
 
 # ---------------------------------------------------------
 # FUNGSI SEARCH DENGAN DYNAMIC SQL
@@ -52,13 +60,17 @@ def search_modules(query):
 
     smf.printf(f"\n{CC.YELLOW}[*] Searching for =>{CC.RESET} {query_str}")
     smf.printf()
-    smf.printf(f"{CC.CYAN}{'Module Path':<35} {'Category':<15} {'Description'}{CC.RESET}")
+    smf.printf(
+        f"{CC.CYAN}{'Module Path':<35} {'Category':<15} {'Description'}{CC.RESET}"
+    )
     smf.printf(f"{CC.MAGENTA}{'-'*35} {'-'*15} {'-'*45}{CC.RESET}")
 
     supported_filters = {"author", "action", "defaction"}
-    
+
     if filters and not all(f_key in supported_filters for f_key in filters.keys()):
-        smf.printf(f"{CC.YELLOW}[!] Invalid filter detected. Supported: author, action, defaction{CC.RESET}\n")
+        smf.printf(
+            f"{CC.YELLOW}[!] Invalid filter detected. Supported: author, action, defaction{CC.RESET}\n"
+        )
         return
 
     # Membangun Raw SQL Query secara dinamis berdasarkan input user
@@ -100,7 +112,7 @@ def search_modules(query):
     count = 0
     for row in rows:
         module_name, category, description = row
-        
+
         # Fallback jika deskripsi kosong dari database
         desc = description if description else "No description provided."
         if len(desc) > 50:
@@ -113,4 +125,3 @@ def search_modules(query):
         smf.printf(f"\n{CC.YELLOW}[*] {query_str} => Not found.{CC.RESET}\n")
     else:
         smf.printf(f"\n{CC.YELLOW}[✓] Found {count} module(s).{CC.RESET}\n")
-        

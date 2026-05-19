@@ -4,6 +4,7 @@ import smf
 from lib.smfdb_helpers.log_utils import extract_logs
 from lib.smf.core.console.engine import Context
 
+
 # This command is used to retrieve specific logs that are stored.
 # in the internal log database and differentiated using several log levels
 # for example:

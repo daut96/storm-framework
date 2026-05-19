@@ -32,7 +32,7 @@ def show_modules(category: str) -> List[str]:
     Mengembalikan daftar module_name berdasarkan kategori.
     Sangat cepat karena menggunakan SQL Index 'idx_category'.
     """
-    smf.printd(f"Executing category fetch for:" category, level="DEBUG")
+    smf.printd(f"Executing category fetch for:", category, level="DEBUG")
     try:
         conn = _get_db_connection()
         cursor = conn.cursor()

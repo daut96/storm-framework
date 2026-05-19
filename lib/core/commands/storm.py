@@ -6,21 +6,18 @@ from apps.utility.colors import *
 from apps.utility.update import run_update as update
 from apps.utility.restart import run_restart as restart
 
-from lib.smf.core.console.engine import Context
-
-
 # This command storm is used for several specific command values.
 # for example give this;
 # 1. Command => storm update > to update the Storm Framework.
 # 2. Command => storm verify > to re-verify by activating the integrity check.
 # 3. Command => storm restart > to restart storm if there are any strange bugs or errors after the update.
-def execute(args: list[str], ctx: Context) -> None:
+def execute(args, ctx):
     cmd = args[0].lower() if args else ""
     options = ctx.options
 
     if not cmd:
         smf.printf(
-            f"{CC.YELLOW}[!] WARN => Incorrect input, Run (help) for complete information.{CC.RESET}"
+            f"{CC.YELLOW}[!] Incorrect input, Run (help) for complete information.{CC.RESET}"
         )
         return
 
@@ -41,7 +38,7 @@ def execute(args: list[str], ctx: Context) -> None:
     # Fallback not found
     else:
         smf.printf(
-            f"{CC.YELLOW}[!] WARN =>{CC.RESET} {args} {CC.YELLOW}> Not found.{CC.RESET}"
+            f"{CC.YELLOW}[!]{CC.RESET} {args} {CC.YELLOW}> Not found.{CC.RESET}"
         )
 
     return

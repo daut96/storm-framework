@@ -43,35 +43,35 @@ def execute(args: list[str], ctx: "Context") -> None:
                 width = 55
 
                 smf.printf()
-                smf.printf(f"{'='*width}")
-                smf.printf(f"{'STORM VULNERABILITY KNOWLEDGE BASE':^55}")
-                smf.printf(f"{'='*width}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'STORM VULNERABILITY KNOWLEDGE BASE':^55}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
 
-                smf.printf(f"{'ID CVE':<13} : {info['cve']}")
-                smf.printf(f"{'NAME':<13} : {info['name']}")
-                smf.printf(f"{'LEVEL':<13} : {info['severity']}")
-                smf.printf(f"{'PUBLISHED':<13} : {info['published']}")
-                smf.printf(f"{'UPDATED':<13} : {info['updated']}")
-                smf.printf(f"{'-'*width}")
+                smf.printf(f"{CC.CYAN}{'ID CVE':<13} : {CC.YELLOW}{info['cve']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['name']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'LEVEL':<13} : {CC.YELLOW}{info['severity']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'PUBLISHED':<13} : {CC.YELLOW}{info['published']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'UPDATED':<13} : {CC.YELLOW}{info['updated']}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
-                smf.printf("DESCRIPTION   :")
+                smf.printf(f"{CC.YELLOW}DESCRIPTION{CC.RESET}   :")
                 desc = textwrap.fill(
                     info["description"].strip(),
                     width=width - 2,
                     initial_indent=" ",
                     subsequent_indent=" ",
                 )
-                smf.printf(desc)
+                smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
 
-                smf.printf(f"{'-'*width}")
-                smf.printf("REFERENCES    :")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}REFERENCES{CC.RESET}    :")
                 for link in info["URL"]:
-                    smf.printf(f" - {link}")
-                smf.printf(f"{'-'*width}")
+                    smf.printf(f" - {CC.YELLOW}{link}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
-                smf.printf(f"{'SCANNER':<13} : {info['scanner']}")
-                smf.printf(f"{'EXPLOIT':<13} : {info['exploit']}")
-                smf.printf(f"{'='*width}")
+                smf.printf(f"{CC.CYAN}{'SCANNER':<13} : {CC.YELLOW}{info['scanner']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'EXPLOIT':<13} : {CC.YELLOW}{info['exploit']}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
                 smf.printf()
 
             except Exception as e:
@@ -92,38 +92,38 @@ def execute(args: list[str], ctx: "Context") -> None:
                 label_w = 13
 
                 smf.printf()
-                smf.printf(f"{'='*width}")
-                smf.printf(f"{'STORM INFORMATION MODULES':^55}")
-                smf.printf(f"{'='*width}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'STORM INFORMATION MODULES':^55}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
 
-                smf.printf(f"{'NAME':<13} : {info['Name']}")
-                smf.printf("DESCRIPTION   :")
+                smf.printf(f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['Name']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}DESCRIPTION{CC.RESET}   :")
                 desc = textwrap.fill(
                     info["Description"].strip(),
                     width=width - 2,
                     initial_indent=" ",
                     subsequent_indent=" ",
                 )
-                smf.printf(desc)
+                smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
 
-                smf.printf(f"{'-'*width}")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
                 authors = info.get("Author", [])
                 first_auth = authors[0] if authors else "Unknown"
-                smf.printf(f"{'AUTHOR':<{label_w}} : - {first_auth}")
+                smf.printf(f"{CC.CYAN}{'AUTHOR':<{label_w}} : - {CC.YELLOW}{first_auth}{CC.RESET}")
                 for extra in authors[1:]:
-                    smf.printf(f"{' '*(label_w)} : - {extra}")
+                    smf.printf(f"{' '*(label_w)} : - {CC.YELLOW}{extra}{CC.RESET}")
 
-                smf.printf(f"{'-'*width}")
-                smf.printf(f"{'ACTION':<13}")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'ACTION':<13}{CC.RESET}")
                 for action in info.get("Action", []):
                     name = action[0]
                     desc = action[1].get("Description", "")
-                    smf.printf(f"  > {name:<9} : {desc}")
+                    smf.printf(f"  > {CC.YELLOW}{name:<9} : {desc}{CC.RESET}")
 
-                smf.printf(f"{'-'*width}")
-                smf.printf(f"{'DefAction':<13} : {info['DefaultAction']}")
-                smf.printf(f"{'LICENSE':<13} : {info['License']}")
-                smf.printf(f"{'='*width}")
+                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'DefAction':<13} : {CC.YELLOW}{info['DefaultAction']}{CC.RESET}")
+                smf.printf(f"{CC.CYAN}{'LICENSE':<13} : {CC.YELLOW}{info['License']}{CC.RESET}")
+                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
                 smf.printf()
 
             except Exception as e:

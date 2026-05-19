@@ -10,7 +10,7 @@ from rootmap import ROOT
 def check_update():
     url = "https://raw.githubusercontent.com/StormWorld0/storm-framework/main/data/data_version.json"
     try:
-        latest_version = requests.get(url).json()["version"]
+        latest_version = requests.get(url, timeout=3).json()["version"]
         data = os.path.join(ROOT, "data", "data_version.json")
         with open(data) as f:
             VERSION = json.load(f)["version"]

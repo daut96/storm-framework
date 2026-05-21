@@ -1,79 +1,126 @@
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-![Kali Linux](https://img.shields.io/badge/Kali%20Linux-supported-blue?logo=kalilinux)
-![Termux](https://img.shields.io/badge/Termux-supported-black?logo=android)
+<p align="center">
+  <img src="https://github.com/StormWorld0/storm-framework/blob/main/assets/images/storm-framework.jpg">
+</p>
 
----
+<h2 align="center">Storm-Framework</h2>
 
-## 🛡️ Storm-Framework
+<p align="center">
+  <a href="https://github.com/StormWorld0/storm-framework/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-GPL-blue">
+  </a>
+  <a href="https://github.com/kalilinux">
+    <img src="https://img.shields.io/badge/Kali%20Linux-supported-black?logo=kalilinux">
+  </a>
+  <a href="https://github.com/termux">
+    <img src="https://img.shields.io/badge/Termux-supported-black?logo=android">
+  </a>
+  <a href="https://github.com/ubuntu">
+    <img src="https://img.shields.io/badge/Ubuntu-supported-black?logo=ubuntu">
+  </a>
+  <a href="https://github.com/debian">
+    <img src="https://img.shields.io/badge/Debian-supported-black?logo=debian">
+  </a>
+  <a href="https://github.com/StormWorld0/storm-framework/blob/main/README_ID.md">
+    <img src="https://img.shields.io/badge/Language-Indonesian-red?logo=indonesia&logoColor=white">
+  </a>
+</p>
 
-Tool Suite untuk Pengumpulan Informasi dan Analisis Kerentanan Awal.
+<p align="center">
+  <a href="https://github.com/python">
+    <img src="https://img.shields.io/badge/Python-3.12.13-black">
+  </a>
+  <a href="https://github.com/golang/go">
+    <img src="https://img.shields.io/badge/Golang-1.26.2-black">
+  </a>
+  <a href="https://github.com/rust-lang/rust">
+    <img src="https://img.shields.io/badge/Rust-1.95.0-black">
+  </a>
+  <a href="https://www.gnu.org/software/bash/">
+    <img src="https://img.shields.io/badge/Bash-5.3.9-black">
+  </a>
+</p>
 
----
+<p align="center">
+  <a>
+    <img src="https://img.shields.io/github/languages/code-size/StormWorld0/storm-framework?logoColor=black&color=black">
+  </a>
+  <a>
+    <img src="https://img.shields.io/github/forks/StormWorld0/storm-framework?logoColor=ffff&color=%23ff0000">
+  </a>
+  <a>
+    <img src="https://img.shields.io/github/stars/StormWorld0/storm-framework?color=%2332cd32">
+  </a>
+  <a>
+    <img src="https://img.shields.io/github/contributors/StormWorld0/storm-framework?logoColor=black&color=black">
+  </a>
+</p>
+
+<p align="center">
+Paket Alat untuk Pengumpulan Informasi dan Analisis Kerentanan Awal.
+</p>
 
 ### 🚀 Pendahuluan
 
-**Storm-Framework** adalah suite tool siber yang dirancang khusus untuk membantu profesional keamanan siber, bug bounty hunter, dan peneliti dalam fase **pengumpulan informasi (reconnaissance)** dan **analisis kerentanan awal**. Tool ini bertujuan untuk menyederhanakan langkah-langkah awal dalam proses penetration testing (pentest).
+**Storm-Framework** adalah rangkaian alat siber yang dirancang khusus untuk membantu para profesional keamanan siber, pemburu bug bounty, dan peneliti dalam fase keamanan siber **pengumpulan informasi (reconnaissance)** dan **analisis kerentanan awal**. Alat ini bertujuan untuk menyederhanakan langkah-langkah awal dalam proses pengujian penetrasi (pentest).
 
----
+### ⚠️ Peringatan Penting & Penafian Hukum
 
-### ⚠️ Peringatan Penting & Disclaimer Hukum
+**HARAP BACA SEBELUM DIGUNAKAN!**
 
-**HARAP BACA SEBELUM MENGGUNAKAN!**
+Alat ini dikembangkan hanya untuk tujuan ini:
 
-Tool ini dikembangkan **HANYA** untuk tujuan:
-
-* **Edukasi**
-* **Penelitian**
-* **Pengujian Penetrasi yang Sah dan Berizin (Legal & Authorized Penetration Testing)**
+* **Pendidikan**
+* **Belajar**
+* **Pengujian Penetrasi Legal dan Berlisensi**
 
 #### Tanggung Jawab Pengguna
 
-Pengembang (Developer) **TIDAK** bertanggung jawab atas segala kerusakan, kerugian, atau tindakan ilegal yang timbul dari penggunaan tool ini. Pengguna sepenuhnya bertanggung jawab atas hal-hal berikut:
+Pengembang **TIDAK** bertanggung jawab atas kerusakan, kerugian, atau tindakan ilegal yang timbul dari penggunaan alat ini. Pengguna sepenuhnya bertanggung jawab atas hal-hal berikut:
 
 1.  **Kepatuhan Hukum:** Mematuhi semua hukum dan peraturan lokal, nasional, dan internasional yang berlaku.
-2.  **Izin Tertulis:** Memperoleh **izin tertulis dan eksplisit** dari pemilik sistem atau jaringan sebelum melakukan pengujian apa pun menggunakan tool ini.
-3.  **Penggunaan Etis:** Menggunakan tool ini secara etis dan bertanggung jawab.
+2.  **Izin Tertulis:** Dapatkan **izin tertulis dan jelas** dari pemilik sistem atau jaringan sebelum melakukan pengujian menggunakan alat ini.
+3.  **Penggunaan Etis:** Gunakan alat ini secara etis dan bertanggung jawab.
 
-> **PENGGUNAAN TANPA IZIN ADALAH ILEGAL. Gunakan dengan bijak dan atas risiko Anda sendiri.**
+> **PENGGUNAAN TANPA IZIN ADALAH ILEGAL. Gunakan dengan hati-hati dan atas risiko Anda sendiri.**
 
----
+## Instalasi
 
-### 🛠️ Instalasi
+### Instalasi yang direkomendasikan
 
-Pastikan Anda memiliki **Python 3.13.x** terinstal pada sistem Anda. Tool ini dioptimalkan untuk dijalankan di lingkungan **Kali Linux/Termux**.
+Kami merekomendasikan instalasi standar yang disediakan:
 
-#### 1. Kloning Repositori & Instalasi Otomatis
+- [Instalasi Venv](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_VENV.md)
+- [Instalasi Docker](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_DOCKER.md)
+- [Instalasi Termux](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_TERMUX.md)
 
-Gunakan perintah `curl` berikut untuk mengkloning repositori dan menjalankan skrip instalasi yang diperlukan:
+## Menggunakan Badai
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/storm-os/storm-framework/main/setup | bash 
-```
+Untuk memulai dengan Storm:
 
-### 2. Jalankan
+**Mulai `storm`:** Ini adalah antarmuka utama untuk berinteraksi dengan Storm.
 
-Gunakan perintah ini untuk menjalankannya.
+## Komunikasi dan Pertanyaan
 
-```bash
-sudo pentest
-```
+Untuk pertanyaan atau saran, dll:
 
-### 🤝 Contributing 
+- Bergabunglah di [diskusi GitHub](https://github.com/StormWorld0/storm-framework/discussions) untuk dukungan dan lainnya.
+- Kirim [GitHub issues](https://github.com/StormWorld0/storm-framework/issues) untuk laporan bug dan permintaan fitur.
+- Ikuti [@elzyone](https://x.com/elzyone) di X atau [@zxelzy](https://github.com/zxelzy) untuk akun github.
 
-Proyek open source Storm Framework ini terbuka untuk siapapun. 
-Kalau kamu tertarik untuk membantu pengembangan project ini—baik lewat perbaikan bug, penambahan fitur, atau dokumentasi—silakan cek panduan kontribusi kami. 
+### 📖 Wiki
+
+Di wiki tempat kami menjelaskan berbagai logika fitur dan lainnya, Anda dapat membacanya di [wiki](https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki)
+
+### 🤝 Berkontribusi 
+
+Proyek Storm-Framework sumber terbuka ini terbuka untuk siapa saja.
+Jika Anda tertarik untuk membantu mengembangkan proyek ini—baik melalui perbaikan bug, penambahan fitur, atau dokumentasi—silakan lihat panduan kontribusi kami.
 
 👉 **Baca panduan kontribusi di sini:** 
-[CONTRIBUTING.md](./CONTRIBUTING.md) 
+[MENYUMBANG](./CONTRIBUTING.md) 
 
-Terima kasih sudah tertarik berkontribusi! 💙 
+Terima kasih atas minat Anda untuk berkontribusi! 💙
 
 ### 📜 Lisensi 
 
-Tool ini didistribusikan di bawah Lisensi MIT. 
-
-Ringkasan Lisensi 
-
-Anda bebas untuk menggunakan, memodifikasi, dan mendistribusikan kode ini untuk penggunaan pribadi maupun komersial, dengan syarat Anda menyertakan pemberitahuan hak cipta dan izin lisensi asli. 
-
-PENAFIAN (DISCLAIMER): SEPERTI TERCANTUM DALAM LISENSI MIT, KODE INI DIBERIKAN "SEBAGAIMANA ADANYA" TANPA JAMINAN APAPUN.
+Alat ini didistribusikan di bawah [Lisensi GPL](LICENSE).

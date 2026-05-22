@@ -54,18 +54,37 @@ class StormSmartCache:
             raise
 
     def _extract_metadata(self, file_path: str) -> dict:
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                source_code = f.read()
-                tree = ast.parse(source_code, filename=file_path)
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.Assign):
-                        for target in node.targets:
-                            if isinstance(target, ast.Name) and target.id == "metadata":
-                                return ast.literal_eval(node.value)
-        except Exception as e:
-            smf.printd("Extract metadata failed", e, level="CRITICAL")
-            raise
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            source_code = f.read()
+
+        tree = ast.parse(source_code, filename=file_path)
+
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id == "metadata"
+                    ):
+                        if isinstance(node.value, ast.Dict):
+                            return ast.literal_eval(node.value)
+
+                        smf.printd(
+                            f"metadata in {file_path} is not a literal dict",
+                            level="WARNING"
+                        )
+                        return {}
+
+        return {}
+
+    except Exception as e:
+        smf.printd(
+            f"Extract metadata failed: {file_path}",
+            e,
+            level="ERROR"
+        )
+        return {}
 
     def _fast_scan(
         self,
@@ -102,6 +121,10 @@ class StormSmartCache:
                                 )
 
                                 meta = self._extract_metadata(full_path)
+                                
+                                if not meta:
+                                    continue
+                                    
                                 raw_desc = meta.get("Description", "")
                                 clean_desc = " ".join(raw_desc.split())
 

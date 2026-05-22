@@ -51,9 +51,6 @@ jobs:
         env:
           GITHUB_ACTIONS: "true"
         run: |
-          # Eksekusi skrip instalasi Windows
-          # Kebijakan eksekusi dilewati khusus untuk proses ini
-          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           .\setup.ps1
 
       - name: Validate Wrapper and Binary Execution

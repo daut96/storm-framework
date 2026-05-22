@@ -92,7 +92,9 @@ fn main() {
     let ignored_items: HashSet<&str> = [
         ".git", "__pycache__", ".pytest_cache", ".github", 
         "sqlite", "signed_manifest.json", ".gitignore", 
-        ".env", "target", "res", "cache"
+        ".env", "target", "res", "cache", ".DS_Store", 
+        "Thumbs.db", "desktop.ini", ".Spotlight-V100",
+        ".Trashes"
     ].into_iter().collect();
 
     let mut target_files = Vec::new();

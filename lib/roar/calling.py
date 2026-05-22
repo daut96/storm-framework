@@ -90,14 +90,14 @@ def call_so(query_name: str, module_name: str = None):
     The native loader uses importlib to execute CPython Extension (PyO3).
     This triggers PyInit_<modulename> so the module can be used immediately.
     """
+    stem = query_name.split(".")[0]
+    module_name = module_name or stem
+    
     if module_name is None:
         module_name = query_name
 
     if module_name in sys.modules:
         return sys.modules[module_name]
-
-    stem = query_name.split(".")[0]
-    module_name = module_name or stem
 
     lib_path = resolve_bin_path(query_name)
     try:

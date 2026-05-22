@@ -63,27 +63,20 @@ class StormSmartCache:
             for node in tree.body:
                 if isinstance(node, ast.Assign):
                     for target in node.targets:
-                        if (
-                            isinstance(target, ast.Name)
-                            and target.id == "metadata"
-                        ):
+                        if isinstance(target, ast.Name) and target.id == "metadata":
                             if isinstance(node.value, ast.Dict):
                                 return ast.literal_eval(node.value)
 
                             smf.printd(
                                 f"metadata in {file_path} is not a literal dict",
-                                level="WARNING"
+                                level="WARNING",
                             )
                             return {}
 
             return {}
 
         except Exception as e:
-            smf.printd(
-                f"Extract metadata failed: {file_path}",
-                e,
-                level="ERROR"
-            )
+            smf.printd(f"Extract metadata failed: {file_path}", e, level="ERROR")
             return {}
 
     def _fast_scan(
@@ -121,10 +114,10 @@ class StormSmartCache:
                                 )
 
                                 meta = self._extract_metadata(full_path)
-                                
+
                                 if not meta:
                                     continue
-                                    
+
                                 raw_desc = meta.get("Description", "")
                                 clean_desc = " ".join(raw_desc.split())
 

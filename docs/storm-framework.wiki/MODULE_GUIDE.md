@@ -115,7 +115,7 @@ def execute(options):
 
 ```
 
-But before that, make sure you remember what the binary output is in the Makefile you created. If you enter the wrong binary name, it won't find the binary.
+But before that, make sure you remember what the binary output is in the Makefile you created. If you enter the wrong binary name, it won't find the binary. And for further information regarding **call_bin** you read [Caller Binary](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/CALLER_BINARY.md)
 
 ### Message
 

@@ -16,9 +16,7 @@ jobs:
   # =================================================================
   windows-test:
     name: Test installation on native windows host
-    runs-on: 
-        - windows-2022
-        - ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

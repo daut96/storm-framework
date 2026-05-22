@@ -1,7 +1,7 @@
 import subprocess
 import smf
 
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 metadata = {
     "Name": "DoS to FTP connection",

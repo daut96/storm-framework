@@ -4,7 +4,7 @@ import sys
 import smf
 
 from rootmap import ROOT
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 
 # Verify starting to run integrity check

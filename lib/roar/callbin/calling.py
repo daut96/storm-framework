@@ -1,150 +1,68 @@
 # -- https://github.com/StormWorld0/storm-framework
 # -- SMF License
-import os
-import sqlite3
+import sys
+import ctypes
 import smf
-from pathlib import Path
-from rootmap import ROOT
 
-_BASE_DIR = Path(ROOT).resolve()
-_DB_PATH = _BASE_DIR / "lib" / "sqlite" / "cached" / "cache.db"
+from typing import Optional
+from .manager import _query_db
 
 
-def _get_db_connection() -> sqlite3.Connection:
-    """Manage connections and initialize SQLite database schemas."""
-    if not _DB_PATH.parent.exists():
-        _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        smf.printd(
-            f"The cache.db directory is created on {_DB_PATH.parent}", level="INFO"
-        )
+# Target Environment Detection
+IS_WINDOWS = sys.platform.startswith("win")
+IS_MACOS = sys.platform == "darwin"
+# Android detected as 'linux' in Python
+IS_LINUX_OR_ANDROID = sys.platform.startswith("linux") or hasattr(sys, 'getandroidapilevel')
 
-    conn = sqlite3.connect(_DB_PATH)
+def resolve_bin_path(query_name: str) -> str:
+    """
+    Mencari absolute path dari binary/shared object.
+    Mendukung 'exact match' (dengan ekstensi) dan 'smart fallback' (tanpa ekstensi).
+    """
+    smf.printd(f"Resolving path for: {query_name}", level="DEBUG")
 
+    # 1. Exact Match: Cek apakah nama spesifik dengan ekstensi dikirim caller
+    exact_path = _query_db("filename", query_name)
+    if exact_path:
+        smf.printd(f"Exact match found: {exact_path}", level="DEBUG")
+        return exact_path
+
+    # 2. OS-Aware Smart Fallback: Jika caller memberikan 'nama binary saja'
+    # Prioritaskan format berdasarkan OS yang sedang berjalan
+    candidates = []
+    if IS_WINDOWS:
+        candidates = [f"{query_name}.dll", f"{query_name}.exe"]
+    elif IS_MACOS:
+        candidates = [f"{query_name}.dylib", f"lib{query_name}.dylib", f"{query_name}.so"]
+    elif IS_LINUX_OR_ANDROID:
+        candidates = [f"{query_name}.so", f"lib{query_name}.so", query_name]
+    
+    for candidate in candidates:
+        candidate_path = _query_db("filename", candidate)
+        if candidate_path:
+            smf.printd(f"OS-specific resolution successful: {candidate} -> {candidate_path}", level="DEBUG")
+            return candidate_path
+
+    # Exception spesifik untuk mempermudah error handling di level caller
+    smf.printd(f"Resolution failed for {query_name}. Candidates tried: {candidates}", level="ERROR")
+    raise FileNotFoundError(f"Binary or Shared Object '{query_name}' not found for current OS.")
+
+def call_bin(query_name: str) -> str:
+    """Wrapper untuk backward compatibility"""
+    return resolve_bin_path(query_name)
+
+def load_shared_object(query_name: str) -> ctypes.CDLL:
+    """
+    Mencari jalur file dan langsung me-load nya menggunakan ctypes.
+    Sangat berguna untuk integrasi C/C++ FFI secara native.
+    """
+    lib_path = resolve_bin_path(query_name)
+    
     try:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS binary_cache (
-                name TEXT PRIMARY KEY,
-                path TEXT NOT NULL,
-                category TEXT,
-                last_mtime REAL
-            )
-        """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_name ON binary_cache(name)")
-    except sqlite3.Error as e:
-        smf.printd("Failed to initialize SQLite cache schema", e, level="CRITICAL")
+        smf.printd(f"Loading shared object via ctypes: {lib_path}", level="INFO")
+        # Menggunakan mode RTLD_LOCAL/GLOBAL dapat diatur di sini jika diperlukan pada POSIX
+        return ctypes.CDLL(lib_path)
+    except OSError as e:
+        smf.printd(f"Failed to load shared library '{lib_path}' into memory.", e, level="CRITICAL")
         raise
-
-    return conn
-
-
-def sync_bin() -> None:
-    """
-    Scans the filesystem and synchronizes the binary paths to cache.db
-    """
-    smf.printd("Starting binary cache synchronization scan...", level="INFO")
-    search_targets = {
-        "module": _BASE_DIR / "external" / "source" / "out" / "module",
-        "core": _BASE_DIR / "external" / "source" / "out" / "core",
-    }
-
-    found_on_disk = {}
-
-    for cat, folder in search_targets.items():
-        if not folder.exists():
-            smf.printd(f"Target directory not found and skipped", folder, level="WARN")
-            continue
-
-        # rglob("*") Recursive search
-        for entry in folder.rglob("*"):
-            # Linux Validation: File is regular and has X_OK (executable bit)
-            if entry.is_file() and os.access(entry, os.X_OK):
-                found_on_disk[entry.name] = {
-                    "path": str(entry.absolute()),
-                    "category": cat,
-                    "mtime": entry.stat().st_mtime,
-                }
-                smf.printd(f"Binary extracted: {entry.name} ({cat})", level="DEBUG")
-
-    # Atomic SQLite Transactions (UPSERT Logic)
-    try:
-        with _get_db_connection() as conn:
-            cursor = conn.cursor()
-
-            # Delete stale data (files deleted from the filesystem)
-            cursor.execute("SELECT name FROM binary_cache")
-            cached_names = {row[0] for row in cursor.fetchall()}
-
-            removed = [(name,) for name in cached_names if name not in found_on_disk]
-            if removed:
-                cursor.executemany("DELETE FROM binary_cache WHERE name = ?", removed)
-                smf.printd(
-                    f"Clean {len(removed)} binary that is no longer present in the cache.",
-                    level="INFO",
-                )
-
-            # Insert or Update (based on mtime)
-            updated_count = 0
-            for name, data in found_on_disk.items():
-                cursor.execute(
-                    """
-                    INSERT INTO binary_cache (name, path, category, last_mtime)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(name) DO UPDATE SET
-                        path = excluded.path,
-                        last_mtime = excluded.last_mtime,
-                        category = excluded.category
-                    WHERE last_mtime != excluded.last_mtime
-                """,
-                    (name, data["path"], data["category"], data["mtime"]),
-                )
-
-                if cursor.rowcount > 0:
-                    updated_count += 1
-
-            conn.commit()
-
-            smf.printd(
-                f"DB sync complete. Total: {len(found_on_disk)} binary, Updated/Inserted:",
-                updated_count,
-                level="INFO",
-            )
-
-    except sqlite3.Error as e:
-        smf.printd(
-            f"An I/O error occurred during the DB sync transaction.", e, level="ERROR"
-        )
-        raise
-
-
-def call_bin(binary_name: str) -> str:
-    """
-    Gets the absolute path of the binary.
-    Lookup complexity is O(1) because it uses PRIMARY KEY index in SQLite.
-    """
-    smf.printd(
-        f"Caller makes a path resolution request for", binary_name, level="DEBUG"
-    )
-
-    try:
-        with _get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT path FROM binary_cache WHERE name = ?", (binary_name,)
-            )
-            row = cursor.fetchone()
-
-        if not row:
-            smf.printd(
-                f"Resolution failed: Binary not recorded in the database.",
-                binary_name,
-                level="ERROR",
-            )
-            # Exception dilempar agar caller module bisa memberikan error handling spesifik
-            raise FileNotFoundError(f"Binary {binary_name} not found.")
-
-        smf.printd(f"Successful resolution: {binary_name} -> {row[0]}", level="DEBUG")
-        return row[0]
-
-    except sqlite3.Error as e:
-        smf.printd("Database interaction error while lookup path", e, level="CRITICAL")
-        raise
+        

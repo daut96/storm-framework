@@ -189,7 +189,7 @@ fn main() {
         .collect();
 
     if !modified_files.is_empty() || !missing_files.is_empty() || !untracked_files.is_empty() {
-        println!("\n\n[!] INTEGRITY BREACH DETECTED [!]");
+        println!("[!] INTEGRITY BREACH DETECTED [!]\n");
         for f in &modified_files { println!("    [MODIFIED]  -> {}", f); }
         for f in &missing_files { println!("    [MISSING]   -> {}", f); }
         for f in &untracked_files { println!("    [UNTRACKED] -> {}", f); }
@@ -200,7 +200,7 @@ fn main() {
         } else {
             println!("\nSTATUS: CRITICAL");
             println!("MESSAGE: File injection detected");
-            std::process::exit(203);
+            std::process::exit(201);
         }
     } else {
         // Just leave it empty and fill it with python

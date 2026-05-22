@@ -7,7 +7,7 @@ import sys
 from apps.utility.verify import *
 from lib.roar.plugin_api import plugin
 from lib.roar.cache import cache_modules as cache
-from lib.roar.callbin import calling
+from lib.roar.callbin import manager
 
 
 def boot():
@@ -26,7 +26,7 @@ def boot():
     smf.printd("Module synchronization successful", level="INFO")
 
     # Cache binary synchronization
-    calling.sync_bin()
+    manager.sync_bin()
     smf.printd("Binary synchronization successful", level="INFO")
 
     # Verify file integrity

@@ -26,10 +26,9 @@ C = call_so("storm")
 C = call_so("storm.so")
 ```
 
-## Important
-
-Because the caller is designed to make things easier for developers, such as contributors who want to share code with the Storm Framework, we always remind you that you must ensure the code passes dynamic compilation and is properly tested through GitHub Actions.
-
-We also recommend writing modules in either Python or Golang. If the module is written in another language, such as Rust, you must follow the strict Storm Framework vendor standards, and we do not recommend doing so.
-
-One final thing: we only accept source code, not precompiled binaries. If a PR includes prebuilt binaries, the Maintainers will immediately reject it.
+>[!Important]
+>Because the caller is designed to make things easier for developers, such as contributors who want to share code with the Storm Framework, we always remind you that you must ensure the code passes dynamic compilation and is properly tested through GitHub Actions.
+>
+>We also recommend writing modules in either Python or Golang. If the module is written in another language, such as Rust, you must follow the strict Storm Framework vendor standards, and we do not recommend doing so.
+>
+>One final thing: we only accept source code, not precompiled binaries. If a PR includes prebuilt binaries, the Maintainers will immediately reject it.

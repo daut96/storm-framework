@@ -3,7 +3,7 @@ import threading
 import os
 import smf
 
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 metadata = {
     "Name": "Session Initiation Protocol Scanning",

@@ -78,7 +78,9 @@ fn main() {
     let ignored_items = [
         ".git", "__pycache__", ".pytest_cache", ".github", 
         "sqlite", "signed_manifest.json", ".gitignore", 
-        ".env", "target", "res", "cache"
+        ".env", "target", "res", "cache", ".DS_Store", 
+        "Thumbs.db", "desktop.ini", ".Spotlight-V100",
+        ".Trashes"
     ];
 
     // --- SETUP STATE FOR UI SPINNER ---

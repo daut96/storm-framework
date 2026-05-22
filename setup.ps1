@@ -93,11 +93,8 @@ RUN pip install --no-cache-dir -r /opt/$REPO_NAME/requirements.txt
     Write-Color "[+] Initiating Docker Build Process..." "Green"
 
     if ($env:GITHUB_ACTIONS -eq "true") {
-        & docker buildx build `
+        & docker build `
             -t "$REPO_NAME" `
-            --cache-from type=gha `
-            --cache-to type=gha,mode=max `
-            --load `
             "$INSTALL_DIR"
     } else {
         & docker build `

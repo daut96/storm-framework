@@ -27,6 +27,10 @@ Function Write-ToFile {
 # -----------------------------------------------------------------------------
 Write-Color "[!] Start Installation: $REPO_NAME [!]" "Green"
 
+if ($IsWindows) {
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+}
+
 # Check Dependencies
 $Dependencies = @("git", "python", "docker", "openssl")
 foreach ($Dep in $Dependencies) {

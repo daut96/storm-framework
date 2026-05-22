@@ -3,7 +3,7 @@ import threading
 import smf
 
 from apps.utility.colors import *
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 metadata = {
     "Name": "Searching for subdomains",

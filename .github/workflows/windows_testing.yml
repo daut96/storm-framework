@@ -1,4 +1,4 @@
-name: Storm Framework Windows CI Testing
+name: Windows Testing
 
 on:
   push:
@@ -16,13 +16,10 @@ jobs:
   # =================================================================
   windows-test:
     name: Test installation on native windows host
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Verify and Start Docker Desktop Daemon
         shell: pwsh
@@ -54,7 +51,7 @@ jobs:
         env:
           GITHUB_ACTIONS: "true"
         run: |
-          # Eksekusi skrip instalasi Windows (asumsi nama file: install.ps1)
+          # Eksekusi skrip instalasi Windows
           # Kebijakan eksekusi dilewati khusus untuk proses ini
           Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           .\setup.ps1
@@ -62,10 +59,7 @@ jobs:
       - name: Validate Wrapper and Binary Execution
         shell: cmd
         run: |
-          :: Menyegarkan Environment Path agar sistem mengenali 'storm' yang baru ditambahkan
-          refreshenv
-          
           echo "[+] Memvalidasi fungsionalitas wrapper storm..."
           :: Menjalankan command dasar wrapper untuk memastikan kontainer merespon tanpa error
-          call storm --update
+          call storm
           

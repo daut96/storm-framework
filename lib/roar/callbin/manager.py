@@ -33,7 +33,9 @@ def _get_db_connection() -> sqlite3.Connection:
                 last_mtime REAL
             )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_filename ON binary_cache(filename)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_bin_filename ON binary_cache(filename)"
+        )
         conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_stem ON binary_cache(stem)")
     except sqlite3.Error as e:
         smf.printd("Failed to initialize SQLite cache schema", e, level="CRITICAL")
@@ -53,7 +55,9 @@ def sync_bin() -> None:
 
     for cat, folder in search_targets.items():
         if not folder.exists():
-            smf.printd(f"Target directory not found and skipped: {folder}", level="WARN")
+            smf.printd(
+                f"Target directory not found and skipped: {folder}", level="WARN"
+            )
             continue
 
         # Scan recursive
@@ -69,10 +73,10 @@ def sync_bin() -> None:
             if is_valid_so or is_linux_executable:
                 # Dealing with multi-dot suffixes (example: 'lib.abi3.so' -> 'lib')
                 # This ensures that 'stem' is actually the base name of the binary
-                base_name = entry.name.split('.')[0] 
+                base_name = entry.name.split(".")[0]
 
                 found_on_disk[entry.name] = {
-                    "stem": base_name, 
+                    "stem": base_name,
                     "path": str(entry.absolute()),
                     "category": cat,
                     "mtime": entry.stat().st_mtime,
@@ -87,8 +91,12 @@ def sync_bin() -> None:
 
             removed = [(name,) for name in cached_names if name not in found_on_disk]
             if removed:
-                cursor.executemany("DELETE FROM binary_cache WHERE filename = ?", removed)
-                smf.printd(f"Cleaned {len(removed)} binaries no longer in cache.", level="INFO")
+                cursor.executemany(
+                    "DELETE FROM binary_cache WHERE filename = ?", removed
+                )
+                smf.printd(
+                    f"Cleaned {len(removed)} binaries no longer in cache.", level="INFO"
+                )
 
             updated_count = 0
             for filename, data in found_on_disk.items():
@@ -103,7 +111,13 @@ def sync_bin() -> None:
                         last_mtime = excluded.last_mtime
                     WHERE last_mtime != excluded.last_mtime
                 """,
-                    (filename, data["stem"], data["path"], data["category"], data["mtime"]),
+                    (
+                        filename,
+                        data["stem"],
+                        data["path"],
+                        data["category"],
+                        data["mtime"],
+                    ),
                 )
 
                 if cursor.rowcount > 0:
@@ -127,11 +141,13 @@ def _query_db(query_column: str, query_value: str) -> Optional[str]:
             # Column validation to prevent SQL Injection
             if query_column not in ("filename", "stem"):
                 raise ValueError("Invalid query column")
-                
-            cursor.execute(f"SELECT path FROM binary_cache WHERE {query_column} = ?", (query_value,))
+
+            cursor.execute(
+                f"SELECT path FROM binary_cache WHERE {query_column} = ?",
+                (query_value,),
+            )
             row = cursor.fetchone()
             return row[0] if row else None
     except sqlite3.Error as e:
         smf.printd(f"DB error looking up {query_value}", e, level="CRITICAL")
         raise
-                

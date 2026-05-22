@@ -15,7 +15,9 @@ IS_LINUX_OR_ANDROID = sys.platform.startswith("linux") or hasattr(
 
 
 def resolve_bin_path(query_name: str) -> str:
-    smf.printd(f"Resolving path for: {query_name}", level="DEBUG")
+    smf.printd(f"Resolving path for", query_name, level="DEBUG")
+
+    clean_name = query_name.split('.')[0]
 
     # 1. Exact Match
     exact_path = _query_db("filename", query_name)
@@ -44,13 +46,13 @@ def resolve_bin_path(query_name: str) -> str:
     stem_path = _query_db("stem", query_name)
     if stem_path:
         smf.printd(
-            f"Resolved via pure stem fallback: {query_name} -> {stem_path}",
+            f"Resolved via pure stem fallback: {query_name} ->", stem_path,
             level="DEBUG",
         )
         return stem_path
 
     smf.printd(
-        f"Resolution failed for {query_name}. Candidates tried: {candidates}",
+        f"Resolution failed for {query_name}. Candidates tried:", candidates,
         level="ERROR",
     )
     raise FileNotFoundError(
@@ -89,10 +91,13 @@ def call_so(query_name: str, module_name: str = None):
     if module_name is None:
         module_name = query_name
 
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+        
     lib_path = resolve_bin_path(query_name)
     try:
         smf.printd(
-            f"Loading Python Extension module: {module_name} from {lib_path}",
+            f"Loading Python Extension module: {module_name} from", lib_path,
             level="INFO",
         )
         spec = importlib.util.spec_from_file_location(module_name, lib_path)

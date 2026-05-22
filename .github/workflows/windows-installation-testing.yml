@@ -1,4 +1,4 @@
-name: Storm Framework Multi-OS CI Testing
+name: Storm Framework Windows CI Testing
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify and Start Docker Desktop Daemon
-        shell: powershell
+        shell: pwsh
         run: |
           Write-Host "[+] Memeriksa status Docker Daemon..."
           $DockerCheck = docker info 2>&1
@@ -35,7 +35,7 @@ jobs:
               while ($retryCount -lt 12) {
                   docker info >$null 2>&1
                   if ($LASTEXITCODE -eq 0) {
-                      Write-Host "[✓] Docker Daemon berhasil diaktifkan."
+                      Write-Host "[OK] Docker Daemon berhasil diaktifkan."
                       break
                   }
                   Write-Host "[-] Menunggu Docker Daemon siap (5 detik)..."
@@ -43,11 +43,11 @@ jobs:
                   $retryCount++
               }
           } else {
-              Write-Host "[✓] Docker Daemon sudah siap."
+              Write-Host "[OK] Docker Daemon sudah siap."
           }
 
       - name: Execute Storm Installation (PowerShell)
-        shell: powershell
+        shell: pwsh
         env:
           GITHUB_ACTIONS: "true"
         run: |

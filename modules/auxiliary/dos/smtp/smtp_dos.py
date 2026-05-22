@@ -2,7 +2,7 @@ import subprocess
 import os
 import smf
 
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 metadata = {
     "Name": "DoS to SMTP network",

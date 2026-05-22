@@ -51,12 +51,15 @@ if (Test-Path $INSTALL_DIR) {
 
 Write-Color "[+] Create installation directory" "Green"
 
+if (!(Test-Path $INSTALL_DIR)) {
+    New-Item -ItemType Directory -Force -Path $INSTALL_DIR | Out-Null
+}
+
 if ($env:GITHUB_ACTIONS -eq "true") {
     Write-Color "[*] CI Environment detected" "Green"
     Copy-Item -Path ".\*" -Destination $INSTALL_DIR -Recurse -Force
 } else {
     Write-Color "[*] Production Environment detected" "Green"
-    New-Item -ItemType Directory -Force -Path $INSTALL_DIR | Out-Null
     git clone $GITHUB_REPO $INSTALL_DIR
 }
 

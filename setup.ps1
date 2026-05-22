@@ -93,14 +93,16 @@ RUN pip install --no-cache-dir -r /opt/$REPO_NAME/requirements.txt
     Write-Color "[+] Initiating Docker Build Process..." "Green"
 
     if ($env:GITHUB_ACTIONS -eq "true") {
-        docker buildx build -t $REPO_NAME --cache-from type=gha --cache-to type=gha,mode=max --load $INSTALL_DIR
+        # Menggunakan & untuk memastikan argumen dibaca sebagai array string oleh Docker
+        & docker buildx build --tag "$REPO_NAME" --cache-from type=gha --cache-to type=gha,mode=max --load "$INSTALL_DIR"
     } else {
-        docker build -t $REPO_NAME $INSTALL_DIR
+        # Menggunakan --tag sebagai ganti -t untuk transparansi debugging
+        & docker build --tag "$REPO_NAME" "$INSTALL_DIR"
     }
 
+    # Penangkapan error yang lebih robust
     if ($LASTEXITCODE -ne 0) {
-        Write-Color "[x] FATAL ERROR: Failed to build Docker Image and Python dependencies." "Red"
-        Write-Color "[x] Halting installation to prevent downstream failures." "Red"
+        Write-Color "[x] FATAL ERROR: Docker build gagal dengan exit code $LASTEXITCODE" "Red"
         exit 1
     }
 }

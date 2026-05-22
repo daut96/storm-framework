@@ -99,7 +99,7 @@ You don't need to do a path or memorize the path where the binary is located, be
 
 ```python
 # Use this import
-from lib.roar.callbin.calling import call_bin
+from lib.roar.calling import call_bin
 
 def execute(options):
     bin = call_bin("binary_name")

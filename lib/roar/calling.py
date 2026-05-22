@@ -92,7 +92,7 @@ def call_so(query_name: str, module_name: str = None):
     """
     stem = query_name.split(".")[0]
     module_name = module_name or stem
-    
+
     if module_name is None:
         module_name = query_name
 

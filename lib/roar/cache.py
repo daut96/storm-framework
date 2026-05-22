@@ -54,37 +54,37 @@ class StormSmartCache:
             raise
 
     def _extract_metadata(self, file_path: str) -> dict:
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            source_code = f.read()
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                source_code = f.read()
 
-        tree = ast.parse(source_code, filename=file_path)
+            tree = ast.parse(source_code, filename=file_path)
 
-        for node in tree.body:
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    if (
-                        isinstance(target, ast.Name)
-                        and target.id == "metadata"
-                    ):
-                        if isinstance(node.value, ast.Dict):
-                            return ast.literal_eval(node.value)
+            for node in tree.body:
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if (
+                            isinstance(target, ast.Name)
+                            and target.id == "metadata"
+                        ):
+                            if isinstance(node.value, ast.Dict):
+                                return ast.literal_eval(node.value)
 
-                        smf.printd(
-                            f"metadata in {file_path} is not a literal dict",
-                            level="WARNING"
-                        )
-                        return {}
+                            smf.printd(
+                                f"metadata in {file_path} is not a literal dict",
+                                level="WARNING"
+                            )
+                            return {}
 
-        return {}
+            return {}
 
-    except Exception as e:
-        smf.printd(
-            f"Extract metadata failed: {file_path}",
-            e,
-            level="ERROR"
-        )
-        return {}
+        except Exception as e:
+            smf.printd(
+                f"Extract metadata failed: {file_path}",
+                e,
+                level="ERROR"
+            )
+            return {}
 
     def _fast_scan(
         self,

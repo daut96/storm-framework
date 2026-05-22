@@ -5,7 +5,7 @@ import ctypes
 import importlib.util
 import smf
 
-from .manager import _query_db
+from .callbin.manager import _query_db
 
 IS_WINDOWS = sys.platform.startswith("win")
 IS_MACOS = sys.platform == "darwin"

@@ -1,25 +1,24 @@
-# --- Configuration ---
-OUT      := $(OUT_DIR)/modules
-ifeq ($(strip $(OUT)),)
-endif
+# --- Configuration & Failsafe ---
+OUT_DIR ?= build
+OUT     := $(OUT_DIR)/modules
 
 # --- Target Discovery (Recursive) ---
-ALL_SRCS := $(shell find . -type f -name "*.go")
-
-# Filter only files that contain the main package
+ALL_SRCS  := $(shell find . -type f -name "*.go")
 MAIN_SRCS := $(shell grep -l -E "^package main" $(ALL_SRCS) 2>/dev/null)
 
 # --- Path Mapping & Transformation ---
-TARGETS := $(patsubst ./%.go,$(OUT)/%,$(basename $(MAIN_SRCS)))
+TARGETS := $(patsubst ./%.go,$(OUT)/%,$(MAIN_SRCS))
 
 # --- Rules ---
-.PHONY: all clean
+.PHONY: all clean pre-build
 
-# Default target: build all found binaries
-all: $(TARGETS)
+all: pre-build $(TARGETS)
+
+# Anticipation
+pre-build:
+	@mkdir -p $(OUT)
 
 # Pattern Rule for dynamic binary compilation
-# % capture sub-directory structure and file names
 $(OUT)/%: ./%.go
 	@mkdir -p $(dir $@)
 	@go build -o $@ $<

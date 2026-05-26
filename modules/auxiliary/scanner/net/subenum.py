@@ -27,7 +27,7 @@ def execute(options):
     wordlist_path = options.get("SUBDOM")
     threads = str(options.get("THREAD"))
 
-    binary = call_bin("subenum")
+    binary = call_bin("sub_enum")
 
     if not binary:
         smf.printf(f"{CC.YELLOW}[!] WARN => Binary not found at >{CC.RESET}", binary)

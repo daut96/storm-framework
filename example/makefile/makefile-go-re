@@ -6,28 +6,23 @@ endif
 # --- Target Discovery (Recursive) ---
 ALL_SRCS := $(shell find . -type f -name "*.go")
 
-# Filter hanya file yang berisi 'package main' untuk menjadi entri binary
-# Ini mencegah library/package non-main ikut terkompilasi sebagai binary terpisah
+# Filter only files that contain the main package
 MAIN_SRCS := $(shell grep -l -E "^package main" $(ALL_SRCS) 2>/dev/null)
 
 # --- Path Mapping & Transformation ---
-# Transformasikan path source menjadi path binary target di dalam $(OUT)
-# Contoh: ./cmd/service/auth.go -> $(OUT)/cmd/service/auth
 TARGETS := $(patsubst ./%.go,$(OUT)/%,$(basename $(MAIN_SRCS)))
 
 # --- Rules ---
 .PHONY: all clean
 
-# Default target: build semua binary yang ditemukan
+# Default target: build all found binaries
 all: $(TARGETS)
 
-# Pattern Rule untuk kompilasi dynamic binary
-# % menangkap struktur sub-direktori dan nama file tanpa ekstensi
+# Pattern Rule for dynamic binary compilation
+# % capture sub-directory structure and file names
 $(OUT)/%: ./%.go
-	@echo "=======> Building Modern AOSP-style Target: $@"
 	@mkdir -p $(dir $@)
 	@go build -o $@ $<
 
 clean:
-	@echo "=======> Cleaning output directory: $(OUT)"
 	rm -rf $(OUT)

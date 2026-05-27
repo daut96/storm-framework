@@ -4,10 +4,9 @@ import smf
 
 def run_sign():
     try:
-        from lib.roar.calling import call_so
+        from external.source.out.core.integrity import libsigned
 
-        signed = call_so("libsigned.so")
-        signed.storm_sign()
+        libsigned.storm_sign()
         return True
     except ImportError as e:
         smf.printf(

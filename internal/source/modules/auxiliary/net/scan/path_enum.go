@@ -28,6 +28,9 @@ type DiagnosticResult struct {
 
 // Global baseline untuk mendeteksi anomali Soft 404
 var soft404Size int64 = -1
+// Global regex
+var linkFinderEngine *regexp.Regexp
+var mapMutex sync.Mutex
 
 func main() {
 	// Configuration

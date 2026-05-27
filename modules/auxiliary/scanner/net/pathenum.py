@@ -93,7 +93,7 @@ def output_stream(line: str) -> str:
     # Deteksi Mode Inisialisasi Wordlist / JIT Crawling
     if "[RESULT] Mode =>" in clean_line:
         mode_info = clean_line.split("=>")[1].strip()
-        return f"[{CC.BLUE}ENGINE INIT{CC.RESET}] {mode_info}\n"
+        return f"[{CC.BLUE}ENGINE INIT{CC.RESET}] {mode_info}\n\n"
 
     # Deteksi Sukses Ekstraksi Path saat JIT Crawling
     if "[SUCCESS]" in clean_line:
@@ -123,7 +123,7 @@ def execute(options, runtime):
     elif wordl:
         smf.printf(f"[!] Wordlist {wordl} no match. Fallback to automatic.")
 
-    smf.printf(f"[*]{CC.CYAN} Running fuzzing to =>{CC.RESET}", url)
+    smf.printf(f"[*]{CC.CYAN} Running fuzzing to =>{CC.RESET}{url}")
 
     # Eksekusi proses dengan pipe stdout untuk streaming data real-time
     process = subprocess.Popen(

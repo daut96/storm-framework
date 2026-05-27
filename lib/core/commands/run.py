@@ -27,8 +27,12 @@ def execute(args, ctx):
 
     # Validate options
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
+    ignore = {"PASS", "PATH"}
+
     missing = [
-        key for key in required_vars.keys() if not str(options.get(key, "")).strip()
+        for key in required_vars
+        if key not in ignore
+        and not str(options.get(key, "")).strip()
     ]
 
     if missing:

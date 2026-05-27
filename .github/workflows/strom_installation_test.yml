@@ -51,9 +51,16 @@ jobs:
       options: --privileged
 
     steps:
+      - name: Fix apt cache
+        run: |
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt clean
+          sudo apt update --fix-missing
+          
       - name: Prepare Environment
         run: |
           apt-get update
+          apt-get upgrade -y
           apt-get install -y curl sudo bash jq
 
       - name: Checkout Code

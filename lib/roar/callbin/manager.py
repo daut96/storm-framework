@@ -10,7 +10,6 @@ from rootmap import ROOT
 
 _BASE_DIR = Path(ROOT).resolve()
 _DB_PATH = _BASE_DIR / "lib" / "sqlite" / "cached" / "cache.db"
-_VALID_EXTENSIONS = {".so", ".dll", ".dylib", ".exe", ".bin", ".pyd"}
 
 
 def _get_db_connection() -> sqlite3.Connection:
@@ -67,10 +66,9 @@ def sync_bin() -> None:
 
             # Taking the very end extension
             suffix = entry.suffix.lower()
-            is_valid_so = suffix in _VALID_EXTENSIONS
             is_linux_executable = (suffix == "") and os.access(entry, os.X_OK)
 
-            if is_valid_so or is_linux_executable:
+            if is_linux_executable:
                 # Dealing with multi-dot suffixes (example: 'lib.abi3.so' -> 'lib')
                 # This ensures that 'stem' is actually the base name of the binary
                 base_name = entry.name.split(".")[0]

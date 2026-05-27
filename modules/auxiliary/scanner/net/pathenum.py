@@ -2,7 +2,6 @@
 # Copyright (c) 2026 Storm Framework
 # See LICENSE file in the project root for full license information.
 import subprocess
-import sys
 import os
 import smf
 
@@ -21,13 +20,14 @@ mechanisms: automatic or via wordlist.
         ["Fuzzing", {"Description": "fuzz URL path list"}],
     ],
     "DefaultAction": "Fuzzing",
-    "License": "SMF License"
+    "License": "SMF License",
 }
 REQUIRED_OPTIONS = {
     "URL": "",
     "PATH": "File wordlist url path (opsional)",
-    "THREAD": "Default 1"
+    "THREAD": "Default 1",
 }
+
 
 def output_stream(line: str) -> str:
     """
@@ -45,36 +45,32 @@ def output_stream(line: str) -> str:
         return f"\n{CC.GREEN}{line}{CC.RESET}"
 
     return line  # return line = Standard output
-    
+
 
 def execute(options, runtime):
     url = options.get("URL")
     wordl = options.get("PATH")
     thread = options.get("THREAD")
-    
+
     bin = call_bin("path_enum")
-    
+
     if not os.path.exists(bin):
         smf.printf(f"[!] Binary => {bin} >> not found")
         return
 
     # Membangun argument baris perintah secara dinamis
     cmd = [bin, "-url", url, "-threads", thread]
-    
+
     if wordlist and os.path.exists(wordlist):
         cmd.extend(["-wordlist", wordlist])
     elif wordlist:
         smf.printf(f"[!] Wordlist {wordlist} no match. Fallback to automatic.")
 
     smf.printf(f"[*] Launching Subprocess: {' '.join(cmd)}")
-    
+
     # Eksekusi proses dengan pipe stdout untuk streaming data real-time
     process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
 
     # Loop of output stream

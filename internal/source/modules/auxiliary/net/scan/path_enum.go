@@ -10,11 +10,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+	"golang.org/x/net/html"
 )
 
 type DiagnosticResult struct {
@@ -139,24 +141,70 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	bodyStr := string(bodyBytes)
+	// Parsing base URL untuk keperluan validasi domain & normalisasi relative path
+	parsedBase, err := url.Parse(baseURL)
+	if err != nil {
+		log.Fatalf("Failed to parse base URL => %v\n", err)
+		return
+	}
 
-	// Regex untuk mengekstrak path internal aplikasi dari source code HTML
-	re := regexp.MustCompile(`(?:href|src)=["'](?:/)([^"'#\s>]+)["']`)
-	matches := re.FindAllStringSubmatch(bodyStr, -1)
-
-	// Set internal untuk de-duplikasi path agar tidak melakukan scan ganda
+	// Inisialisasi HTML tokenizer dari body response
+	tokenizer := html.NewTokenizer(resp.Body)
 	visited := make(map[string]bool)
-	for _, match := range matches {
-		path := match[1]
-		if !visited[path] && !strings.HasPrefix(path, "http") {
-			visited[path] = true
-			jobs <- path
+
+	for {
+		tokenType := tokenizer.Next()
+
+		// Selesai membaca dokumen (EOF) atau terjadi error
+		if tokenType == html.ErrorToken {
+			break
+		}
+
+		// Kita hanya tertarik pada Start Tag (e.g., <a>, <img>) dan Self-Closing Tag (e.g., <script/>, <link/>)
+		if tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken {
+			token := tokenizer.Token()
+
+			// Iterasi seluruh atribut di dalam tag untuk mencari href atau src
+			for _, attr := range token.Attr {
+				if attr.Key == "href" || attr.Key == "src" {
+					rawPath := strings.TrimSpace(attr.Val)
+					if rawPath == "" || strings.HasPrefix(rawPath, "#") || strings.HasPrefix(rawPath, "javascript:") {
+						continue
+					}
+
+					// Normalisasi URL: Mengubah relative path menjadi absolute URL objek
+					resolvedURL, err := parsedBase.Parse(rawPath)
+					if err != nil {
+						continue
+					}
+
+					// SECURITY FILTER: Pastikan path yang diekstrak masih satu host dengan target
+					// Mencegah fuzzer melompat keluar ke external domain (e.g., google.com, github.com)
+					if resolvedURL.Host != parsedBase.Host {
+						continue
+					}
+
+					// Ambil path yang sudah bersih (tanpa query parameters/fragment untuk fuzzing murni)
+					cleanPath := strings.TrimPrefix(resolvedURL.Path, "/")
+					
+					// Jika path merujuk ke root halaman utama, abaikan agar tidak looping
+					if cleanPath == "" {
+						continue
+					}
+
+					// De-duplikasi menggunakan map state
+					if !visited[cleanPath] {
+						visited[cleanPath] = true
+						jobs <- cleanPath
+					}
+				}
+			}
 		}
 	}
-	fmt.Printf("[SUCCESS] Successfully extracted => %d\n\n", len(visited))
+
+	fmt.Printf("[SUCCESS] Successfully extracted via HTML Parser => %d\n", len(visited))
 }
+
 
 func worker(client *http.Client, baseURL string, jobs <-chan string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
 	defer wg.Done()

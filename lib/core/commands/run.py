@@ -28,21 +28,26 @@ def execute(args, ctx):
     # Validate options
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
     missing = []
-    
+
     for key, description in required_vars.items():
         # Sanitize descriptions to lowercase to avoid case-sensitivity
         desc_lower = str(description).lower()
-        
+
         # Keyword sanitation description key
-        is_optional = "(opsional)" in desc_lower or "(optional)" in desc_lower or "opsional" in desc_lower or "optional" in desc_lower
-        
+        is_optional = (
+            "(opsional)" in desc_lower
+            or "(optional)" in desc_lower
+            or "opsional" in desc_lower
+            or "optional" in desc_lower
+        )
+
         # Get the value entered by the user
         user_value = str(options.get(key, "")).strip()
-        
+
         # If it is not optional AND the user has not filled in the value
         if not is_optional and not user_value:
             missing.append(key)
-    
+
     if missing:
         smf.printf(
             f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}"
@@ -64,13 +69,14 @@ def execute(args, ctx):
     try:
         execute_func = current_module.execute
         sig = inspect.signature(execute_func)
-        
+
         # Hitung parameter yang bisa menerima argumen posisi
         valid_params = [
-            p for p in sig.parameters.values() 
+            p
+            for p in sig.parameters.values()
             if p.kind in (p.POSITIONAL_OR_KEYWORD, p.POSITIONAL_ONLY)
         ]
-        
+
         if len(valid_params) >= 2:
             execute_func(options, module_runtime)
         else:

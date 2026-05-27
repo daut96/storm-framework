@@ -30,7 +30,7 @@ REQUIRED_OPTIONS = {
     "THREAD": "Default 1",
 }
 RESULT_PATTERN = re.compile(
-    r"^\[RESULT\]\s+PATH:(?P<path>[^ ]+)\s+\|\s+STATUS:(?P<status>\d+)\s+\|\s+SIZE:(?P<size>\d+)\s+\|\s+TYPE:(?P<type>[^ ]+)"
+    r"^\[RESULT\]\s+(?:\[(?P<source>[^\]]+)\]\s+)?Path:\s+(?P<path>[^ ]+)\s+\|\s+Status:\s+(?P<status>\d+)\s+\|\s+Size:\s+(?P<size>\d+)\s+\|\s+Type:\s+(?P<type>[^ ]+)"
 )
 
 
@@ -47,6 +47,9 @@ def output_stream(line: str) -> str:
         data = match.groupdict()
         status_code = int(data["status"])
 
+        raw_source = data.get("source")
+        source_engine = raw_source if raw_source else "WORDLIST"
+
         # Aturan Pewarnaan berdasarkan Tingkat Risiko / HTTP State Classification
         if 200 <= status_code < 300:
             # 2xx = Success / File Terbuka / Valid Target
@@ -61,14 +64,22 @@ def output_stream(line: str) -> str:
             # 5xx = Server Error / Potensial Crash / Vulnerability Indicator
             color_status = f"{CC.RED}{status_code}{CC.RESET}"
 
+
+        if source_engine == "JS":
+            color_source = f"{CC.YELLOW}{source_engine:<8}{CC.RESET}"
+        elif source_engine == "HTML":
+            color_source = f"{CC.CYAN}{source_engine:<8}{CC.RESET}"
+        else:
+            color_source = f"{CC.WHITE}{source_engine:<8}{CC.RESET}"
+
         # Rekonstruksi string output terstruktur dengan komponen warna terpisah
         # Output dibuat rapi secara tabular menggunakan string alignment (e.g., :<30)
         formatted_line = (
             f"[{CC.GREEN}RESULT{CC.RESET}] "
-            f"[{CC.CYAN}{data['source']}{CC.RESET}] | "
-            f"Path: {CC.MAGENTA}{data['path']}{CC.RESET} | "
+            f"[{color_source}] "
+            f"Path: {CC.MAGENTA}{data['path']:<45}{CC.RESET} | "
             f"Status: {color_status} | "
-            f"Size: {CC.WHITE}{data['size']}{CC.RESET} | "
+            f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
             f"Type: {data['type']}"
         )
         return f"{formatted_line}\n"

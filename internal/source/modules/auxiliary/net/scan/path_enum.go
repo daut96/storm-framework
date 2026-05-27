@@ -253,8 +253,6 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	mapMutex.Lock()
 	totalFound := len(visited)
 	mapMutex.Unlock()
-
-	fmt.Printf("[SUCCESS] Crawl Engine finished. Total unique targets in state map => %d\n", totalFound)
 }
 
 

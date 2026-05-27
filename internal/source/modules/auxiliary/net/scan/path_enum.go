@@ -253,7 +253,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 
 func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// Jika flag -regex-file tidak diisi, abaikan deep parsing untuk menghemat bandwidth
+
 	if linkFinderEngine == nil {
 		return
 	}
@@ -262,8 +262,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 	if err != nil {
 		return
 	}
-	
-	// Gunakan header yang sama agar tidak diblokir WAF
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
 
 	resp, err := client.Do(req)
@@ -277,54 +275,82 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		return
 	}
 
-	// Gunakan linkFinderEngine yang sudah di-load secara dinamis dari file .txt via flag CLI
-	matches := linkFinderEngine.FindAllStringSubmatch(string(body), -1)
+	// OPTIMASI: Gunakan FindAllSubmatch untuk memproses []byte langsung tanpa alokasi string(body) raksasa
+	matches := linkFinderEngine.FindAllSubmatch(body, -1)
 	
+	var localNewEndpoints []string
+	localNewCount := 0
+
 	for _, match := range matches {
-		// match[1] pada regex standar industri langsung mengambil isi path bersih di dalam kutip
-		rawPath := strings.TrimSpace(match[1])
+		if len(match) < 2 {
+			continue
+		}
+		// Konversi ke string hanya untuk bagian yang match saja (Hemat Memori Heap)
+		rawPath := strings.TrimSpace(string(match[1]))
 		if rawPath == "" {
 			continue
 		}
 
-		// Evaluasi jika hasil ekstraksi berupa Full URL (Absolute)
-		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") || strings.HasPrefix(rawPath, "//") {
+		// Normalisasi Schemeless URL (//) menjadi URL absolut yang valid sebelum di-parse
+		if strings.HasPrefix(rawPath, "//") {
+			rawPath = parsedBase.Scheme + ":" + rawPath
+		}
+
+		// Evaluasi Absolute URL
+		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") {
 			resolvedURL, err := url.Parse(rawPath)
 			if err != nil {
 				continue
 			}
-			// Scope Protection: Lewati jika domain berbeda dengan target utama
+			// Scope Protection
 			if resolvedURL.Host != parsedBase.Host {
 				continue
 			}
 			rawPath = resolvedURL.Path
 		}
 
-		// Bersihkan karakter query string atau fragment (?v=1.0 atau #token) untuk fuzzing murni
+		// Bersihkan karakter query string atau fragment (?v=1.0 atau #token)
 		if idx := strings.IndexAny(rawPath, "?#"); idx != -1 {
 			rawPath = rawPath[:idx]
 		}
 
 		cleanPath := strings.TrimPrefix(rawPath, "/")
 		
-		// Bersihkan noise file statis berulang yang tidak perlu di-fuzz
-		if cleanPath == "" || strings.HasSuffix(cleanPath, ".js") || strings.HasSuffix(cleanPath, ".css") {
+		// Filter Agresif: Singkirkan static assets & Cloudflare noise
+		lowerPath := strings.ToLower(cleanPath)
+		if lowerPath == "" || 
+			strings.HasSuffix(lowerPath, ".js") || 
+			strings.HasSuffix(lowerPath, ".css") ||
+			strings.HasSuffix(lowerPath, ".png") || 
+			strings.HasSuffix(lowerPath, ".jpg") || 
+			strings.HasSuffix(lowerPath, ".jpeg") ||
+			strings.HasSuffix(lowerPath, ".ico") ||
+			strings.HasSuffix(lowerPath, ".svg") ||
+			strings.Contains(lowerPath, "cdn-cgi/") {
 			continue
 		}
 
-		// THREAD-SAFE BLOCK: Proteksi map 'visited' dari data race condition
+		// THREAD-SAFE BLOCK: Hanya untuk verifikasi & modifikasi map
 		mapMutex.Lock()
 		if !visited[cleanPath] {
 			visited[cleanPath] = true
-			
-			// Kirim endpoint baru yang ditemukan di dalam file JS ke pool fuzzer secara real-time
-			jobs <- cleanPath
+			localNewCount++
+			// Simpan ke array lokal, jangan langsung kirim ke channel di dalam lock!
+			localNewEndpoints = append(localNewEndpoints, cleanPath) 
 		}
 		mapMutex.Unlock()
 	}
-	fmt.Printf("[SUCCESS] Successfully extracted via JS Parser => %d\n", len(visited))
-}
 
+	// SAFE CHANNEL EMISSION: Kirim data ke fuzzer di luar cakupan lock (Anti-Deadlock)
+	for _, endpoint := range localNewEndpoints {
+		jobs <- endpoint
+	}
+
+	// LOGGING AKURAT: Hanya mencetak jika file JS ini menyumbang penemuan unik baru
+	if localNewCount > 0 {
+		fmt.Printf("[SUCCESS] JS Deep Parser murni menemukan %d endpoint baru dari: %s\n", localNewCount, jsURL)
+	}
+}
 
 func worker(client *http.Client, baseURL string, jobs <-chan string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
 	defer wg.Done()

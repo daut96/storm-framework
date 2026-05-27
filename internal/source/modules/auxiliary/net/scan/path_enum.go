@@ -98,7 +98,7 @@ func main() {
 		for res := range results {
 			// Menggunakan data asli dari struct DiagnosticResult (res)
 			// Format output disesuaikan agar dibaca mulus oleh regex Python baru kita
-			fmt.Printf("[RESULT] [%-8s] Path: %-50s | Status: %d | Size: %-8d | Type: %s\n", 
+			fmt.Printf("[RESULT] [%s] Path: %s | Status: %d | Size: %d | Type: %s\n", 
 				res.Source, res.Path, res.StatusCode, res.Size, res.Type,
 			)
 		}

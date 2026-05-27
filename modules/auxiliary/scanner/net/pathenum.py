@@ -86,7 +86,7 @@ def output_stream(line: str) -> str:
 
     # Deteksi Sukses Ekstraksi Path saat JIT Crawling
     if "[SUCCESS]" in clean_line:
-        return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n"
+        return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n\n"
 
     return line
 
@@ -110,7 +110,7 @@ def execute(options, runtime):
     elif wordl:
         smf.printf(f"[!] Wordlist {wordl} no match. Fallback to automatic.")
 
-    smf.printf(f"{CC.GREEN}[*] Menjalankan fuzzing...{CC.RESET}")
+    smf.printf(f"[*]{CC.CYAN} Menjalankan fuzzing ke =>{CC.RESET}", url)
 
     # Eksekusi proses dengan pipe stdout untuk streaming data real-time
     process = subprocess.Popen(
@@ -129,7 +129,7 @@ def execute(options, runtime):
 
     # Catch error exception
     except Exception as e:
-        smf.printf(f"\n{CC.RED}[!] Error pathenum =>{CC.RESET}", e)
+        smf.printf(f"\n[!]{CC.RED} Error pathenum =>{CC.RESET}", e)
         smf.printd(f"Exception pathenum", e, level="ERROR")
 
     # Stop the binary process
@@ -142,5 +142,5 @@ def execute(options, runtime):
                 process.kill()
 
         smf.printf(
-            f"{CC.GREEN}[*] Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
+            f"\n[*]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
         )

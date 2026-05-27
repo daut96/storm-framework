@@ -96,9 +96,9 @@ def execute(options, runtime):
     url = options.get("URL")
     wordl = options.get("PATH")
     thread = options.get("THREAD")
-    
+
     regex = os.path.join(ROOT, "external", "source", "regex", "rexgo.txt")
-    
+
     bin = call_bin("path_enum")
 
     if not bin:

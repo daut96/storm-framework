@@ -25,6 +25,11 @@ type DiagnosticResult struct {
 	Size       int64  `json:"size"`
 	Type       string `json:"type"`
 }
+type CrawlJob struct {
+	Path   string
+	Source string
+}
+
 
 // Global baseline untuk mendeteksi anomali Soft 404
 var soft404Size int64 = -1
@@ -87,8 +92,9 @@ func main() {
 	go func() {
 		for res := range results {
 			// Format output standard terstruktur agar mudah diparsing oleh regex Python
-			fmt.Printf("[RESULT] PATH:%s | STATUS:%d | SIZE:%d | TYPE:%s\n", 
-				res.Path, res.StatusCode, res.Size, res.Type)
+			fmt.Printf("[RESULT] [%-8s] Path: %-50s | Status: %d | Size: %-8d | Type: %s\n", 
+                job.Source, job.Path, statusCode, contentLength, validationType,
+			)
 		}
 		// Sinyal dikirim SETELAH channel results ditutup dan semua buffer terbaca habis
 		doneAggregator <- true 
@@ -168,7 +174,7 @@ func loadWordlist(path string, jobs chan<- string) {
 	}
 }
 
-func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- string) {
+func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- CrawlJob) {
 	resp, err := client.Get(baseURL)
 	if err != nil {
 		// Perbaikan: Jangan gunakan log.Fatalf agar aplikasi tidak mati mendadak
@@ -249,7 +255,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 
 	// SAFE CHANNEL EMISSION: Kirim seluruh hasil temuan HTML ke worker pool di luar lock
 	for _, path := range localNewPaths {
-		jobs <- path
+		jobs <- CrawlJob{Path: path, Source: "HTML"}
 	}
 
 	// Tunggu seluruh background JS Parser selesai bekerja
@@ -263,7 +269,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	fmt.Printf("[SUCCESS] Crawl Engine finished. Total unique targets in state map => %d\n", totalFound)
 }
 
-func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string, wg *sync.WaitGroup) {
+func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- CrawlJob, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if linkFinderEngine == nil {
@@ -330,8 +336,8 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		
 		// Filter Agresif: Singkirkan static assets & Cloudflare noise
 		lowerPath := strings.ToLower(cleanPath)
-		if lowerPath == "" || 
-			strings.HasSuffix(lowerPath, ".js") || 
+		if lowerPath == "" ||
+		    strings.HasSuffix(lowerPath, "text/") ||
 			strings.HasSuffix(lowerPath, ".css") ||
 			strings.HasSuffix(lowerPath, ".png") || 
 			strings.HasSuffix(lowerPath, ".jpg") || 
@@ -355,12 +361,12 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 
 	// SAFE CHANNEL EMISSION: Kirim data ke fuzzer di luar cakupan lock (Anti-Deadlock)
 	for _, endpoint := range localNewEndpoints {
-		jobs <- endpoint
+		jobs <- CrawlJob{Path: endpoint, Source: "JS_Regex"}
 	}
 
 	// LOGGING AKURAT: Hanya mencetak jika file JS ini menyumbang penemuan unik baru
 	if localNewCount > 0 {
-		fmt.Printf("[SUCCESS] JS Deep Parser murni menemukan %d endpoint baru dari: %s\n", localNewCount, jsURL)
+		fmt.Printf("[SUCCESS] Pure JS Deep Parser finds: %d\n", localNewCount)
 	}
 }
 

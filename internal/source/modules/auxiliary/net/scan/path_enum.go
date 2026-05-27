@@ -155,7 +155,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 			jobs <- path
 		}
 	}
-	fmt.Printf("[SUCCESS] Successfully extracted => %d\n", len(visited))
+	fmt.Printf("[SUCCESS] Successfully extracted => %d\n\n", len(visited))
 }
 
 func worker(client *http.Client, baseURL string, jobs <-chan string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
@@ -196,13 +196,11 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 			}
 		}
 
-		// FILTERING LOGIC: Validasi keaslian path
+		logType := "Valid"
 		if statusCode == http.StatusNotFound {
-			continue // Valid 404, abaikan.
-		}
-
-		if statusCode == http.StatusOK && size == soft404Size {
-			continue // Terdeteksi sebagai anomali Soft 404, abaikan.
+			logType = "Not Found (404)"
+		} else if statusCode == http.StatusOK && size == soft404Size {
+			logType = "Soft 404 Anomaly"
 		}
 
 		// Kirim data valid atau anomali konfigurasi (403/500/301) ke aggregator
@@ -210,7 +208,7 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 			Path:       cleanPath,
 			StatusCode: statusCode,
 			Size:       size,
-			Type:       "Detected",
+			Type:       logType,
 		}
 	}
 }

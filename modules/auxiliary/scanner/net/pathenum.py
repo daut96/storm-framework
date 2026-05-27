@@ -65,9 +65,10 @@ def output_stream(line: str) -> str:
         # Output dibuat rapi secara tabular menggunakan string alignment (e.g., :<30)
         formatted_line = (
             f"[{CC.GREEN}RESULT{CC.RESET}] "
-            f"Path: {CC.MAGENTA}{data['path']:<30}{CC.RESET} | "
+            f"[{CC.CYAN}{data['source']}{CC.RESET}] | "
+            f"Path: {CC.MAGENTA}{data['path']}{CC.RESET} | "
             f"Status: {color_status} | "
-            f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
+            f"Size: {CC.WHITE}{data['size']}{CC.RESET} | "
             f"Type: {data['type']}"
         )
         return f"{formatted_line}\n"

@@ -257,6 +257,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	fmt.Printf("[SUCCESS] Crawl Engine finished. Total unique targets in state map => %d\n", totalFound)
 }
 
+
 func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- CrawlJob, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -281,8 +282,14 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		return
 	}
 
+	// Selesaikan base URL relative path berdasarkan lokasi file JS saat ini, bukan domain utama
+	parsedJSURL, err := url.Parse(jsURL)
+	if err != nil {
+		parsedJSURL = parsedBase
+	}
+
 	matches := linkFinderEngine.FindAllSubmatch(body, -1)
-	var localNewEndpoints []string
+	var localNewEndpoints []CrawlJob
 	localNewCount := 0
 
 	for _, match := range matches {
@@ -298,6 +305,9 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 			rawPath = parsedBase.Scheme + ":" + rawPath
 		}
 
+		var finalAbsoluteURL *url.URL
+
+		// Resolve path secara akurat berdasarkan standar RFC
 		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") {
 			resolvedURL, err := url.Parse(rawPath)
 			if err != nil {
@@ -306,15 +316,28 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 			if resolvedURL.Host != parsedBase.Host {
 				continue
 			}
-			rawPath = resolvedURL.Path
+			finalAbsoluteURL = resolvedURL
+		} else {
+			// Hubungkan relative path dengan sub-direktori file JS berada
+			resolvedURL, err := parsedJSURL.Parse(rawPath)
+			if err != nil {
+				continue
+			}
+			if resolvedURL.Host != parsedBase.Host {
+				continue
+			}
+			finalAbsoluteURL = resolvedURL
 		}
 
-		if idx := strings.IndexAny(rawPath, "?#"); idx != -1 {
-			rawPath = rawPath[:idx]
+		pathOnly := finalAbsoluteURL.Path
+		if idx := strings.IndexAny(pathOnly, "?#"); idx != -1 {
+			pathOnly = pathOnly[:idx]
 		}
 
-		cleanPath := strings.TrimPrefix(rawPath, "/")
+		cleanPath := strings.TrimPrefix(pathOnly, "/")
 		lowerPath := strings.ToLower(cleanPath)
+		
+		// Filter Noise yang tidak perlu di-fuzzing
 		if lowerPath == "" ||
 			strings.HasSuffix(lowerPath, "text/") ||
 			strings.HasSuffix(lowerPath, ".css") ||
@@ -331,17 +354,26 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		if !visited[cleanPath] {
 			visited[cleanPath] = true
 			localNewCount++
-			localNewEndpoints = append(localNewEndpoints, cleanPath) 
+			
+			// Simpan objek pekerjaan baru ke array lokal
+			jobItem := CrawlJob{Path: cleanPath, Source: "JS"}
+			localNewEndpoints = append(localNewEndpoints, jobItem)
+
+			// =========================================================================
+			// RECURSIVE ENGINE TRIGGER: Jika menemukan file JS baru di dalam file JS, 
+			// kejar secara rekursif sampai mentok (ujung dunia)
+			// =========================================================================
+			if strings.HasSuffix(lowerPath, ".js") {
+				wg.Add(1)
+				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase, visited, jobs, wg)
+			}
 		}
 		mapMutex.Unlock()
 	}
 
-	for _, endpoint := range localNewEndpoints {
-		jobs <- CrawlJob{Path: endpoint, Source: "JS_Regex"}
-	}
-
-	if localNewCount > 0 {
-		fmt.Printf("[SUCCESS] Pure JS Deep Parser finds: %d\n", localNewCount)
+	// Mengirim seluruh target temuan ke worker pool fuzzer utama
+	for _, job := range localNewEndpoints {
+		jobs <- job
 	}
 }
 

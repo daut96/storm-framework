@@ -61,7 +61,7 @@ def execute(options):
     port = options.get("PORT")
 
     # Binary path
-    bin_path = call_bin("https_prox")
+    bin_path = call_bin("https_proxy")
 
     # Binary validation
     if not bin_path:

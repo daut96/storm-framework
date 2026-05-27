@@ -35,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	if *targetURL == "" {
-		log.Printf("[ERROR] Error => The url parameter is absolutely required.")
+		log.Printf("Error => The url parameter is absolutely required.")
 		os.Exit(1)
 	}
 
@@ -105,14 +105,14 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 		// Server mengembalikan 200 OK untuk path tidak valid (Soft 404 dideteksi!)
 		body, _ := io.ReadAll(resp.Body)
 		soft404Size = int64(len(body))
-		log.Printf("[WARN] Warning => Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
+		log.Printf("Warning => Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
 	}
 }
 
 func loadWordlist(path string, jobs chan<- string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("[FATAL] Failed to read wordlist => %v\n", err)
+		log.Fatalf("Failed to read wordlist => %v\n", err)
 		return
 	}
 	defer file.Close()
@@ -129,7 +129,7 @@ func loadWordlist(path string, jobs chan<- string) {
 func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- string) {
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		log.Fatalf("[FATAL] Failed to perform basic crawl => %v\n", err)
+		log.Fatalf("Failed to perform basic crawl => %v\n", err)
 		return
 	}
 	defer resp.Body.Close()

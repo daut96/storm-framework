@@ -73,17 +73,17 @@ func main() {
 	go func() {
 		for res := range results {
 			// Format output standard terstruktur agar mudah diparsing oleh regex Python
-			log.Printf("[RESULT] PATH:%s | STATUS:%d | SIZE:%d | TYPE:%s\n", 
+			fmt.Printf("[RESULT] PATH:%s | STATUS:%d | SIZE:%d | TYPE:%s\n", 
 				res.Path, res.StatusCode, res.Size, res.Type)
 		}
 	}()
 
 	// 5. Penentuan Mekanisme Input (Wordlist vs Otomatis)
 	if *wordlistPath != "" {
-		log.Printf("[RESULT] Mode => Using Static Wordlist Input")
+		fmt.Println("[RESULT] Mode => Using Static Wordlist Input")
 		loadWordlist(*wordlistPath, jobs)
 	} else {
-		log.Printf("[RESULT] Mode => Empty wordlist. Enable JIT Crawling")
+		fmt.Println("[RESULT] Mode => Empty wordlist. Enable JIT Crawling")
 		discoverPathsAutomatically(client, *targetURL, jobs)
 	}
 
@@ -150,7 +150,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 			jobs <- path
 		}
 	}
-	log.Printf("[SUCCESS] Successfully extracted => %d\n", len(visited))
+	fmt.Printf("[SUCCESS] Successfully extracted => %d\n", len(visited))
 }
 
 func worker(client *http.Client, baseURL string, jobs <-chan string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {

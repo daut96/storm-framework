@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"flag"
 	"log"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -93,7 +94,7 @@ func main() {
 
 func calibrateSoft404(client *http.Client, baseURL string) {
 	// Membuat string acak resolusi tinggi untuk memicu 404 murni pada server
-	randomPath := log.Printf("anomaly_test_%d.html", time.Now().UnixNano())
+	randomPath := fmt.Sprintf("anomaly_test_%d.html", time.Now().UnixNano())
 	resp, err := client.Get(baseURL + randomPath)
 	if err != nil {
 		return

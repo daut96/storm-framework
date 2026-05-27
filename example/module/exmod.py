@@ -9,6 +9,9 @@ This is the standard that must be set so that all modules can run.
 # This can be used to find the root project if needed.
 from rootmap import ROOT  # noqa
 
+# To call binary
+from lib.roar.calling import call_bin # noqa
+
 #
 # Apply metadata with this template in every module you create
 # This serves to identify the module and provide information about its creator
@@ -19,13 +22,13 @@ metadata = {
     "Description": """
 For a complete explanation
 """,
-    "Author": ["fill in your name", "examples"],
+    "Author": ["your name"],
     "Action": [
         ["Function name", {"Description": "Brief explanation of the function"}],
         ["Function name", {"Description": "Brief explanation of the function"}],
     ],
     "DefaultAction": "Main function",
-    "License": "fill in your module license or match GPL-3.0",
+    "License": "SMF License",
 }
 
 #

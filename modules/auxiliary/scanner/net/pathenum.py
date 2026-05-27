@@ -32,6 +32,7 @@ RESULT_PATTERN = re.compile(
     r"^\[RESULT\]\s+PATH:(?P<path>[^ ]+)\s+\|\s+STATUS:(?P<status>\d+)\s+\|\s+SIZE:(?P<size>\d+)\s+\|\s+TYPE:(?P<type>[^ ]+)"
 )
 
+
 def output_stream(line: str) -> str:
     """
     Color injection for captured logs
@@ -39,12 +40,12 @@ def output_stream(line: str) -> str:
     clean_line = line.strip()
     if not clean_line:
         return line
-        
+
     match = RESULT_PATTERN.match(clean_line)
     if match:
         data = match.groupdict()
-        status_code = int(data['status'])
-        
+        status_code = int(data["status"])
+
         # Aturan Pewarnaan berdasarkan Tingkat Risiko / HTTP State Classification
         if 200 <= status_code < 300:
             # 2xx = Success / File Terbuka / Valid Target
@@ -70,23 +71,22 @@ def output_stream(line: str) -> str:
         )
         return f"{formatted_line}\n"
 
-    
     if "Error =>" in clean_line:
         return f"[{CC.RED}SYSTEM ERROR{CC.RESET}] {CC.RED}{clean_line.split('=>')[1].strip()}{CC.RESET}\n"
-        
+
     # Deteksi Anomali / Soft 404 dari fungsi calibrateSoft404
     if "Warning =>" in clean_line:
         return f"[{CC.YELLOW}ANOMALY WARN{CC.RESET}] {CC.YELLOW}{clean_line.split('=>')[1].strip()}{CC.RESET}\n"
 
     # Deteksi Mode Inisialisasi Wordlist / JIT Crawling
     if "[RESULT] Mode =>" in clean_line:
-        mode_info = clean_line.split('=>')[1].strip()
+        mode_info = clean_line.split("=>")[1].strip()
         return f"[{CC.BLUE}ENGINE INIT{CC.RESET}] {mode_info}\n"
 
     # Deteksi Sukses Ekstraksi Path saat JIT Crawling
     if "[SUCCESS]" in clean_line:
         return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n"
-    
+
     return line
 
 

@@ -233,7 +233,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 					// js path detection
 					if strings.HasSuffix(cleanPath, ".js") {
 						jsWG.Add(1)
-                        go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs)
+                        go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs, &jsWG)
                     }
 					mapMutex.Lock()
 					

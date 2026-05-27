@@ -33,9 +33,7 @@ def _get_db_connection() -> sqlite3.Connection:
                 last_mtime REAL
             )
         """)
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_bin_filename ON db_bin(filename)"
-        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_filename ON db_bin(filename)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_stem ON db_bin(stem)")
     except sqlite3.Error as e:
         smf.printd("Failed to initialize SQLite cache schema", e, level="CRITICAL")
@@ -91,9 +89,7 @@ def sync_bin() -> None:
 
             removed = [(name,) for name in cached_names if name not in found_on_disk]
             if removed:
-                cursor.executemany(
-                    "DELETE FROM db_bin WHERE filename = ?", removed
-                )
+                cursor.executemany("DELETE FROM db_bin WHERE filename = ?", removed)
                 smf.printd(
                     f"Cleaned {len(removed)} binaries no longer in cache.", level="INFO"
                 )

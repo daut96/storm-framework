@@ -10,6 +10,7 @@ from rootmap import ROOT
 
 _BASE_DIR = Path(ROOT).resolve()
 _DB_PATH = _BASE_DIR / "lib" / "sqlite" / "cached" / "cache.db"
+_VALID_EXTENSIONS = {".so", ".dll", ".dylib", ".exe", ".bin", ".pyd"}
 
 
 def _get_db_connection() -> sqlite3.Connection:
@@ -24,7 +25,7 @@ def _get_db_connection() -> sqlite3.Connection:
 
     try:
         conn.execute("""
-            CREATE TABLE IF NOT EXISTS binary_cache (
+            CREATE TABLE IF NOT EXISTS db_bin (
                 filename TEXT PRIMARY KEY,
                 stem TEXT NOT NULL,
                 path TEXT NOT NULL,
@@ -33,9 +34,9 @@ def _get_db_connection() -> sqlite3.Connection:
             )
         """)
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_bin_filename ON binary_cache(filename)"
+            "CREATE INDEX IF NOT EXISTS idx_bin_filename ON db_bin(filename)"
         )
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_stem ON binary_cache(stem)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_bin_stem ON db_bin(stem)")
     except sqlite3.Error as e:
         smf.printd("Failed to initialize SQLite cache schema", e, level="CRITICAL")
         raise
@@ -46,7 +47,7 @@ def _get_db_connection() -> sqlite3.Connection:
 def sync_bin() -> None:
     smf.printd("Starting binary cache synchronization scan...", level="INFO")
     search_targets = {
-        "module": _BASE_DIR / "external" / "source" / "out" / "module",
+        "module": _BASE_DIR / "external" / "source" / "out" / "modules",
         "core": _BASE_DIR / "external" / "source" / "out" / "core",
     }
 
@@ -66,9 +67,10 @@ def sync_bin() -> None:
 
             # Taking the very end extension
             suffix = entry.suffix.lower()
+            is_valid = suffix in _VALID_EXTENSIONS
             is_linux_executable = (suffix == "") and os.access(entry, os.X_OK)
 
-            if is_linux_executable:
+            if is_valid or is_linux_executable:
                 # Dealing with multi-dot suffixes (example: 'lib.abi3.so' -> 'lib')
                 # This ensures that 'stem' is actually the base name of the binary
                 base_name = entry.name.split(".")[0]
@@ -84,13 +86,13 @@ def sync_bin() -> None:
     try:
         with _get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT filename FROM binary_cache")
+            cursor.execute("SELECT filename FROM db_bin")
             cached_names = {row[0] for row in cursor.fetchall()}
 
             removed = [(name,) for name in cached_names if name not in found_on_disk]
             if removed:
                 cursor.executemany(
-                    "DELETE FROM binary_cache WHERE filename = ?", removed
+                    "DELETE FROM db_bin WHERE filename = ?", removed
                 )
                 smf.printd(
                     f"Cleaned {len(removed)} binaries no longer in cache.", level="INFO"
@@ -100,7 +102,7 @@ def sync_bin() -> None:
             for filename, data in found_on_disk.items():
                 cursor.execute(
                     """
-                    INSERT INTO binary_cache (filename, stem, path, category, last_mtime)
+                    INSERT INTO db_bin (filename, stem, path, category, last_mtime)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(filename) DO UPDATE SET
                         stem = excluded.stem,
@@ -141,7 +143,7 @@ def _query_db(query_column: str, query_value: str) -> Optional[str]:
                 raise ValueError("Invalid query column")
 
             cursor.execute(
-                f"SELECT path FROM binary_cache WHERE {query_column} = ?",
+                f"SELECT path FROM db_bin WHERE {query_column} = ?",
                 (query_value,),
             )
             row = cursor.fetchone()

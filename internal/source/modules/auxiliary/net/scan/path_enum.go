@@ -44,7 +44,7 @@ func main() {
 		*targetURL += "/"
 	}
 
-	// 1. Inisialisasi HTTP Client berkinerja tinggi (Connection Pooling)
+	// Inisialisasi HTTP Client berkinerja tinggi (Connection Pooling)
 	transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 10,
@@ -56,26 +56,29 @@ func main() {
 		Timeout:   2 * time.Second,
 	}
 
-	// 2. Kalibrasi Anomali Jaringan (Deteksi Soft 404)
+	// Kalibrasi Anomali Jaringan (Deteksi Soft 404)
 	calibrateSoft404(client, *targetURL)
 
 	jobs := make(chan string, 1000)
 	results := make(chan DiagnosticResult, 1000)
 	var wg sync.WaitGroup
 
-	// 3. Spawning Worker Pool
+	// Spawning Worker Pool
 	for i := 0; i < *threads; i++ {
 		wg.Add(1)
 		go worker(client, *targetURL, jobs, results, &wg)
 	}
 
-	// 4. Sinkronisasi Output (Result Aggregator)
+	doneAggregator := make(chan bool)
+	// Sinkronisasi Output (Result Aggregator)
 	go func() {
 		for res := range results {
 			// Format output standard terstruktur agar mudah diparsing oleh regex Python
 			fmt.Printf("[RESULT] PATH:%s | STATUS:%d | SIZE:%d | TYPE:%s\n", 
 				res.Path, res.StatusCode, res.Size, res.Type)
 		}
+		// Sinyal dikirim SETELAH channel results ditutup dan semua buffer terbaca habis
+		doneAggregator <- true 
 	}()
 
 	// 5. Penentuan Mekanisme Input (Wordlist vs Otomatis)
@@ -87,9 +90,11 @@ func main() {
 		discoverPathsAutomatically(client, *targetURL, jobs)
 	}
 
-	close(jobs)
-	wg.Wait()
-	close(results)
+	// GRACEFUL SHUTDOWN SEQUENCE
+	close(jobs)          // 1. Tutup input stream (memberitahu worker tidak ada job lagi)
+	wg.Wait()            // 2. Tunggu semua worker selesai memproses job yang tersisa
+	close(results)       // 3. Tutup output stream (memberitahu aggregator tidak ada data lagi)
+	<-doneAggregator     // 4. BLOCKING: Tunggu aggregator selesai nge-print semuanya ke stdout!
 }
 
 func calibrateSoft404(client *http.Client, baseURL string) {

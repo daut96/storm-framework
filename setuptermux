@@ -124,16 +124,11 @@ if [ -f smf_ca.key ] && [ -f smf_ca.crt ]; then
 else
     echo "[+] Generate CA Trust Store..."
 
-    # Delete CA lama
     rm -f smf_ca.key smf_ca.crt
-
-    # Generate CA private key
     openssl genrsa -out smf_ca.key 2048
-
-    # Allow standard owner read/write
     chmod 600 smf_ca.key
 
-    # Generate self-signed CA certificate
+    # Menggunakan <<-EOF (Indendasi WAJIB menggunakan karakter TAB)
     openssl req -x509 -new -nodes \
         -key smf_ca.key \
         -sha256 \
@@ -141,20 +136,21 @@ else
         -out smf_ca.crt \
         -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm" \
         -extensions v3_ca \
-        -config <(cat <<EOF
-    [req]
-    distinguished_name = req_distinguished_name
-    [req_distinguished_name]
-    [v3_ca]
-    subjectKeyIdentifier = hash
-    authorityKeyIdentifier = keyid:always,issuer
-    basicConstraints = critical, CA:true
-    keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-    EOF
-    )
+        -config <(cat <<-EOF
+		[req]
+		distinguished_name = req_distinguished_name
+		[req_distinguished_name]
+		[v3_ca]
+		subjectKeyIdentifier = hash
+		authorityKeyIdentifier = keyid:always,issuer
+		basicConstraints = critical, CA:true
+		keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+		EOF
+        )
 
     echo "[✓] Success generate CA Trust Store"
 fi
+
 
 # Go to root folder
 cd "$INSTALL_DIR" || { echo -e "${RED}[x] ERROR: Lost track of directory!${NC}"; exit 1; }

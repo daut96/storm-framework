@@ -6,6 +6,7 @@ import os
 import smf
 import re
 
+from rootmap import ROOT
 from apps.utility.colors import *
 from lib.roar.calling import call_bin
 
@@ -95,7 +96,9 @@ def execute(options, runtime):
     url = options.get("URL")
     wordl = options.get("PATH")
     thread = options.get("THREAD")
-
+    
+    regex = os.path.join(ROOT, "external", "source", "regex", "rexgo.txt")
+    
     bin = call_bin("path_enum")
 
     if not bin:
@@ -103,14 +106,14 @@ def execute(options, runtime):
         return
 
     # Membangun argument baris perintah secara dinamis
-    cmd = [bin, "-url", url, "-threads", thread]
+    cmd = [bin, "-url", url, "-threads", thread, "-regex", regex]
 
     if wordl and os.path.exists(wordl):
         cmd.extend(["-wordlist", wordl])
     elif wordl:
         smf.printf(f"[!] Wordlist {wordl} no match. Fallback to automatic.")
 
-    smf.printf(f"[*]{CC.CYAN} Menjalankan fuzzing ke =>{CC.RESET}", url)
+    smf.printf(f"[*]{CC.CYAN} Running fuzzing to =>{CC.RESET}", url)
 
     # Eksekusi proses dengan pipe stdout untuk streaming data real-time
     process = subprocess.Popen(

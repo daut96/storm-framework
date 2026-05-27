@@ -10,7 +10,7 @@ This is the standard that must be set so that all modules can run.
 from rootmap import ROOT  # noqa
 
 # To call binary
-from lib.roar.calling import call_bin # noqa
+from lib.roar.calling import call_bin  # noqa
 
 #
 # Apply metadata with this template in every module you create

@@ -30,6 +30,7 @@ def execute(args, ctx):
     ignore = {"PASS", "PATH"}
 
     missing = [
+        key
         for key in required_vars
         if key not in ignore
         and not str(options.get(key, "")).strip()

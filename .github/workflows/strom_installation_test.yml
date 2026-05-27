@@ -60,7 +60,6 @@ jobs:
       - name: Prepare Environment
         run: |
           apt-get update
-          apt-get upgrade -y
           apt-get install -y curl sudo bash jq
 
       - name: Checkout Code

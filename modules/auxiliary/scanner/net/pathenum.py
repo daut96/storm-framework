@@ -29,7 +29,6 @@ REQUIRED_OPTIONS = {
     "PATH": "File wordlist url path (opsional)",
     "THREAD": "Default 1",
 }
-
 RESULT_PATTERN = re.compile(
     r"^\[RESULT\]\s+PATH:(?P<path>[^ ]+)\s+\|\s+STATUS:(?P<status>\d+)\s+\|\s+SIZE:(?P<size>\d+)\s+\|\s+TYPE:(?P<type>[^ ]+)"
 )
@@ -87,7 +86,7 @@ def output_stream(line: str) -> str:
 
     # Deteksi Sukses Ekstraksi Path saat JIT Crawling
     if "[SUCCESS]" in clean_line:
-        return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n\n"
+        return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n"
 
     return line
 

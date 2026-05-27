@@ -64,7 +64,6 @@ def output_stream(line: str) -> str:
             # 5xx = Server Error / Potensial Crash / Vulnerability Indicator
             color_status = f"{CC.RED}{status_code}{CC.RESET}"
 
-
         if source_engine == "JS":
             color_source = f"{CC.YELLOW}{source_engine:<8}{CC.RESET}"
         elif source_engine == "HTML":

@@ -117,20 +117,18 @@ func initDynamicRegex(filePath string) error {
 		return fmt.Errorf("cannot read file: %w", err)
 	}
 
-	rawRegex := string(content)
-
-	// Validasi Taktis: Pastikan flag verbose (?x) sudah terpasang di awal file teks
-	// Jika belum ada, kita injeksi secara otomatis agar Go RE2 tidak bingung membaca whitespace & komentar
-	if !strings.HasPrefix(strings.TrimSpace(rawRegex), "(?x)") && !strings.HasPrefix(strings.TrimSpace(rawRegex), "(?ix)") {
-		rawRegex = "(?ix)\n" + rawRegex
+	// Ambil string murni dan bersihkan spasi di ujung-ujungnya (jika ada)
+	rawRegex := strings.TrimSpace(string(content))
+	if rawRegex == "" {
+		return fmt.Errorf("regex file is empty")
 	}
-
+	
 	// Compile string menjadi executable regex state-machine
 	compiled, err := regexp.Compile(rawRegex)
 	if err != nil {
 		return fmt.Errorf("invalid regex syntax: %w", err)
 	}
-
+	
 	// Masukkan ke global variable agar bisa diakses oleh fungsi crawler
 	linkFinderEngine = compiled
 	return nil

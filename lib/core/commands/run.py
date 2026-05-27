@@ -27,14 +27,22 @@ def execute(args, ctx):
 
     # Validate options
     required_vars = getattr(current_module, "REQUIRED_OPTIONS", {})
-    ignore = {"PASS", "PATH"}
-
-    missing = [
-        key
-        for key in required_vars
-        if key not in ignore and not str(options.get(key, "")).strip()
-    ]
-
+    missing = []
+    
+    for key, description in required_vars.items():
+        # Sanitize descriptions to lowercase to avoid case-sensitivity
+        desc_lower = str(description).lower()
+        
+        # Keyword sanitation description key
+        is_optional = "(opsional)" in desc_lower or "(optional)" in desc_lower or "opsional" in desc_lower or "optional" in desc_lower
+        
+        # Get the value entered by the user
+        user_value = str(options.get(key, "")).strip()
+        
+        # If it is not optional AND the user has not filled in the value
+        if not is_optional and not user_value:
+            missing.append(key)
+    
     if missing:
         smf.printf(
             f"{CC.YELLOW}[!] Failed to run. Variabel null: {', '.join(missing)}{CC.RESET}"
@@ -54,13 +62,19 @@ def execute(args, ctx):
 
     # Execution module
     try:
-        current_module.execute(options, module_runtime)
-    except TypeError as e:
-        # Fallback to 1 parameter options
-        if "execute() takes 1 positional argument but 2 were given" in str(e):
-            current_module.execute(options)
+        execute_func = current_module.execute
+        sig = inspect.signature(execute_func)
+        
+        # Hitung parameter yang bisa menerima argumen posisi
+        valid_params = [
+            p for p in sig.parameters.values() 
+            if p.kind in (p.POSITIONAL_OR_KEYWORD, p.POSITIONAL_ONLY)
+        ]
+        
+        if len(valid_params) >= 2:
+            execute_func(options, module_runtime)
         else:
-            smf.printd("TYPE ERROR COMMAND RUN", e, level="ERROR")
+            execute_func(options)
 
     except AttributeError as e:
         smf.printd("ATTRIBUTE ERROR COMMAND RUN", e, level="ERROR")

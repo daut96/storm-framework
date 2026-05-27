@@ -247,12 +247,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	for _, path := range localNewPaths {
 		jobs <- CrawlJob{Path: path, Source: "HTML"}
 	}
-
 	jsWG.Wait()
-
-	mapMutex.Lock()
-	totalFound := len(visited)
-	mapMutex.Unlock()
 }
 
 

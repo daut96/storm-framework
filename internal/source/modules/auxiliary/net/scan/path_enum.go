@@ -45,14 +45,14 @@ func main() {
 
 	// 1. Inisialisasi HTTP Client berkinerja tinggi (Connection Pooling)
 	transport := &http.Transport{
-		MaxIdleConns:        *threads,
-		MaxIdleConnsPerHost: *threads,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
 		IdleConnTimeout:     30 * time.Second,
 		DisableCompression:  true, // Save CPU
 	}
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   6 * time.Second,
+		Timeout:   2 * time.Second,
 	}
 
 	// 2. Kalibrasi Anomali Jaringan (Deteksi Soft 404)
@@ -166,7 +166,7 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 			continue
 		}
 
-    req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
+        req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
 
 		resp, err := client.Do(req)
 		if err != nil {

@@ -6,33 +6,36 @@ package main
 import (
 	"bufio"
 	"flag"
-	"log"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
+
 	"golang.org/x/net/html"
 )
 
 type DiagnosticResult struct {
+	Source     string `json:"source"`
 	Path       string `json:"path"`
 	StatusCode int    `json:"status_code"`
 	Size       int64  `json:"size"`
 	Type       string `json:"type"`
 }
+
 type CrawlJob struct {
 	Path   string
 	Source string
 }
 
-
 // Global baseline untuk mendeteksi anomali Soft 404
 var soft404Size int64 = -1
+
 // Global regex
 var linkFinderEngine *regexp.Regexp
 var mapMutex sync.Mutex
@@ -71,14 +74,15 @@ func main() {
 	}
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   2 * time.Second,
+		Timeout:   5 * time.Second, // Dinaikkan ke 5s demi kestabilan jaringan cloud target
 	}
 
 	// Kalibrasi Anomali Jaringan (Deteksi Soft 404)
 	calibrateSoft404(client, *targetURL)
 
-	jobs := make(chan string, 1000)
-	results := make(chan DiagnosticResult, 1000)
+	// SINKRONISASI TIPE DATA: Ubah channel menjadi penampung objek CrawlJob
+	jobs := make(chan CrawlJob, 5000)
+	results := make(chan DiagnosticResult, 5000)
 	var wg sync.WaitGroup
 
 	// Spawning Worker Pool
@@ -88,19 +92,20 @@ func main() {
 	}
 
 	doneAggregator := make(chan bool)
-	// Sinkronisasi Output (Result Aggregator)
+	
+	// Sinkronisasi Output (Result Aggregator) - FIX VARIABEL UNDEFINED
 	go func() {
 		for res := range results {
-			// Format output standard terstruktur agar mudah diparsing oleh regex Python
+			// Menggunakan data asli dari struct DiagnosticResult (res)
+			// Format output disesuaikan agar dibaca mulus oleh regex Python baru kita
 			fmt.Printf("[RESULT] [%-8s] Path: %-50s | Status: %d | Size: %-8d | Type: %s\n", 
-                job.Source, job.Path, statusCode, contentLength, validationType,
+				res.Source, res.Path, res.StatusCode, res.Size, res.Type,
 			)
 		}
-		// Sinyal dikirim SETELAH channel results ditutup dan semua buffer terbaca habis
 		doneAggregator <- true 
 	}()
 
-	// 5. Penentuan Mekanisme Input (Wordlist vs Otomatis)
+	// Penentuan Mekanisme Input (Wordlist vs Otomatis)
 	if *wordlistPath != "" {
 		fmt.Println("[RESULT] Mode => Using Static Wordlist Input")
 		loadWordlist(*wordlistPath, jobs)
@@ -110,38 +115,33 @@ func main() {
 	}
 
 	// GRACEFUL SHUTDOWN SEQUENCE
-	close(jobs)          // 1. Tutup input stream (memberitahu worker tidak ada job lagi)
-	wg.Wait()            // 2. Tunggu semua worker selesai memproses job yang tersisa
-	close(results)       // 3. Tutup output stream (memberitahu aggregator tidak ada data lagi)
-	<-doneAggregator     // 4. BLOCKING: Tunggu aggregator selesai nge-print semuanya ke stdout!
+	close(jobs)          
+	wg.Wait()            
+	close(results)       
+	<-doneAggregator     
 }
 
 func initDynamicRegex(filePath string) error {
-	// Baca file regex eksternal yang ditunjuk oleh flag
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("cannot read file: %w", err)
 	}
 
-	// Ambil string murni dan bersihkan spasi di ujung-ujungnya (jika ada)
 	rawRegex := strings.TrimSpace(string(content))
 	if rawRegex == "" {
 		return fmt.Errorf("regex file is empty")
 	}
 	
-	// Compile string menjadi executable regex state-machine
 	compiled, err := regexp.Compile(rawRegex)
 	if err != nil {
 		return fmt.Errorf("invalid regex syntax: %w", err)
 	}
 	
-	// Masukkan ke global variable agar bisa diakses oleh fungsi crawler
 	linkFinderEngine = compiled
 	return nil
 }
 
 func calibrateSoft404(client *http.Client, baseURL string) {
-	// Membuat string acak resolusi tinggi untuk memicu 404 murni pada server
 	randomPath := fmt.Sprintf("anomaly_test_%d.html", time.Now().UnixNano())
 	resp, err := client.Get(baseURL + randomPath)
 	if err != nil {
@@ -150,14 +150,13 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		// Server mengembalikan 200 OK untuk path tidak valid (Soft 404 dideteksi!)
 		body, _ := io.ReadAll(resp.Body)
 		soft404Size = int64(len(body))
 		log.Printf("Warning => Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
 	}
 }
 
-func loadWordlist(path string, jobs chan<- string) {
+func loadWordlist(path string, jobs chan<- CrawlJob) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Failed to read wordlist => %v\n", err)
@@ -169,7 +168,8 @@ func loadWordlist(path string, jobs chan<- string) {
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" && !strings.HasPrefix(line, "#") {
-			jobs <- line
+			// Bungkus kata dari wordlist dengan label SOURCE: WORDLIST
+			jobs <- CrawlJob{Path: line, Source: "WORDLIST"}
 		}
 	}
 }
@@ -177,7 +177,6 @@ func loadWordlist(path string, jobs chan<- string) {
 func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- CrawlJob) {
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		// Perbaikan: Jangan gunakan log.Fatalf agar aplikasi tidak mati mendadak
 		log.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
 		return
 	}
@@ -190,11 +189,8 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	}
 
 	tokenizer := html.NewTokenizer(resp.Body)
-	
 	var jsWG sync.WaitGroup
 	visited := make(map[string]bool)
-
-	// Slice lokal untuk menampung path yang siap dikirim (Anti-Deadlock)
 	var localNewPaths []string
 
 	for {
@@ -218,12 +214,10 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						continue
 					}
 
-					// Security Filter Scope
 					if resolvedURL.Host != parsedBase.Host {
 						continue
 					}
 
-					// Pembersihan berlapis: Pastikan query string dan fragment dibuang dari path
 					pathOnly := resolvedURL.Path
 					if idx := strings.IndexAny(pathOnly, "?#"); idx != -1 {
 						pathOnly = pathOnly[:idx]
@@ -234,17 +228,14 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						continue
 					}
 
-					// Trigger Deep JS Parsing jika mendeteksi ekstensi .js
 					if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
 						jsWG.Add(1)
 						go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs, &jsWG)
 					}
 
-					// LOCK AREA: Hanya untuk operasi map yang sangat cepat
 					mapMutex.Lock()
 					if !visited[cleanPath] {
 						visited[cleanPath] = true
-						// Tampung ke local slice, JANGAN kirim ke channel di sini!
 						localNewPaths = append(localNewPaths, cleanPath)
 					}
 					mapMutex.Unlock()
@@ -253,15 +244,12 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 		}
 	}
 
-	// SAFE CHANNEL EMISSION: Kirim seluruh hasil temuan HTML ke worker pool di luar lock
 	for _, path := range localNewPaths {
 		jobs <- CrawlJob{Path: path, Source: "HTML"}
 	}
 
-	// Tunggu seluruh background JS Parser selesai bekerja
 	jsWG.Wait()
 
-	// SAFE LOGGING: Membaca total map wajib di dalam lock untuk menghindari data race
 	mapMutex.Lock()
 	totalFound := len(visited)
 	mapMutex.Unlock()
@@ -293,9 +281,7 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		return
 	}
 
-	// OPTIMASI: Gunakan FindAllSubmatch untuk memproses []byte langsung tanpa alokasi string(body) raksasa
 	matches := linkFinderEngine.FindAllSubmatch(body, -1)
-	
 	var localNewEndpoints []string
 	localNewCount := 0
 
@@ -303,41 +289,34 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 		if len(match) < 2 {
 			continue
 		}
-		// Konversi ke string hanya untuk bagian yang match saja (Hemat Memori Heap)
 		rawPath := strings.TrimSpace(string(match[1]))
 		if rawPath == "" {
 			continue
 		}
 
-		// Normalisasi Schemeless URL (//) menjadi URL absolut yang valid sebelum di-parse
 		if strings.HasPrefix(rawPath, "//") {
 			rawPath = parsedBase.Scheme + ":" + rawPath
 		}
 
-		// Evaluasi Absolute URL
 		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") {
 			resolvedURL, err := url.Parse(rawPath)
 			if err != nil {
 				continue
 			}
-			// Scope Protection
 			if resolvedURL.Host != parsedBase.Host {
 				continue
 			}
 			rawPath = resolvedURL.Path
 		}
 
-		// Bersihkan karakter query string atau fragment (?v=1.0 atau #token)
 		if idx := strings.IndexAny(rawPath, "?#"); idx != -1 {
 			rawPath = rawPath[:idx]
 		}
 
 		cleanPath := strings.TrimPrefix(rawPath, "/")
-		
-		// Filter Agresif: Singkirkan static assets & Cloudflare noise
 		lowerPath := strings.ToLower(cleanPath)
 		if lowerPath == "" ||
-		    strings.HasSuffix(lowerPath, "text/") ||
+			strings.HasSuffix(lowerPath, "text/") ||
 			strings.HasSuffix(lowerPath, ".css") ||
 			strings.HasSuffix(lowerPath, ".png") || 
 			strings.HasSuffix(lowerPath, ".jpg") || 
@@ -348,43 +327,38 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 			continue
 		}
 
-		// THREAD-SAFE BLOCK: Hanya untuk verifikasi & modifikasi map
 		mapMutex.Lock()
 		if !visited[cleanPath] {
 			visited[cleanPath] = true
 			localNewCount++
-			// Simpan ke array lokal, jangan langsung kirim ke channel di dalam lock!
 			localNewEndpoints = append(localNewEndpoints, cleanPath) 
 		}
 		mapMutex.Unlock()
 	}
 
-	// SAFE CHANNEL EMISSION: Kirim data ke fuzzer di luar cakupan lock (Anti-Deadlock)
 	for _, endpoint := range localNewEndpoints {
 		jobs <- CrawlJob{Path: endpoint, Source: "JS_Regex"}
 	}
 
-	// LOGGING AKURAT: Hanya mencetak jika file JS ini menyumbang penemuan unik baru
 	if localNewCount > 0 {
 		fmt.Printf("[SUCCESS] Pure JS Deep Parser finds: %d\n", localNewCount)
 	}
 }
 
-func worker(client *http.Client, baseURL string, jobs <-chan string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
+// FIX WORKER PARAMETER: Sekarang membaca channel tipe <-chan CrawlJob
+func worker(client *http.Client, baseURL string, jobs <-chan CrawlJob, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for path := range jobs {
-		// Bersihkan karakter awalan slash jika ada agar tidak terjadi double slash (//) pada URL
-		cleanPath := strings.TrimPrefix(path, "/")
+	for job := range jobs {
+		// Bongkar isi struct CrawlJob
+		cleanPath := strings.TrimPrefix(job.Path, "/")
 		fullURL := baseURL + cleanPath
 
-		// Menggunakan HEAD request sebagai pertahanan pertama efisiensi I/O jaringan
 		req, err := http.NewRequest("HEAD", fullURL, nil)
 		if err != nil {
 			continue
 		}
-
-        req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -396,7 +370,6 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 		statusCode := resp.StatusCode
 		var size int64 = 0
 
-		// Jika server menolak HEAD atau mengembalikan anomali, lakukan fallback ke GET untuk analisis mendalam
 		if statusCode == http.StatusMethodNotAllowed || statusCode == http.StatusOK {
 			getReq, _ := http.NewRequest("GET", fullURL, nil)
 			getResp, err := client.Do(getReq)
@@ -415,8 +388,9 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 			logType = "Soft 404 Anomaly"
 		}
 
-		// Kirim data valid atau anomali konfigurasi (403/500/301) ke aggregator
+		// Kirim hasil diagnostic lengkap beserta metadata ASAL-USUL mesin (Source) ke aggregator
 		results <- DiagnosticResult{
+			Source:     job.Source, // Teruskan informasi asal-usul (HTML / JS_Regex / WORDLIST)
 			Path:       cleanPath,
 			StatusCode: statusCode,
 			Size:       size,
@@ -424,4 +398,3 @@ func worker(client *http.Client, baseURL string, jobs <-chan string, results cha
 		}
 	}
 }
-

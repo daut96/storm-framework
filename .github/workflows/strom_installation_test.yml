@@ -53,9 +53,9 @@ jobs:
     steps:
       - name: Fix apt cache
         run: |
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt clean
-          sudo apt update --fix-missing
+          rm -rf /var/lib/apt/lists/*
+          apt clean
+          apt update --fix-missing
           
       - name: Prepare Environment
         run: |

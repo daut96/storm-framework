@@ -171,38 +171,35 @@ func loadWordlist(path string, jobs chan<- string) {
 func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- string) {
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		log.Fatalf("Failed to perform basic crawl => %v\n", err)
+		// Perbaikan: Jangan gunakan log.Fatalf agar aplikasi tidak mati mendadak
+		log.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	// Parsing base URL untuk keperluan validasi domain & normalisasi relative path
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
-		log.Fatalf("Failed to parse base URL => %v\n", err)
+		log.Printf("[ERROR] Failed to parse base URL => %v\n", err)
 		return
 	}
 
-	// Inisialisasi HTML tokenizer dari body response
 	tokenizer := html.NewTokenizer(resp.Body)
 	
 	var jsWG sync.WaitGroup
-	
 	visited := make(map[string]bool)
+
+	// Slice lokal untuk menampung path yang siap dikirim (Anti-Deadlock)
+	var localNewPaths []string
 
 	for {
 		tokenType := tokenizer.Next()
-
-		// Selesai membaca dokumen (EOF) atau terjadi error
 		if tokenType == html.ErrorToken {
 			break
 		}
 
-		// Kita hanya tertarik pada Start Tag (e.g., <a>, <img>) dan Self-Closing Tag (e.g., <script/>, <link/>)
 		if tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken {
 			token := tokenizer.Token()
 
-			// Iterasi seluruh atribut di dalam tag untuk mencari href atau src
 			for _, attr := range token.Attr {
 				if attr.Key == "href" || attr.Key == "src" {
 					rawPath := strings.TrimSpace(attr.Val)
@@ -210,45 +207,60 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						continue
 					}
 
-					// Normalisasi URL: Mengubah relative path menjadi absolute URL objek
 					resolvedURL, err := parsedBase.Parse(rawPath)
 					if err != nil {
 						continue
 					}
 
-					// SECURITY FILTER: Pastikan path yang diekstrak masih satu host dengan target
-					// Mencegah fuzzer melompat keluar ke external domain (e.g., google.com, github.com)
+					// Security Filter Scope
 					if resolvedURL.Host != parsedBase.Host {
 						continue
 					}
 
-					// Ambil path yang sudah bersih (tanpa query parameters/fragment untuk fuzzing murni)
-					cleanPath := strings.TrimPrefix(resolvedURL.Path, "/")
-					
-					// Jika path merujuk ke root halaman utama, abaikan agar tidak looping
+					// Pembersihan berlapis: Pastikan query string dan fragment dibuang dari path
+					pathOnly := resolvedURL.Path
+					if idx := strings.IndexAny(pathOnly, "?#"); idx != -1 {
+						pathOnly = pathOnly[:idx]
+					}
+
+					cleanPath := strings.TrimPrefix(pathOnly, "/")
 					if cleanPath == "" {
 						continue
 					}
 
-					// js path detection
-					if strings.HasSuffix(cleanPath, ".js") {
+					// Trigger Deep JS Parsing jika mendeteksi ekstensi .js
+					if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
 						jsWG.Add(1)
-                        go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs, &jsWG)
-                    }
+						go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs, &jsWG)
+					}
+
+					// LOCK AREA: Hanya untuk operasi map yang sangat cepat
 					mapMutex.Lock()
-					
-					// De-duplikasi menggunakan map state
-					if !visited[cleanPath] && cleanPath != "" {
-                        visited[cleanPath] = true
-                        jobs <- cleanPath
-                    }
+					if !visited[cleanPath] {
+						visited[cleanPath] = true
+						// Tampung ke local slice, JANGAN kirim ke channel di sini!
+						localNewPaths = append(localNewPaths, cleanPath)
+					}
 					mapMutex.Unlock()
 				}
 			}
 		}
 	}
+
+	// SAFE CHANNEL EMISSION: Kirim seluruh hasil temuan HTML ke worker pool di luar lock
+	for _, path := range localNewPaths {
+		jobs <- path
+	}
+
+	// Tunggu seluruh background JS Parser selesai bekerja
 	jsWG.Wait()
-	fmt.Printf("[SUCCESS] Successfully extracted via HTML Parser => %d\n", len(visited))
+
+	// SAFE LOGGING: Membaca total map wajib di dalam lock untuk menghindari data race
+	mapMutex.Lock()
+	totalFound := len(visited)
+	mapMutex.Unlock()
+
+	fmt.Printf("[SUCCESS] Crawl Engine finished. Total unique targets in state map => %d\n", totalFound)
 }
 
 func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string, wg *sync.WaitGroup) {

@@ -185,6 +185,9 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 
 	// Inisialisasi HTML tokenizer dari body response
 	tokenizer := html.NewTokenizer(resp.Body)
+	
+	var jsWG sync.WaitGroup
+	
 	visited := make(map[string]bool)
 
 	for {
@@ -229,6 +232,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 
 					// js path detection
 					if strings.HasSuffix(cleanPath, ".js") {
+						jsWG.Add(1)
                         go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs)
                     }
 					mapMutex.Lock()
@@ -243,10 +247,12 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 			}
 		}
 	}
+	jsWG.Wait()
 	fmt.Printf("[SUCCESS] Successfully extracted via HTML Parser => %d\n", len(visited))
 }
 
-func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string) {
+func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	// Jika flag -regex-file tidak diisi, abaikan deep parsing untuk menghemat bandwidth
 	if linkFinderEngine == nil {
 		return

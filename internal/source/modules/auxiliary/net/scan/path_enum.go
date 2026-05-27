@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"os"
 	"strings"
 	"sync"
@@ -33,11 +34,19 @@ func main() {
 	targetURL := flag.String("url", "", "Base URL target")
 	wordlistPath := flag.String("wordlist", "", "Path to wordlist file (opsional)")
 	threads := flag.Int("threads", 1, "Number of concurrent workers")
+	regex := flag.String("regex", "", "Path to custom regex file for JS parsing")
 	flag.Parse()
 
 	if *targetURL == "" {
 		log.Printf("Error => The url parameter is absolutely required.")
 		os.Exit(1)
+	}
+
+	if *regex != "" {
+		err := initDynamicRegex(*regex)
+		if err != nil {
+			log.Fatalf("Error => Failed to initialize custom regex: %v\n", err)
+		}
 	}
 
 	// Memastikan format URL konsisten memiliki trailing slash
@@ -96,6 +105,32 @@ func main() {
 	wg.Wait()            // 2. Tunggu semua worker selesai memproses job yang tersisa
 	close(results)       // 3. Tutup output stream (memberitahu aggregator tidak ada data lagi)
 	<-doneAggregator     // 4. BLOCKING: Tunggu aggregator selesai nge-print semuanya ke stdout!
+}
+
+func initDynamicRegex(filePath string) error {
+	// Baca file regex eksternal yang ditunjuk oleh flag
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("cannot read file: %w", err)
+	}
+
+	rawRegex := string(content)
+
+	// Validasi Taktis: Pastikan flag verbose (?x) sudah terpasang di awal file teks
+	// Jika belum ada, kita injeksi secara otomatis agar Go RE2 tidak bingung membaca whitespace & komentar
+	if !strings.HasPrefix(strings.TrimSpace(rawRegex), "(?x)") && !strings.HasPrefix(strings.TrimSpace(rawRegex), "(?ix)") {
+		rawRegex = "(?ix)\n" + rawRegex
+	}
+
+	// Compile string menjadi executable regex state-machine
+	compiled, err := regexp.Compile(rawRegex)
+	if err != nil {
+		return fmt.Errorf("invalid regex syntax: %w", err)
+	}
+
+	// Masukkan ke global variable agar bisa diakses oleh fungsi crawler
+	linkFinderEngine = compiled
+	return nil
 }
 
 func calibrateSoft404(client *http.Client, baseURL string) {
@@ -191,17 +226,96 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						continue
 					}
 
+					// js path detection
+					if strings.HasSuffix(cleanPath, ".js") {
+                        go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs)
+                    }
+					mapMutex.Lock()
+					
 					// De-duplikasi menggunakan map state
-					if !visited[cleanPath] {
-						visited[cleanPath] = true
-						jobs <- cleanPath
-					}
+					if !visited[cleanPath] && cleanPath != "" {
+                        visited[cleanPath] = true
+                        jobs <- cleanPath
+                    }
+					mapMutex.Unlock()
 				}
 			}
 		}
 	}
-
 	fmt.Printf("[SUCCESS] Successfully extracted via HTML Parser => %d\n", len(visited))
+}
+
+func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- string) {
+	// Jika flag -regex-file tidak diisi, abaikan deep parsing untuk menghemat bandwidth
+	if linkFinderEngine == nil {
+		return
+	}
+
+	req, err := http.NewRequest("GET", jsURL, nil)
+	if err != nil {
+		return
+	}
+	
+	// Gunakan header yang sama agar tidak diblokir WAF
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
+
+	resp, err := client.Do(req)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	// Gunakan linkFinderEngine yang sudah di-load secara dinamis dari file .txt via flag CLI
+	matches := linkFinderEngine.FindAllStringSubmatch(string(body), -1)
+	
+	for _, match := range matches {
+		// match[1] pada regex standar industri langsung mengambil isi path bersih di dalam kutip
+		rawPath := strings.TrimSpace(match[1])
+		if rawPath == "" {
+			continue
+		}
+
+		// Evaluasi jika hasil ekstraksi berupa Full URL (Absolute)
+		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") || strings.HasPrefix(rawPath, "//") {
+			resolvedURL, err := url.Parse(rawPath)
+			if err != nil {
+				continue
+			}
+			// Scope Protection: Lewati jika domain berbeda dengan target utama
+			if resolvedURL.Host != parsedBase.Host {
+				continue
+			}
+			rawPath = resolvedURL.Path
+		}
+
+		// Bersihkan karakter query string atau fragment (?v=1.0 atau #token) untuk fuzzing murni
+		if idx := strings.IndexAny(rawPath, "?#"); idx != -1 {
+			rawPath = rawPath[:idx]
+		}
+
+		cleanPath := strings.TrimPrefix(rawPath, "/")
+		
+		// Bersihkan noise file statis berulang yang tidak perlu di-fuzz
+		if cleanPath == "" || strings.HasSuffix(cleanPath, ".js") || strings.HasSuffix(cleanPath, ".css") {
+			continue
+		}
+
+		// THREAD-SAFE BLOCK: Proteksi map 'visited' dari data race condition
+		mapMutex.Lock()
+		if !visited[cleanPath] {
+			visited[cleanPath] = true
+			
+			// Kirim endpoint baru yang ditemukan di dalam file JS ke pool fuzzer secara real-time
+			jobs <- cleanPath
+		}
+		mapMutex.Unlock()
+	}
+	fmt.Printf("[SUCCESS] Successfully extracted via JS Parser => %d\n", len(visited))
 }
 
 

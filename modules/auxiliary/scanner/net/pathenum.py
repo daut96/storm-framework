@@ -61,10 +61,10 @@ def execute(options, runtime):
     # Membangun argument baris perintah secara dinamis
     cmd = [bin, "-url", url, "-threads", thread]
 
-    if wordlist and os.path.exists(wordlist):
-        cmd.extend(["-wordlist", wordlist])
-    elif wordlist:
-        smf.printf(f"[!] Wordlist {wordlist} no match. Fallback to automatic.")
+    if wordl and os.path.exists(wordl):
+        cmd.extend(["-wordlist", wordl])
+    elif wordl:
+        smf.printf(f"[!] Wordlist {wordl} no match. Fallback to automatic.")
 
     smf.printf(f"[*] Launching Subprocess: {' '.join(cmd)}")
 

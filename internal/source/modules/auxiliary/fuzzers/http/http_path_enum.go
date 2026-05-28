@@ -40,7 +40,7 @@ func main() {
 
 	// Transport layer yang di-tuning untuk agresivitas tanpa mematikan local port OS (Port Exhaustion)
 	transport := &http.Transport{
-		MaxConnsPerHost:     200,             // Batasi koneksi simultan ke 1 target
+		MaxConnsPerHost:     100,             // Batasi koneksi simultan ke 1 target
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 50,
 		IdleConnTimeout:     30 * time.Second,
@@ -55,13 +55,13 @@ func main() {
 
 	calibrateSoft404(client, *targetURL)
 
-	jobs := make(chan CrawlJob, 10000)
-	results := make(chan DiagnosticResult, 10000)
-	var wg sync.WaitGroup
+	jobs := make(chan CrawlJob, 50000)
+	results := make(chan DiagnosticResult, 50000)
+	var workerWG sync.WaitGroup
 
 	for i := 0; i < *threads; i++ {
-		wg.Add(1)
-		go worker(client, *targetURL, jobs, results, &wg)
+		workerWG.Add(1)
+		go worker(client, *targetURL, jobs, results, &workerWG)
 	}
 
 	doneAggregator := make(chan bool)
@@ -74,19 +74,25 @@ func main() {
 		}
 		doneAggregator <- true
 	}()
+	fmt.Println("[INFO] Engine => Starting Hybrid Seeding")
 
+	SubmitJob("", "HTML") 
+	
 	if *wordlistPath != "" {
 		fmt.Println("[INFO] Mode => Using Static Wordlist Input")
-		loadWordlist(*wordlistPath, jobs)
+		loadWordlist(*wordlistPath)
 	} else {
 		fmt.Println("[INFO] Mode => Empty wordlist. Enable JIT Crawling & Parsing")
 		discoverPathsAutomatically(client, *targetURL, jobs)
 	}
+	GlobalTaskTracker.Wait()
 
 	// GRACEFUL SHUTDOWN
-	close(jobs)
-	wg.Wait()
-	close(results)
+	close(DiscoveryChannel) // Mematikan Dispatcher -> Mematikan WorkerQueue
+	workerWG.Wait()         // Memastikan Worker meletakkan alat kerjanya
+	close(results)          // Mematikan Aggregator layar
 	<-doneAggregator
+
+	fmt.Println("[INFO] Fuzzing Core Run Finished Successfully. No tasks left behind.")
 }
 

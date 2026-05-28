@@ -36,7 +36,7 @@ func initDynamicRegex(filePath string) error {
 	return nil
 }
 
-func loadWordlist(path string, jobs chan<- CrawlJob) {
+func loadWordlist(path string) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Failed to read wordlist => %v\n", err)
@@ -48,12 +48,12 @@ func loadWordlist(path string, jobs chan<- CrawlJob) {
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" && !strings.HasPrefix(line, "#") {
-			jobs <- CrawlJob{Path: line, Source: "WORDLIST"}
+			SubmitJob{line, "WORDLIST"}
 		}
 	}
 }
 
-func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<- CrawlJob) {
+func discoverPathsAutomatically(client *http.Client, baseURL string) {
 	resp, err := client.Get(baseURL)
 	if err != nil {
 		log.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
@@ -71,7 +71,6 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	}
 
 	tokenizer := html.NewTokenizer(safeBodyReader)
-	var jsWG sync.WaitGroup
 	var localNewPaths []string
 
 	for {
@@ -110,8 +109,8 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						localNewPaths = append(localNewPaths, cleanPath)
 
 						if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
-							jsWG.Add(1)
-							go extractFromJS(client, resolvedURL.String(), parsedBase, jobs, &jsWG)
+							
+							go extractFromJS(client, resolvedURL.String(), parsedBase)
 						}
 					}
 				}
@@ -120,17 +119,15 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	}
 
 	for _, path := range localNewPaths {
-		jobs <- CrawlJob{Path: path, Source: "HTML"}
+		SubmitJob{path, "HTML"}
 	}
-	jsWG.Wait()
 }
 
-func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, jobs chan<- CrawlJob, wg *sync.WaitGroup) {
+func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 	// Meminta izin masuk ke goroutine (mengambil token dari semaphore)
 	jsParseSemaphore <- struct{}{}
 	defer func() {
 		<-jsParseSemaphore // Mengembalikan token saat selesai
-		wg.Done()
 	}()
 
 	if linkFinderEngine == nil {
@@ -215,18 +212,14 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, jobs 
 
 		// Atomic Deduplication
 		if _, loaded := visitedMap.LoadOrStore(cleanPath, true); !loaded {
-			jobItem := CrawlJob{Path: cleanPath, Source: "JS"}
+			jobItem := SubmitJob{cleanPath, "JS"}
 			localNewEndpoints = append(localNewEndpoints, jobItem)
 
 			if strings.HasSuffix(lowerPath, ".js") {
-				wg.Add(1)
-				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase, jobs, wg)
+				
+				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase)
 			}
 		}
-	}
-
-	for _, job := range localNewEndpoints {
-		jobs <- job
 	}
 }
 

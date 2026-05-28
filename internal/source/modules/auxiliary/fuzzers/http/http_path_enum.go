@@ -55,8 +55,8 @@ func main() {
 
 	calibrateSoft404(client, *targetURL)
 
-	jobs := make(chan CrawlJob, 50000)
 	results := make(chan DiagnosticResult, 50000)
+	
 	var workerWG sync.WaitGroup
 
 	go JobDispatcher()
@@ -78,14 +78,16 @@ func main() {
 	}()
 	fmt.Println("[INFO] Engine => Starting Hybrid Seeding")
 
-	SubmitJob("", "HTML") 
+	GlobalTaskTracker.Add(1)
+	go discoverPathsAutomatically(client, *targetURL)
 	
 	if *wordlistPath != "" {
 		fmt.Println("[INFO] Mode => Using Static Wordlist Input")
-		loadWordlist(*wordlistPath)
+		go func(path string) {
+			loadWordlist(path)
+		}(*wordlistPath)
 	} else {
 		fmt.Println("[INFO] Mode => Empty wordlist. Enable JIT Crawling & Parsing")
-		discoverPathsAutomatically(client, *targetURL)
 	}
 	GlobalTaskTracker.Wait()
 

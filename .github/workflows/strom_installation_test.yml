@@ -56,12 +56,13 @@ jobs:
           DEBIAN_FRONTEND:
         run: |
           if [ "${{ matrix.os }}" = "kalilinux/kali-rolling:latest" ]; then
+            rm -f /etc/apt/sources.list.d/kali.sources
             echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
           fi
-          
+          rm -rf /var/lib/apt/lists/*
           apt-get clean
           apt-get update -y || apt-get update --fix-missing -y
-          apt-get install -y curl sudo bash jq
+          apt-get install -y --fix-missing --no-install-recommends curl sudo bash jq git
 
       - name: Checkout Code
         uses: actions/checkout@v4

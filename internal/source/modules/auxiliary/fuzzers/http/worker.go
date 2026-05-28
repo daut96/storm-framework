@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url" // WAJIB ditambahkan untuk url.Parse
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -24,7 +24,7 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 		safeReader := io.LimitReader(resp.Body, 1*1024*1024)
 		body, _ := io.ReadAll(safeReader)
 		soft404Size = int64(len(body))
-		log.Printf("[INFO] Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
+		fmt.Printf("[INFO] Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
 	}
 }
 

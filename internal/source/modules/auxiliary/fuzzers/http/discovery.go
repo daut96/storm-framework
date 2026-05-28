@@ -61,15 +61,17 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	}
 	defer resp.Body.Close()
 
+	// Mitigasi OOM: Baca maksimal 5MB dari base URL
+	safeBodyReader := io.LimitReader(resp.Body, 5*1024*1024)
+
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
 		log.Printf("[ERROR] Failed to parse base URL => %v\n", err)
 		return
 	}
 
-	tokenizer := html.NewTokenizer(resp.Body)
+	tokenizer := html.NewTokenizer(safeBodyReader)
 	var jsWG sync.WaitGroup
-	visited := make(map[string]bool)
 	var localNewPaths []string
 
 	for {
@@ -89,11 +91,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 					}
 
 					resolvedURL, err := parsedBase.Parse(rawPath)
-					if err != nil {
-						continue
-					}
-
-					if resolvedURL.Host != parsedBase.Host {
+					if err != nil || resolvedURL.Host != parsedBase.Host {
 						continue
 					}
 
@@ -107,17 +105,15 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 						continue
 					}
 
-					if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
-						jsWG.Add(1)
-						go extractFromJS(client, resolvedURL.String(), parsedBase, visited, jobs, &jsWG)
-					}
-
-					mapMutex.Lock()
-					if !visited[cleanPath] {
-						visited[cleanPath] = true
+					// Atomic Deduplication: Cek dan simpan dalam 1 instruksi mesin (Thread-Safe)
+					if _, loaded := visitedMap.LoadOrStore(cleanPath, true); !loaded {
 						localNewPaths = append(localNewPaths, cleanPath)
+
+						if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
+							jsWG.Add(1)
+							go extractFromJS(client, resolvedURL.String(), parsedBase, jobs, &jsWG)
+						}
 					}
-					mapMutex.Unlock()
 				}
 			}
 		}
@@ -129,8 +125,13 @@ func discoverPathsAutomatically(client *http.Client, baseURL string, jobs chan<-
 	jsWG.Wait()
 }
 
-func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visited map[string]bool, jobs chan<- CrawlJob, wg *sync.WaitGroup) {
-	defer wg.Done()
+func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, jobs chan<- CrawlJob, wg *sync.WaitGroup) {
+	// Meminta izin masuk ke goroutine (mengambil token dari semaphore)
+	jsParseSemaphore <- struct{}{}
+	defer func() {
+		<-jsParseSemaphore // Mengembalikan token saat selesai
+		wg.Done()
+	}()
 
 	if linkFinderEngine == nil {
 		return
@@ -148,7 +149,9 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Mitigasi OOM: Tarpit Defense (Hanya proses 5MB awal dari file JS)
+	safeReader := io.LimitReader(resp.Body, 5*1024*1024)
+	body, err := io.ReadAll(safeReader)
 	if err != nil {
 		return
 	}
@@ -160,7 +163,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 
 	matches := linkFinderEngine.FindAllSubmatch(body, -1)
 	var localNewEndpoints []CrawlJob
-	localNewCount := 0
 
 	for _, match := range matches {
 		if len(match) < 2 {
@@ -179,19 +181,13 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 
 		if strings.HasPrefix(rawPath, "http://") || strings.HasPrefix(rawPath, "https://") {
 			resolvedURL, err := url.Parse(rawPath)
-			if err != nil {
-				continue
-			}
-			if resolvedURL.Host != parsedBase.Host {
+			if err != nil || resolvedURL.Host != parsedBase.Host {
 				continue
 			}
 			finalAbsoluteURL = resolvedURL
 		} else {
 			resolvedURL, err := parsedJSURL.Parse(rawPath)
-			if err != nil {
-				continue
-			}
-			if resolvedURL.Host != parsedBase.Host {
+			if err != nil || resolvedURL.Host != parsedBase.Host {
 				continue
 			}
 			finalAbsoluteURL = resolvedURL
@@ -217,20 +213,16 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL, visit
 			continue
 		}
 
-		mapMutex.Lock()
-		if !visited[cleanPath] {
-			visited[cleanPath] = true
-			localNewCount++
-
+		// Atomic Deduplication
+		if _, loaded := visitedMap.LoadOrStore(cleanPath, true); !loaded {
 			jobItem := CrawlJob{Path: cleanPath, Source: "JS"}
 			localNewEndpoints = append(localNewEndpoints, jobItem)
 
 			if strings.HasSuffix(lowerPath, ".js") {
 				wg.Add(1)
-				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase, visited, jobs, wg)
+				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase, jobs, wg)
 			}
 		}
-		mapMutex.Unlock()
 	}
 
 	for _, job := range localNewEndpoints {

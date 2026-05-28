@@ -69,9 +69,11 @@ def output_stream(line: str) -> str:
 
         # Color the type
         if type == "Not":
-            color_type = f"{CC.RED}{type}{CC.RESET}"
+            color_type = f"{CC.CYAN}{type}{CC.RESET}"
         elif type == "Soft":
             color_type = f"{CC.YELLOW}{type}{CC.RESET}"
+        elif type == "Error":
+            color_type = f"{CC.RED}{type}{CC.RESET}"
         else:
             color_type = f"{CC.GREEN}{type}{CC.RESET}"
 

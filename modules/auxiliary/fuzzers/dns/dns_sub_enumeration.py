@@ -70,6 +70,21 @@ def execute(options):
         stdout_thread.join()
         stderr_thread.join()
 
+    except KeyboardInterrupt:
+        smf.printf("\n[✓] Sub Enumeration is stopped")
+
     except Exception as e:
         smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
+
+    finally:
+        if process.poll() is None:  # Check the process in the background
+            process.terminate()
+            try:
+                process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                process.kill()
+
+        smf.printf(
+            f"[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
+        )

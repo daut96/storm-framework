@@ -72,6 +72,18 @@ func worker(client *http.Client, baseURL string, jobs <-chan CrawlJob, results c
 			logType = "Soft 404 Anomaly"
 		}
 
+		// LOGIKA HYBRID CROSSOVER:
+		if statusCode == http.StatusOK && strings.HasSuffix(strings.ToLower(job.Path), ".js") && logType == "Valid" {
+			// Tambahkan 1 tugas untuk Goroutine JS Extractor agar tidak mati mendadak
+			GlobalTaskTracker.Add(1)
+			
+			go func(jsURL string) {
+				defer GlobalTaskTracker.Done()
+				extractFromJS(client, jsURL, parsedBase) 
+				// extractFromJS tidak lagi butuh wg atau channel manual, ia cukup memanggil SubmitJob() di dalamnya
+			}(fullURL)
+		}
+
 		results <- DiagnosticResult{
 			Source:     job.Source,
 			Path:       cleanPath,
@@ -79,5 +91,7 @@ func worker(client *http.Client, baseURL string, jobs <-chan CrawlJob, results c
 			Size:       size,
 			Type:       logType,
 		}
+		// Tandai tugas selesai
+		GlobalTaskTracker.Done()
 	}
 }

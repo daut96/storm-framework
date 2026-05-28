@@ -166,16 +166,16 @@ else
     echo "[+] Generate CA Trust Store..."
 
     # Delete CA lama
-    rm -f smf_ca.key smf_ca.crt
+    sudo rm -f smf_ca.key smf_ca.crt
 
     # Generate CA private key
-    openssl genrsa -out smf_ca.key 2048
+    sudo openssl genrsa -out smf_ca.key 2048
 
     # Allow standard owner read/write
-    chmod 600 smf_ca.key
+    sudo chmod 600 smf_ca.key
 
     # Generate self-signed CA certificate
-    openssl req -x509 -new -nodes \
+    sudo openssl req -x509 -new -nodes \
         -key smf_ca.key \
         -sha256 \
         -days 3650 \

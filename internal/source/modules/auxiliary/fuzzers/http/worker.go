@@ -83,6 +83,8 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				logType = "Not Found (404)"
 			} else if statusCode == http.StatusOK && size == soft404Size {
 				logType = "Soft 404 Anomaly"
+			} else if statusCode >= 500 {
+				logType = "Error"
 			}
 
 			// =========================================================================

@@ -13,13 +13,15 @@ from lib.roar.calling import call_bin
 metadata = {
     "Name": "Path enumeration fuzzing",
     "Description": """
-Fuzzing URL paths uses two different 
-mechanisms: automatic or via wordlist.
+Performs fuzz on the specified url path,
+It has two mechanisms: a recursive crawler and 
+a combination of a wordlist and a recursive crawler.
 """,
     "Author": ["zxelzy"],
     "Action": [
         ["Path Enumeration", {"Description": "Perform a search on the URL path"}],
         ["Fuzzing", {"Description": "fuzz URL path list"}],
+        ["Crawler", {"Description": "Crawl html for JS and dissect recursively"}]
     ],
     "DefaultAction": "Fuzzing",
     "License": "SMF License",
@@ -48,6 +50,7 @@ def output_stream(line: str) -> str:
         status_code = int(data["status"])
 
         raw_source = data.get("source")
+        type = data.get("type")
         source_engine = raw_source if raw_source else "WORDLIST"
 
         # Aturan Pewarnaan berdasarkan Tingkat Risiko / HTTP State Classification
@@ -64,12 +67,19 @@ def output_stream(line: str) -> str:
             # 5xx = Server Error / Potensial Crash / Vulnerability Indicator
             color_status = f"{CC.RED}{status_code}{CC.RESET}"
 
-        if source_engine == "JS":
-            color_source = f"{CC.YELLOW}{source_engine:<8}{CC.RESET}"
-        elif source_engine == "HTML":
-            color_source = f"{CC.CYAN}{source_engine:<8}{CC.RESET}"
+        if type == "Not":
+            color_type = f"{CC.RED}{type}{CC.RESET}"
+        elif type == "Soft":
+            color_type = f"{CC.YELLOW}{type}{CC.RESET}"
         else:
-            color_source = f"{CC.WHITE}{source_engine:<8}{CC.RESET}"
+            color_type = f"{CC.GREEN}{type}{CC.RESET}"
+
+        if source_engine == "JS":
+            color_source = f"{CC.YELLOW}{source_engine:^8}{CC.RESET}"
+        elif source_engine == "HTML":
+            color_source = f"{CC.CYAN}{source_engine:^8}{CC.RESET}"
+        else:
+            color_source = f"{CC.WHITE}{source_engine:^8}{CC.RESET}"
 
         # Rekonstruksi string output terstruktur dengan komponen warna terpisah
         # Output dibuat rapi secara tabular menggunakan string alignment (e.g., :<30)
@@ -79,7 +89,7 @@ def output_stream(line: str) -> str:
             f"Path: {CC.MAGENTA}{data['path']:<45}{CC.RESET} | "
             f"Status: {color_status} | "
             f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
-            f"Type: {data['type']}"
+            f"Type: {color_type}"
         )
         return f"{formatted_line}\n"
 
@@ -90,14 +100,13 @@ def output_stream(line: str) -> str:
     if "Warning =>" in clean_line:
         return f"[{CC.YELLOW}ANOMALY WARN{CC.RESET}] {CC.YELLOW}{clean_line.split('=>')[1].strip()}{CC.RESET}\n"
 
-    # Deteksi Mode Inisialisasi Wordlist / JIT Crawling
-    if "[RESULT] Mode =>" in clean_line:
-        mode_info = clean_line.split("=>")[1].strip()
-        return f"[{CC.BLUE}ENGINE INIT{CC.RESET}] {mode_info}\n\n"
+    # Deteksi info mode COMBO or JIT
+    if "[INFO] Mode =>" in clean_line:
+        return f"{CC.YELLOW}{clean_line}{CC.RESET}\n\n"
 
-    # Deteksi Sukses Ekstraksi Path saat JIT Crawling
-    if "[SUCCESS]" in clean_line:
-        return f"[{CC.GREEN}CRAWL SUCCESS{CC.RESET}] {clean_line.replace('[SUCCESS]', '').strip()}\n"
+    # Deteksi info biasa
+    if "[INFO]" in clean_line:
+        return f"{CC.YELLOW}{clean_line}{CC.RESET}\n"
 
     return line
 

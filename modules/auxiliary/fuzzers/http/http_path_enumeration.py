@@ -144,7 +144,7 @@ def execute(options, runtime):
     elif wordl:
         smf.printf(f"[!] Wordlist {wordl} no match. Fallback to automatic.")
 
-    smf.printf(f"[*]{CC.CYAN} Running fuzzing to => {CC.RESET}{url}")
+    smf.printf(f"[~]{CC.CYAN} Running fuzzing to => {CC.RESET}{url}\n")
 
     # Run subprocess
     process = subprocess.Popen(
@@ -159,7 +159,7 @@ def execute(options, runtime):
 
     # Capture CTRL + C
     except KeyboardInterrupt:
-        smf.printf("\n[!] path enumeration stopped.")
+        smf.printf("\n[✓] path enumeration stopped.")
 
     # Catch error exception
     except Exception as e:
@@ -176,5 +176,5 @@ def execute(options, runtime):
                 process.kill()
 
         smf.printf(
-            f"[*]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
+            f"\n[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
         )

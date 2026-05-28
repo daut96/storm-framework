@@ -59,9 +59,11 @@ func main() {
 	results := make(chan DiagnosticResult, 50000)
 	var workerWG sync.WaitGroup
 
+	go JobDispatcher()
+	
 	for i := 0; i < *threads; i++ {
 		workerWG.Add(1)
-		go worker(client, *targetURL, jobs, results, &workerWG)
+		go worker(client, *targetURL, results, &workerWG)
 	}
 
 	doneAggregator := make(chan bool)
@@ -83,7 +85,7 @@ func main() {
 		loadWordlist(*wordlistPath)
 	} else {
 		fmt.Println("[INFO] Mode => Empty wordlist. Enable JIT Crawling & Parsing")
-		discoverPathsAutomatically(client, *targetURL, jobs)
+		discoverPathsAutomatically(client, *targetURL)
 	}
 	GlobalTaskTracker.Wait()
 

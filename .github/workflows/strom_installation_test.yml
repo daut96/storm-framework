@@ -63,7 +63,7 @@ jobs:
             echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
             
             # The key to not being crushed
-            chattr +i /etc/apt/sources.list
+            chmod 444 /etc/apt/sources.list
           fi
           
           rm -rf /var/lib/apt/lists/*

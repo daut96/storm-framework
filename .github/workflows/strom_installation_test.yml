@@ -1,4 +1,4 @@
-name: Storm Framework Multi-OS CI Testing
+name: Multi-OS CI Testing
 
 on:
   push:
@@ -55,22 +55,33 @@ jobs:
         env:
           DEBIAN_FRONTEND:
         run: |
-          if [ "${{ matrix.os }}" = "kalilinux/kali-rolling:latest" ]; then
-            # Remove default deb822 system
-            rm -f /etc/apt/sources.list.d/kali.sources
-            
-            # Write global official mirrors to sources.list
-            echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
-            
-            # The key to not being crushed
-            chmod 444 /etc/apt/sources.list
-          fi
-          
           rm -rf /var/lib/apt/lists/*
           apt-get clean
           
-          apt-get update -y || apt-get update --fix-missing -y
-          apt-get install -y --fix-missing --no-install-recommends curl sudo bash jq
+          if [ "${{ matrix.os }}" = "kalilinux/kali-rolling:latest" ]; then
+            rm -f /etc/apt/sources.list.d/kali.sources
+            echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
+            
+            apt-get update -y
+            
+            cat << 'EOF' > /usr/local/bin/apt-get
+          #!/bin/bash
+          rm -f /etc/apt/sources.list.d/kali.sources
+          echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
+          
+          if [[ "$*" == *"install"* ]]; then
+              /usr/bin/apt-get update -y >/dev/null 2>&1
+          fi
+          
+          exec /usr/bin/apt-get "$@" --fix-missing --no-install-recommends
+          EOF
+            
+            cp /usr/local/bin/apt-get /usr/local/bin/apt
+            chmod +x /usr/local/bin/apt-get /usr/local/bin/apt
+          else
+            apt-get update -y
+          fi
+          apt-get install -y curl sudo bash jq
 
       - name: Checkout Code
         uses: actions/checkout@v4

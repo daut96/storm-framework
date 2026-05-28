@@ -183,15 +183,15 @@ else
         -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm" \
         -extensions v3_ca \
         -config <(cat <<-EOF
-		[req]
-		distinguished_name = req_distinguished_name
-		[req_distinguished_name]
-		[v3_ca]
-		subjectKeyIdentifier = hash
-		authorityKeyIdentifier = keyid:always,issuer
-		basicConstraints = critical, CA:true
-		keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-		EOF
+[req]
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[v3_ca]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+EOF
         )
 
     echo "[✓] Success generate CA Trust Store"

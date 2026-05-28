@@ -19,14 +19,17 @@ type CrawlJob struct {
 	Source string
 }
 
-// Global baseline untuk mendeteksi anomali Soft 404
 var soft404Size int64 = -1
-
-// Engine Regex Global
 var linkFinderEngine *regexp.Regexp
-
-// Pengganti map & mutex manual. sync.Map sangat efisien untuk operasi "Read-Mostly" / "Append-Only"
 var visitedMap sync.Map
-
-// Semaphore: Mencegah Goroutine Explosion. Maksimal 50 ekstraksi JS berjalan bersamaan.
 var jsParseSemaphore = make(chan struct{}, 50)
+
+// === ARSITEKTUR BARU ===
+// GlobalTaskTracker memastikan program tidak berhenti sebelum SELURUH rekursi JS selesai
+var GlobalTaskTracker sync.WaitGroup
+
+// DiscoveryChannel menerima temuan path baru dari Worker / Mesin JS secara dinamis
+var DiscoveryChannel = make(chan CrawlJob)
+
+// WorkerQueue adalah antrean yang dikonsumsi oleh barisan Worker untuk eksekusi HTTP
+var WorkerQueue = make(chan CrawlJob)

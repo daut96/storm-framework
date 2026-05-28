@@ -14,6 +14,7 @@ exploited.
 """,
     "Author": ["zxelzy"],
     "Action": [
+        ["Sub Enumeration", {"Description": "Searching for valid subdomains"}],
         ["Scanner", {"Description": "Searching for sensitive subdomains"}],
     ],
     "DefaultAction": "Scanner",

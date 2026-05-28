@@ -165,21 +165,33 @@ else
     echo "[+] Generate CA Trust Store..."
 
     # Delete CA lama
-    rm -f smf_ca.key smf_ca.crt
+    sudo rm -f smf_ca.key smf_ca.crt
 
     # Generate CA private key
-    openssl genrsa -out smf_ca.key 2048
+    sudo openssl genrsa -out smf_ca.key 2048
 
     # Allow standard owner read/write
     sudo chmod 600 smf_ca.key
 
     # Generate self-signed CA certificate
-    openssl req -x509 -new -nodes \
+    sudo openssl req -x509 -new -nodes \
         -key smf_ca.key \
         -sha256 \
         -days 3650 \
         -out smf_ca.crt \
-        -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm"
+        -subj "/CN=Storm Trusted Root CA/O=StormWorld0/OU=Network-Security-Storm" \
+        -extensions v3_ca \
+        -config <(cat <<-EOF
+		[req]
+		distinguished_name = req_distinguished_name
+		[req_distinguished_name]
+		[v3_ca]
+		subjectKeyIdentifier = hash
+		authorityKeyIdentifier = keyid:always,issuer
+		basicConstraints = critical, CA:true
+		keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+		EOF
+        )
 
     echo "[✓] Success generate CA Trust Store"
 fi

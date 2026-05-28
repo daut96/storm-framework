@@ -22,7 +22,11 @@ type CrawlJob struct {
 // Global baseline untuk mendeteksi anomali Soft 404
 var soft404Size int64 = -1
 
-// Global regex & Mutex
+// Engine Regex Global
 var linkFinderEngine *regexp.Regexp
-var mapMutex sync.Mutex
 
+// Pengganti map & mutex manual. sync.Map sangat efisien untuk operasi "Read-Mostly" / "Append-Only"
+var visitedMap sync.Map
+
+// Semaphore: Mencegah Goroutine Explosion. Maksimal 50 ekstraksi JS berjalan bersamaan.
+var jsParseSemaphore = make(chan struct{}, 50)

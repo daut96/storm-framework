@@ -52,8 +52,15 @@ jobs:
 
     steps:          
       - name: Prepare Environment
+        env:
+          DEBIAN_FRONTEND:
         run: |
-          apt-get update
+          if [ "${{ matrix.os }}" = "kalilinux/kali-rolling:latest" ]; then
+            echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list
+          fi
+          
+          apt-get clean
+          apt-get update -y || apt-get update --fix-missing -y
           apt-get install -y curl sudo bash jq
 
       - name: Checkout Code

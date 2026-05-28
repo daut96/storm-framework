@@ -109,7 +109,7 @@ def execute(options, runtime):
 
     regex = os.path.join(ROOT, "external", "source", "regex", "rexgo.txt")
 
-    bin = call_bin("path_enum")
+    bin = call_bin("http_path_enum")
 
     if not bin:
         smf.printf(f"[!] Binary => path_enum >> not found")

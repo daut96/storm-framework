@@ -76,18 +76,17 @@ func main() {
 		}
 		doneAggregator <- true
 	}()
-	fmt.Println("[INFO] Engine => Starting Hybrid Seeding")
 
 	GlobalTaskTracker.Add(1)
 	go discoverPathsAutomatically(client, *targetURL)
 	
 	if *wordlistPath != "" {
-		fmt.Println("[INFO] Mode => Using Static Wordlist Input")
+		fmt.Println("[INFO] Mode => Wordlist detected. Running Combo Wordlist & Crawling")
 		go func(path string) {
 			loadWordlist(path)
 		}(*wordlistPath)
 	} else {
-		fmt.Println("[INFO] Mode => Empty wordlist. Enable JIT Crawling & Parsing")
+		fmt.Println("[INFO] Mode => Empty wordlist. Running JIT Crawling Recursive")
 	}
 	GlobalTaskTracker.Wait()
 
@@ -96,7 +95,5 @@ func main() {
 	workerWG.Wait()         // Memastikan Worker meletakkan alat kerjanya
 	close(results)          // Mematikan Aggregator layar
 	<-doneAggregator
-
-	fmt.Println("[INFO] Fuzzing Core Run Finished Successfully. No tasks left behind.")
 }
 

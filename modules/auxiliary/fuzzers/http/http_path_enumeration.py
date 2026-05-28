@@ -53,20 +53,21 @@ def output_stream(line: str) -> str:
         type = data.get("type")
         source_engine = raw_source if raw_source else "WORDLIST"
 
-        # Aturan Pewarnaan berdasarkan Tingkat Risiko / HTTP State Classification
+        # Risk Level Coloring / HTTP State Classification
         if 200 <= status_code < 300:
-            # 2xx = Success / File Terbuka / Valid Target
+            # 2xx = Success / File Open / Valid Target
             color_status = f"{CC.GREEN}{status_code}{CC.RESET}"
         elif 300 <= status_code < 400:
-            # 3xx = Redirects / Potensial Routing Bypass
+            # 3xx = Redirects / Potential Routing Bypass
             color_status = f"{CC.YELLOW}{status_code}{CC.RESET}"
         elif 400 <= status_code < 500:
             # 4xx = Forbidden / Unauthorized
             color_status = f"{CC.CYAN}{status_code}{CC.RESET}"
         else:
-            # 5xx = Server Error / Potensial Crash / Vulnerability Indicator
+            # 5xx = Server Error / Potential Crash / Vulnerability Indicator
             color_status = f"{CC.RED}{status_code}{CC.RESET}"
 
+        # Color the type
         if type == "Not":
             color_type = f"{CC.RED}{type}{CC.RESET}"
         elif type == "Soft":
@@ -74,6 +75,7 @@ def output_stream(line: str) -> str:
         else:
             color_type = f"{CC.GREEN}{type}{CC.RESET}"
 
+        # Color the source
         if source_engine == "JS":
             color_source = f"{CC.YELLOW}{source_engine:^8}{CC.RESET}"
         elif source_engine == "HTML":
@@ -81,8 +83,7 @@ def output_stream(line: str) -> str:
         else:
             color_source = f"{CC.WHITE}{source_engine:^8}{CC.RESET}"
 
-        # Rekonstruksi string output terstruktur dengan komponen warna terpisah
-        # Output dibuat rapi secara tabular menggunakan string alignment (e.g., :<30)
+        # Log streaming output design
         formatted_line = (
             f"[{CC.GREEN}RESULT{CC.RESET}] "
             f"[{color_source}] "
@@ -96,17 +97,24 @@ def output_stream(line: str) -> str:
     if "Error =>" in clean_line:
         return f"[{CC.RED}SYSTEM ERROR{CC.RESET}] {CC.RED}{clean_line.split('=>')[1].strip()}{CC.RESET}\n"
 
-    # Deteksi Anomali / Soft 404 dari fungsi calibrateSoft404
+    if "Error" in clean_line:
+        return f"{CC.RED}{clean_line}{CC.RESET}"
+
+    # Anomaly Detection / Soft 404
     if "Warning =>" in clean_line:
         return f"[{CC.YELLOW}ANOMALY WARN{CC.RESET}] {CC.YELLOW}{clean_line.split('=>')[1].strip()}{CC.RESET}\n"
 
-    # Deteksi info mode COMBO or JIT
+    # Detect COMBO or JIT mode info
     if "[INFO] Mode =>" in clean_line:
         return f"{CC.YELLOW}{clean_line}{CC.RESET}\n\n"
 
-    # Deteksi info biasa
+    # Normal info detection
     if "[INFO]" in clean_line:
         return f"{CC.YELLOW}{clean_line}{CC.RESET}\n"
+
+    # Detection error
+    if "[ERROR]" in clean_line:
+        return f"{CC.RED}{clean_line}{CC.RESET}\n"
 
     return line
 
@@ -116,17 +124,21 @@ def execute(options, runtime):
     wordl = options.get("PATH")
     thread = options.get("THREAD")
 
+    # Specifying the Linkfinder regex path
     regex = os.path.join(ROOT, "external", "source", "regex", "rexgo.txt")
 
+    # Call binary
     bin = call_bin("http_path_enum")
 
+    # Binary validation
     if not bin:
         smf.printf(f"[!] Binary => path_enum >> not found")
         return
 
-    # Membangun argument baris perintah secara dinamis
+    # Setting up cmd dynamically
     cmd = [bin, "-url", url, "-threads", thread, "-regex", regex]
 
+    # Wordlist input validation
     if wordl and os.path.exists(wordl):
         cmd.extend(["-wordlist", wordl])
     elif wordl:
@@ -134,7 +146,7 @@ def execute(options, runtime):
 
     smf.printf(f"[*]{CC.CYAN} Running fuzzing to => {CC.RESET}{url}")
 
-    # Eksekusi proses dengan pipe stdout untuk streaming data real-time
+    # Run subprocess
     process = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )

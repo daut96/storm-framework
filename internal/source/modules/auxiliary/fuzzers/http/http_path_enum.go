@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-	// Configuration
 	targetURL := flag.String("url", "", "Base URL target")
 	wordlistPath := flag.String("wordlist", "", "Path to wordlist file (opsional)")
 	threads := flag.Int("threads", 1, "Number of concurrent workers")
@@ -35,32 +34,31 @@ func main() {
 		}
 	}
 
-	// Memastikan format URL konsisten memiliki trailing slash
 	if !strings.HasSuffix(*targetURL, "/") {
 		*targetURL += "/"
 	}
 
-	// Inisialisasi HTTP Client berkinerja tinggi (Connection Pooling)
+	// Transport layer yang di-tuning untuk agresivitas tanpa mematikan local port OS (Port Exhaustion)
 	transport := &http.Transport{
+		MaxConnsPerHost:     200,             // Batasi koneksi simultan ke 1 target
 		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 10,
+		MaxIdleConnsPerHost: 50,
 		IdleConnTimeout:     30 * time.Second,
-		DisableCompression:  true, // Save CPU
+		DisableCompression:  true,
+		ForceAttemptHTTP2:   true,            // Optimasi Multiplexing jika target support
 	}
+	
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   5 * time.Second,
+		Timeout:   10 * time.Second,          // Hard timeout per round-trip request
 	}
 
-	// Kalibrasi Anomali Jaringan (Deteksi Soft 404)
 	calibrateSoft404(client, *targetURL)
 
-	// Inisialisasi Channels
-	jobs := make(chan CrawlJob, 5000)
-	results := make(chan DiagnosticResult, 5000)
+	jobs := make(chan CrawlJob, 10000)
+	results := make(chan DiagnosticResult, 10000)
 	var wg sync.WaitGroup
 
-	// Spawning Worker Pool
 	for i := 0; i < *threads; i++ {
 		wg.Add(1)
 		go worker(client, *targetURL, jobs, results, &wg)
@@ -68,7 +66,6 @@ func main() {
 
 	doneAggregator := make(chan bool)
 
-	// Sinkronisasi Output (Result Aggregator)
 	go func() {
 		for res := range results {
 			fmt.Printf("[RESULT] [%s] Path: %s | Status: %d | Size: %d | Type: %s\n",
@@ -78,18 +75,18 @@ func main() {
 		doneAggregator <- true
 	}()
 
-	// Penentuan Mekanisme Input
 	if *wordlistPath != "" {
-		fmt.Println("[RESULT] Mode => Using Static Wordlist Input")
+		fmt.Println("[INFO] Mode => Using Static Wordlist Input")
 		loadWordlist(*wordlistPath, jobs)
 	} else {
-		fmt.Println("[RESULT] Mode => Empty wordlist. Enable JIT Crawling")
+		fmt.Println("[INFO] Mode => Empty wordlist. Enable JIT Crawling & Parsing")
 		discoverPathsAutomatically(client, *targetURL, jobs)
 	}
 
-	// GRACEFUL SHUTDOWN SEQUENCE
+	// GRACEFUL SHUTDOWN
 	close(jobs)
 	wg.Wait()
 	close(results)
 	<-doneAggregator
 }
+

@@ -11,7 +11,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 
 	"golang.org/x/net/html"
 )
@@ -48,12 +47,17 @@ func loadWordlist(path string) {
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" && !strings.HasPrefix(line, "#") {
-			SubmitJob{line, "WORDLIST"}
+			// PERBAIKAN: Gunakan tanda kurung biasa untuk fungsi
+			SubmitJob(line, "WORDLIST")
 		}
 	}
 }
 
 func discoverPathsAutomatically(client *http.Client, baseURL string) {
+	// Karena ini adalah fungsi yang men-spawn otomatis dari main(),
+	// kita tandai bahwa pekerjaannya sudah selesai saat fungsi ini return.
+	defer GlobalTaskTracker.Done()
+
 	resp, err := client.Get(baseURL)
 	if err != nil {
 		log.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
@@ -61,7 +65,6 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 	}
 	defer resp.Body.Close()
 
-	// Mitigasi OOM: Baca maksimal 5MB dari base URL
 	safeBodyReader := io.LimitReader(resp.Body, 5*1024*1024)
 
 	parsedBase, err := url.Parse(baseURL)
@@ -71,7 +74,6 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 	}
 
 	tokenizer := html.NewTokenizer(safeBodyReader)
-	var localNewPaths []string
 
 	for {
 		tokenType := tokenizer.Next()
@@ -104,30 +106,23 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 						continue
 					}
 
-					// Atomic Deduplication: Cek dan simpan dalam 1 instruksi mesin (Thread-Safe)
-					if _, loaded := visitedMap.LoadOrStore(cleanPath, true); !loaded {
-						localNewPaths = append(localNewPaths, cleanPath)
-
-						if strings.HasSuffix(strings.ToLower(cleanPath), ".js") {
-							
-							go extractFromJS(client, resolvedURL.String(), parsedBase)
-						}
-					}
+					// OPTIMASI: Langsung lempar ke SubmitJob. 
+					// Deduplikasi akan diurus oleh Central Dispatcher!
+					SubmitJob(cleanPath, "HTML")
 				}
 			}
 		}
 	}
-
-	for _, path := range localNewPaths {
-		SubmitJob{path, "HTML"}
-	}
 }
 
 func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
-	// Meminta izin masuk ke goroutine (mengambil token dari semaphore)
+	// PERBAIKAN: Fungsi ini di-spawn oleh Worker (go extractFromJS).
+	// Maka ia wajib melapor ke GlobalTaskTracker saat tugasnya selesai agar program tidak mati.
+	defer GlobalTaskTracker.Done()
+
 	jsParseSemaphore <- struct{}{}
 	defer func() {
-		<-jsParseSemaphore // Mengembalikan token saat selesai
+		<-jsParseSemaphore
 	}()
 
 	if linkFinderEngine == nil {
@@ -146,7 +141,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 	}
 	defer resp.Body.Close()
 
-	// Mitigasi OOM: Tarpit Defense (Hanya proses 5MB awal dari file JS)
 	safeReader := io.LimitReader(resp.Body, 5*1024*1024)
 	body, err := io.ReadAll(safeReader)
 	if err != nil {
@@ -159,7 +153,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 	}
 
 	matches := linkFinderEngine.FindAllSubmatch(body, -1)
-	var localNewEndpoints []CrawlJob
 
 	for _, match := range matches {
 		if len(match) < 2 {
@@ -210,16 +203,8 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 			continue
 		}
 
-		// Atomic Deduplication
-		if _, loaded := visitedMap.LoadOrStore(cleanPath, true); !loaded {
-			jobItem := SubmitJob{cleanPath, "JS"}
-			localNewEndpoints = append(localNewEndpoints, jobItem)
-
-			if strings.HasSuffix(lowerPath, ".js") {
-				
-				go extractFromJS(client, finalAbsoluteURL.String(), parsedBase)
-			}
-		}
+		// OPTIMASI: Langsung lempar temuan JS ini ke Central Dispatcher!
+		// Pekerjaan HTTP Request dan pengecekan file .js rekursif akan diserahkan kembali ke pasukan Worker.
+		SubmitJob(cleanPath, "JS")
 	}
 }
-

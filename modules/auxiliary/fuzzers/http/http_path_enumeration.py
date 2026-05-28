@@ -21,7 +21,7 @@ a combination of a wordlist and a recursive crawler.
     "Action": [
         ["Path Enumeration", {"Description": "Perform a search on the URL path"}],
         ["Fuzzing", {"Description": "fuzz URL path list"}],
-        ["Crawler", {"Description": "Crawl html for JS and dissect recursively"}]
+        ["Crawler", {"Description": "Crawl html for JS and dissect recursively"}],
     ],
     "DefaultAction": "Fuzzing",
     "License": "SMF License",

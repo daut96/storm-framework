@@ -30,9 +30,8 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 func worker(client *http.Client, baseURL string, jobs <-chan CrawlJob, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for job := range jobs {
-		cleanPath := strings.TrimPrefix(job.Path, "/")
-		fullURL := baseURL + cleanPath
+	for job := range WorkerQueue {
+		fullURL := baseURL + job.Path
 
 		req, err := http.NewRequest("HEAD", fullURL, nil)
 		if err != nil {

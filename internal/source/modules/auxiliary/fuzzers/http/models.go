@@ -20,9 +20,13 @@ type CrawlJob struct {
 	Source string
 }
 
+// Soft 404 detection
 var soft404Size int64 = -1
+var soft404Fingerprint string
 var soft404WordCount int
 var currentWordCount int
+
+// Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp
 var visitedMap sync.Map
 var jsParseSemaphore = make(chan struct{}, 50)

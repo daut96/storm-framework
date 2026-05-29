@@ -32,8 +32,9 @@ REQUIRED_OPTIONS = {
     "THREAD": "Default 1",
 }
 RESULT_PATTERN = re.compile(
-    r"^\[RESULT\]\s+(?:\[(?P<source>[^\]]+)\]\s+)?Path:\s+(?P<path>[^ ]+)\s+\|\s+Status:\s+(?P<status>\d+)\s+\|\s+Size:\s+(?P<size>\d+)\s+\|\s+Type:\s+(?P<type>[^ ]+)"
+    r"^\[RESULT\]\s+(?:\[(?P<source>[^\]]+)\]\s+)?Path:\s+(?P<path>[^ ]+)\s+\|\s+Status:\s+(?P<status>\d+)\s+\|\s+Size:\s+(?P<size>\d+)\s+\|\s+Words:\s+(?P<words>\d+)\s+\|\s+Type:\s+(?P<type>[^ ]+)"
 )
+
 
 
 def output_stream(line: str) -> str:
@@ -92,6 +93,7 @@ def output_stream(line: str) -> str:
             f"Path: {CC.MAGENTA}{data['path']:<45}{CC.RESET} | "
             f"Status: {color_status} | "
             f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
+            f"Word: {CC.YELLOW}{data['words']:<5}{CC.RESET} | "
             f"Type: {color_type}"
         )
         return f"{formatted_line}\n"

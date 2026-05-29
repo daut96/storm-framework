@@ -32,7 +32,7 @@ REQUIRED_OPTIONS = {
     "THREAD": "Default 1",
 }
 RESULT_PATTERN = re.compile(
-    r"^\[RESULT\]\s+(?:\[(?P<source>[^\]]+)\]\s+)?Path:\s+(?P<path>[^ ]+)\s+\|\s+Status:\s+(?P<status>\d+)\s+\|\s+Size:\s+(?P<size>\d+)\s+\|\s+Words:\s+(?P<words>\d+)\s+\|\s+Type:\s+(?P<type>[^ ]+)"
+    r"^\[RESULT\]\s+(?:\[(?P<source>[^\]\s]+)\]\s+)?Path:\s+(?P<path>.+?)\s+\|\s+Status:\s+(?P<status>\d{1,5})\s+\|\s+Size:\s+(?P<size>\d+)\s+\|\s+Words:\s+(?P<words>\d+)\s+\|\s+Type:\s+(?P<type>\S+)$"
 )
 
 

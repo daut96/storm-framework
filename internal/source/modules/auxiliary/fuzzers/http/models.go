@@ -25,7 +25,6 @@ var soft404Size int64 = -1
 var soft404Fingerprint string
 var currentBodyString string
 var soft404WordCount int
-var currentWordCount int
 
 // Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp

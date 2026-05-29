@@ -23,7 +23,6 @@ type CrawlJob struct {
 // Soft 404 detection
 var soft404Size int64 = -1
 var soft404Fingerprint string
-var currentBodyString string
 var soft404WordCount int
 
 // Regex / Sync / Max Goroutine

@@ -74,7 +74,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 					safeReader := io.LimitReader(getResp.Body, 5*1024*1024)
 					body, _ := io.ReadAll(safeReader)
 					size = int64(len(body))
-					currentWordCount := len(strings.Fields(string(body)))
+					currentWordCount = len(strings.Fields(string(body)))
 					statusCode = getResp.StatusCode
 					getResp.Body.Close()
 				}

@@ -22,9 +22,9 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 
 	if resp.StatusCode == http.StatusOK {
 		safeReader := io.LimitReader(resp.Body, 1*1024*1024)
-		soft404WordCount = len(strings.Fields(string(body)))
 		body, _ := io.ReadAll(safeReader)
 		soft404Size = int64(len(body))
+		soft404WordCount = len(strings.Fields(string(body)))
 		fmt.Printf("[INFO] Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
 	}
 }
@@ -72,9 +72,9 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				getResp, err := client.Do(getReq)
 				if err == nil {
 					safeReader := io.LimitReader(getResp.Body, 5*1024*1024)
-					currentWordCount := len(strings.Fields(string(body)))
 					body, _ := io.ReadAll(safeReader)
 					size = int64(len(body))
+					currentWordCount := len(strings.Fields(string(body)))
 					statusCode = getResp.StatusCode
 					getResp.Body.Close()
 				}

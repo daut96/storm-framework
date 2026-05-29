@@ -25,7 +25,8 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 		body, _ := io.ReadAll(safeReader)
 		soft404Size = int64(len(body))
 		soft404WordCount = len(strings.Fields(string(body)))
-		fmt.Printf("[INFO] Soft 404 Detection Active. Baseline Size => %d bytes\n", soft404Size)
+		fmt.Printf("[INFO] Soft 404 Detected. Byte Size => %d bytes\n", soft404Size)
+		fmt.Printf("[INFO] Soft 404 Detected. Word Size => %d word\n", soft404WordCount)
 	}
 }
 
@@ -104,7 +105,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 
 			results <- DiagnosticResult{
 				Source:     currentJob.Source,
-				Path:       currentJob.Path, // BUG FIX: Menggunakan currentJob.Path, bukan cleanPath
+				Path:       currentJob.Path,
 				StatusCode: statusCode,
 				Size:       size,
 				Type:       logType,

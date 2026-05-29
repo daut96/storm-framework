@@ -29,6 +29,7 @@ var currentWordCount int
 
 // Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp
+var tagRegex = regexp.MustCompile(`<[^>]+>`)
 var visitedMap sync.Map
 var jsParseSemaphore = make(chan struct{}, 50)
 

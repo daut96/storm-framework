@@ -108,6 +108,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				Path:       currentJob.Path,
 				StatusCode: statusCode,
 				Size:       size,
+				Words:      currentWordCount,
 				Type:       logType,
 			}
 		}(job) 

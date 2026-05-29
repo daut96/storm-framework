@@ -74,7 +74,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				getResp, err := client.Do(getReq)
 				if err == nil {
 					safeReader := io.LimitReader(getResp.Body, 5*1024*1024)
-					body, _ := io.ReadAll(safeReader)
+					body, _ = io.ReadAll(safeReader)
 					size = int64(len(body))
 					currentWordCount = len(strings.Fields(string(body)))
 					statusCode = getResp.StatusCode

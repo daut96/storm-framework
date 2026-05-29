@@ -192,13 +192,16 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 		lowerPath := strings.ToLower(cleanPath)
 
 		if lowerPath == "" ||
-			strings.HasSuffix(lowerPath, "text/") ||
 			strings.HasSuffix(lowerPath, ".css") ||
 			strings.HasSuffix(lowerPath, ".png") ||
 			strings.HasSuffix(lowerPath, ".jpg") ||
 			strings.HasSuffix(lowerPath, ".jpeg") ||
 			strings.HasSuffix(lowerPath, ".ico") ||
 			strings.HasSuffix(lowerPath, ".svg") ||
+		    strings.HasSuffix(lowerPath, ".woff2") ||
+		    strings.HasSuffix(lowerPath, ".gif") ||
+
+		    strings.Contains(lowerPath, "text/") ||
 			strings.Contains(lowerPath, "cdn-cgi/") {
 			continue
 		}

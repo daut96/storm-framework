@@ -89,7 +89,7 @@ def output_stream(line: str) -> str:
         formatted_line = (
             f"[{CC.GREEN}RESULT{CC.RESET}] "
             f"[{color_source}] "
-            f"Path: {CC.MAGENTA}{data['path']:<45}{CC.RESET} | "
+            f"Path: {CC.MAGENTA}{data['path']:<50}{CC.RESET} | "
             f"Status: {color_status} | "
             f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
             f"Word: {CC.YELLOW}{data['words']:<5}{CC.RESET} | "

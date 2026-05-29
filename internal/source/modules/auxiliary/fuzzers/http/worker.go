@@ -74,8 +74,9 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				getResp, err := client.Do(getReq)
 				if err == nil {
 					safeReader := io.LimitReader(getResp.Body, 5*1024*1024)
-					body, _ = io.ReadAll(safeReader)
+					body, _ := io.ReadAll(safeReader)
 					size = int64(len(body))
+					currentBodyString = string(body)
 					currentWordCount = len(strings.Fields(string(body)))
 					statusCode = getResp.StatusCode
 					getResp.Body.Close()
@@ -85,10 +86,10 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			logType := "Valid"
 			if statusCode == http.StatusNotFound {
 				logType = "Not Found (404)"
-			} else if statusCode == http.StatusOK && (size == soft404Size || currentWordCount == soft404WordCount) {
-				if isSoft404Fuzzy(string(body), soft404Fingerprint) {
-                    logType = "Soft 404 Anomaly"
-                }
+			} else if statusCode == http.StatusOK {
+				if size == soft404Size || currentWordCount == soft404WordCount || isSoft404Fuzzy(currentBodyString, soft404Fingerprint) {
+					logType = "Soft 404 Anomaly"
+				}
 			} else if statusCode >= 500 {
 				logType = "Error"
 			}

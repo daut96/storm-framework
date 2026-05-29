@@ -1,11 +1,8 @@
 package main
 
 import (
-	"regexp"
 	"strings"
 )
-
-var tagRegex = regexp.MustCompile(`<[^>]+>`)
 
 // Ekstrak struktur HTML menjadi sidik jari string yang bersih
 func getHTMLStructureFingerprint(htmlContent string) string {

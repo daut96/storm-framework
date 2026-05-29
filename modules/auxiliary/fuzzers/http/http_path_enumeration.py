@@ -92,7 +92,7 @@ def output_stream(line: str) -> str:
             f"Path: {CC.MAGENTA}{data['path']:<50}{CC.RESET} | "
             f"Status: {color_status} | "
             f"Size: {CC.WHITE}{data['size']:<8}{CC.RESET} | "
-            f"Word: {CC.YELLOW}{data['words']:<5}{CC.RESET} | "
+            f"Word: {CC.YELLOW}{data['words']:<7}{CC.RESET} | "
             f"Type: {color_type}"
         )
         return f"{formatted_line}\n"

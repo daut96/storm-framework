@@ -21,6 +21,7 @@ type CrawlJob struct {
 
 var soft404Size int64 = -1
 var soft404WordCount int
+var currentWordCount int
 var linkFinderEngine *regexp.Regexp
 var visitedMap sync.Map
 var jsParseSemaphore = make(chan struct{}, 50)

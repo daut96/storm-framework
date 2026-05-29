@@ -11,6 +11,7 @@ type DiagnosticResult struct {
 	Path       string `json:"path"`
 	StatusCode int    `json:"status_code"`
 	Size       int64  `json:"size"`
+	Words      int    `json:"words"`
 	Type       string `json:"type"`
 }
 

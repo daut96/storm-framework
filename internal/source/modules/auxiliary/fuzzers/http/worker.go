@@ -25,6 +25,7 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 		body, _ := io.ReadAll(safeReader)
 		soft404Size = int64(len(body))
 		soft404WordCount = len(strings.Fields(string(body)))
+		soft404Fingerprint = getHTMLStructureFingerprint(string(body))
 		fmt.Printf("[INFO] Soft 404 Detected. Byte Size => %d bytes\n", soft404Size)
 		fmt.Printf("[INFO] Soft 404 Detected. Word Size => %d word\n", soft404WordCount)
 	}
@@ -85,7 +86,9 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			if statusCode == http.StatusNotFound {
 				logType = "Not Found (404)"
 			} else if statusCode == http.StatusOK && (size == soft404Size || currentWordCount == soft404WordCount) {
-				logType = "Soft 404 Anomaly"
+				if isSoft404Fuzzy(string(body), soft404Fingerprint) {
+                    logType = "Soft 404 Anomaly"
+                }
 			} else if statusCode >= 500 {
 				logType = "Error"
 			}

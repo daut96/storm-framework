@@ -36,7 +36,6 @@ RESULT_PATTERN = re.compile(
 )
 
 
-
 def output_stream(line: str) -> str:
     """
     Color injection for captured logs

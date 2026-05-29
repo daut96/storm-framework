@@ -70,8 +70,8 @@ func main() {
 
 	go func() {
 		for res := range results {
-			fmt.Printf("[RESULT] [%s] Path: %s | Status: %d | Size: %d | Type: %s\n",
-				res.Source, res.Path, res.StatusCode, res.Size, res.Type,
+			fmt.Printf("[RESULT] [%s] Path: %s | Status: %d | Size: %d | Words: %d | Type: %s\n",
+				res.Source, res.Path, res.StatusCode, res.Size, res.Words, res.Type,
 			)
 		}
 		doneAggregator <- true

@@ -21,8 +21,8 @@ func calibrateSoft404(client *http.Client, baseURL string) {
 	}
 	defer resp.Body.Close()
 
-	safeReader := io.LimitReader(resp.Body, 1*1024*1024)
-	body, _ := io.ReadAll(safeReader)
+	
+	body, _ := io.ReadAll(resp.Body)
 	soft404StatusCode = resp.StatusCode
 	soft404Size = int64(len(body))
 	soft404WordCount = len(strings.Fields(string(body)))

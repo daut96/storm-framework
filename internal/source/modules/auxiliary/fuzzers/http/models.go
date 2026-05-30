@@ -21,6 +21,13 @@ type CrawlJob struct {
 }
 
 // Soft 404 detection
+type Soft404Profile struct {
+	StatusCode  int
+	Size        int64
+	WordCount   int
+	Fingerprint string
+}
+var Soft404Monsters map[string]Soft404Profile
 var soft404Size int64 = -1
 var soft404Fingerprint string
 var soft404WordCount int

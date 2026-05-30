@@ -43,25 +43,25 @@ func advancedCalibration(client *http.Client, baseURL string) {
 	Soft404Monsters = make(map[string]Soft404Profile)
 	
 	// Root dengan ekstensi statis
-	probe1 := fmt.Sprintf("%s/anomaly_storm_%d.html", baseURL, time.Now().Unix())
+	probe1 := fmt.Sprintf("%sanomaly_storm_%d.html", baseURL, time.Now().Unix())
 	recordProfile(client, probe1, "first anomaly")
 
 	// Rute bersarang / multi-level
-	probe2 := fmt.Sprintf("%s/fastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano())
+	probe2 := fmt.Sprintf("%sfastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano())
 	recordProfile(client, probe2, "second anomaly")
 
 	// Subfolder multi-level file
-	probe3 := fmt.Sprintf("%s/bj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano())
+	probe3 := fmt.Sprintf("%sbj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano())
 	recordProfile(client, probe3, "third anomaly")
 
 	// Root tanpa ekstensi
-	probe4 := fmt.Sprintf("%s/ushqrt_%d", baseURL, time.Now().Unix())
+	probe4 := fmt.Sprintf("%sushqrt_%d", baseURL, time.Now().Unix())
 	recordProfile(client, probe4, "fourth anomaly")
 
-	probe5 := fmt.Sprintf("%s/0xjktt99/%d", baseURL, time.Now().Unix())
+	probe5 := fmt.Sprintf("%s0xjktt99/%d", baseURL, time.Now().Unix())
 	recordProfile(client, probe5, "fifth anomaly")
 
-	probe6 := fmt.Sprintf("%s/00PBB190/%dh2PP.html", baseURL, time.Now().Unix())
+	probe6 := fmt.Sprintf("%s00PBB190/%dh2PP.html", baseURL, time.Now().Unix())
 	recordProfile(client, probe6, "sixth anomaly")
 }
 

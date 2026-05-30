@@ -68,6 +68,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			
 			var size int64 = 0
 			var currentWordCount int = 0
+			var currentBodyString string = ""
 
 			if statusCode == http.StatusMethodNotAllowed || statusCode == http.StatusOK {
 				getReq, _ := http.NewRequest("GET", fullURL, nil)

@@ -89,7 +89,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			logType := "Valid"
 			if statusCode == http.StatusNotFound {
 				logType = "Not"
-			} else if statusCode == http.StatusOK {
+			} else if statusCode == soft404StatusCode {
 				if size == soft404Size || currentWordCount == soft404WordCount || isSoft404Fuzzy(currentBodyString, soft404Fingerprint) {
 					logType = "Soft"
 				}

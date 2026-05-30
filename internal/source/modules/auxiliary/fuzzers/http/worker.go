@@ -13,22 +13,22 @@ import (
 )
 
 func calibrateSoft404(client *http.Client, baseURL string) {
-	randomPath := fmt.Sprintf("anomaly_test_%d.html", time.Now().UnixNano())
+	randomPath := fmt.Sprintf("Anomaly_Storm_%d.html", time.Now().UnixNano())
 	resp, err := client.Get(baseURL + randomPath)
 	if err != nil {
+		fmt.Printf("[ERROR] Failed to perform initial calibration: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
-		safeReader := io.LimitReader(resp.Body, 1*1024*1024)
-		body, _ := io.ReadAll(safeReader)
-		soft404Size = int64(len(body))
-		soft404WordCount = len(strings.Fields(string(body)))
-		soft404Fingerprint = getHTMLStructureFingerprint(string(body))
-		fmt.Printf("[INFO] Soft 404 Detected. Byte Size => %d bytes\n", soft404Size)
-		fmt.Printf("[INFO] Soft 404 Detected. Word Size => %d word\n", soft404WordCount)
-	}
+	safeReader := io.LimitReader(resp.Body, 1*1024*1024)
+	body, _ := io.ReadAll(safeReader)
+	soft404StatusCode = resp.StatusCode
+	soft404Size = int64(len(body))
+	soft404WordCount = len(strings.Fields(string(body)))
+	soft404Fingerprint = getHTMLStructureFingerprint(string(body))
+	fmt.Printf("[INFO] Soft 404 Detected. Byte Size => %d bytes\n", soft404Size)
+	fmt.Printf("[INFO] Soft 404 Detected. Word Size => %d word\n", soft404WordCount)
 }
 
 // Parameter 'jobs' dihapus, worker membaca langsung dari WorkerQueue global

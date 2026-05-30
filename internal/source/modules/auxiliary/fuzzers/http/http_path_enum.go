@@ -45,7 +45,7 @@ func main() {
 		MaxIdleConnsPerHost: 50,
 		IdleConnTimeout:     30 * time.Second,
 		DisableCompression:  true,
-		ForceAttemptHTTP2:   true,            // Optimasi Multiplexing jika target support
+		ForceAttemptHTTP2:   false,            // Optimasi Multiplexing jika target support
 	}
 	
 	client := &http.Client{

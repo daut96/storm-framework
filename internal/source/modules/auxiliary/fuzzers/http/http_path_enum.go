@@ -53,7 +53,7 @@ func main() {
 		Timeout:   10 * time.Second,          // Hard timeout per round-trip request
 	}
 
-	calibrateSoft404(client, *targetURL)
+	advancedCalibration(client, *targetURL)
 
 	results := make(chan DiagnosticResult, 50000)
 	

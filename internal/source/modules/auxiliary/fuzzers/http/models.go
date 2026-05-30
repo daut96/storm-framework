@@ -28,10 +28,6 @@ type Soft404Profile struct {
 	Fingerprint string
 }
 var Soft404Monsters map[string]Soft404Profile
-var soft404Size int64 = -1
-var soft404Fingerprint string
-var soft404WordCount int
-var soft404StatusCode int
 
 // Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp

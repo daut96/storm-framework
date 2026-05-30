@@ -35,7 +35,7 @@ func isSoft404Fuzzy(currentHTML, baselineFingerprint string) bool {
 	}
 	
 	ratio := lenCurrent / lenBaseline
-	if ratio > 0.90 && ratio < 1.10 {
+	if ratio > 0.95 && ratio < 1.5 {
 		// Jika panjang struktur tag mirip dalam rentang 90% - 110%, 
 		// besar kemungkinan ini adalah template error yang sama dengan input dinamis
 		return true

@@ -12,23 +12,55 @@ import (
 	"time"
 )
 
-func calibrateSoft404(client *http.Client, baseURL string) {
-	randomPath := fmt.Sprintf("Anomaly_Storm_%d.html", time.Now().UnixNano())
-	resp, err := client.Get(baseURL + randomPath)
+func recordProfile(client *http.Client, targetURL string, category string) {
+	req, _ := http.NewRequest("GET", targetURL, nil)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
+	
+	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("[ERROR] Failed to perform initial calibration: %v\n", err)
+		fmt.Printf("[!] Failed category calibration => %s : %v\n", category, err)
 		return
 	}
 	defer resp.Body.Close()
 
+	safeReader := io.LimitReader(resp.Body, 5*1024*1024)
+	body, _ := io.ReadAll(safeReader)
+	bodyString := string(body)
+
+	// Simpan profil anomali ke dalam memori global
+	Soft404Monsters[category] = Soft404Profile{
+		StatusCode:  resp.StatusCode,
+		Size:        int64(len(body)),
+		WordCount:   len(strings.Fields(bodyString)),
+		Fingerprint: getHTMLStructureFingerprint(bodyString),
+	}
+}
+
+func advancedCalibration(client *http.Client, baseURL string) {
+	// Inisialisasi Map Global
+	Soft404Monsters = make(map[string]Soft404Profile)
 	
-	body, _ := io.ReadAll(resp.Body)
-	soft404StatusCode = resp.StatusCode
-	soft404Size = int64(len(body))
-	soft404WordCount = len(strings.Fields(string(body)))
-	soft404Fingerprint = getHTMLStructureFingerprint(string(body))
-	fmt.Printf("[INFO] Soft 404 Detected. Byte Size => %d bytes\n", soft404Size)
-	fmt.Printf("[INFO] Soft 404 Detected. Word Size => %d word\n", soft404WordCount)
+	// Root dengan ekstensi statis
+	probe1 := fmt.Sprintf("%s/anomaly_storm_%d.html", baseURL, time.Now().Unix())
+	recordProfile(client, probe1, "first anomaly")
+
+	// Rute bersarang / multi-level
+	probe2 := fmt.Sprintf("%s/fastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano())
+	recordProfile(client, probe2, "second anomaly")
+
+	// Subfolder multi-level file
+	probe3 := fmt.Sprintf("%s/bj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano())
+	recordProfile(client, probe3, "third anomaly")
+
+	// Root tanpa ekstensi
+	probe4 := fmt.Sprintf("%s/ushqrt_%d", baseURL, time.Now().Unix())
+	recordProfile(client, probe4, "fourth anomaly")
+
+	probe5 := fmt.Sprintf("%s/0xjktt99/%d", baseURL, time.Now().Unix())
+	recordProfile(client, probe5, "fifth anomaly")
+
+	probe6 := fmt.Sprintf("%s/00PBB190/%dh2PP.html", baseURL, time.Now().Unix())
+	recordProfile(client, probe6, "sixth anomaly")
 }
 
 // Parameter 'jobs' dihapus, worker membaca langsung dari WorkerQueue global
@@ -87,12 +119,23 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			}
 
 			logType := "Valid"
-			if statusCode == http.StatusNotFound {
-				logType = "Not"
-			} else if statusCode == soft404StatusCode {
-				if size == soft404Size || currentWordCount == soft404WordCount || isSoft404Fuzzy(currentBodyString, soft404Fingerprint) {
-					logType = "Soft"
+			isSoft404 := false
+			
+			for _, profile := range Soft404Monsters {
+				// Cek apakah status code-nya sama dengan salah satu profil jebakan
+				if statusCode == profile.StatusCode {
+					// Lakukan pengecekan berlapis (Size ATAU Word Count ATAU Fuzzy HTML)
+					if size == profile.Size || currentWordCount == profile.WordCount || isSoft404Fuzzy(currentBodyString, profile.Fingerprint) {
+						isSoft404 = true
+						break // Langsung keluar loop, halaman ini positif sampah!
+					}
 				}
+			}
+			
+			if isSoft404 {
+				logType = "Soft"
+			} else if statusCode == http.StatusNotFound {
+				logType = "Not"
 			} else if statusCode >= 500 {
 				logType = "Error"
 			}

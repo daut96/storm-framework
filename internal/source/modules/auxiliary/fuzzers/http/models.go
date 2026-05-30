@@ -24,6 +24,7 @@ type CrawlJob struct {
 var soft404Size int64 = -1
 var soft404Fingerprint string
 var soft404WordCount int
+var currentBodyString string
 
 // Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp

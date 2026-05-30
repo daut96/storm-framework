@@ -34,6 +34,8 @@ func recordProfile(client *http.Client, targetURL string, category string) {
 		WordCount:   len(strings.Fields(bodyString)),
 		Fingerprint: getHTMLStructureFingerprint(bodyString),
 	}
+	fmt.Printf("[INFO] Calibration 404 => Status: %d | Size: %d | Word: %d\n", 
+		resp.StatusCode, len(body), len(strings.Fields(bodyString)))
 }
 
 func advancedCalibration(client *http.Client, baseURL string) {

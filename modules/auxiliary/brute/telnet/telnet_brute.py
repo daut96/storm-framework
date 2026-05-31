@@ -3,6 +3,7 @@ import smf
 
 from apps.utility.colors import *
 from lib.roar.calling import call_bin
+
 metadata = {
     "Name": "Bruteforce Telnet login",
     "Description": """

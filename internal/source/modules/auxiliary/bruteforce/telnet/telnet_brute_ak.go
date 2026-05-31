@@ -77,7 +77,7 @@ func main() {
 	wg.Wait()
 	close(results)
 
-	fmt.Println("[SUCCESS]  [*] Bruteforce completed. No credentials were successful.")
+	fmt.Println("[SUCC]  [*] Bruteforce completed. No credentials were successful.")
 }
 
 // Membaca file teks (satu baris per item)

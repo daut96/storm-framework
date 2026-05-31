@@ -1,8 +1,5 @@
 import subprocess
 import smf
-import os
-
-from apps.utility.colors import C
 
 metadata = {
     "Name": "Bruteforce Telnet login",
@@ -27,7 +24,7 @@ REQUIRED_OPTIONS = {
     "IP": "",
     "THREAD": "Default 1 thread",
     "PASS": "fill with wordlist",
-    "USER": "fill with wordlist"
+    "USER": "fill with wordlist",
 }
 
 

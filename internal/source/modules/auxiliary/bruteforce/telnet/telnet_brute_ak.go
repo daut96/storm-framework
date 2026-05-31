@@ -45,7 +45,7 @@ func main() {
 		fmt.Printf("  [ERROR] Failed to read password file => %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("  [*] Menggunakan => %d thread, total kombinasi => %d\n", *threads, len(usernames)*len(passwords))
+	fmt.Printf("  [*] Use => %d thread, total combination => %d\n", *threads, len(usernames)*len(passwords))
 
 	// Siapkan context untuk cancel jika sukses
 	ctx, cancel := context.WithCancel(context.Background())

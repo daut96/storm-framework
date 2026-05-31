@@ -75,7 +75,7 @@ def execute(options):
         thread,
         "-users",
         user,
-        "-password",
+        "-passwords",
         passw,
     ]
 

@@ -26,8 +26,8 @@ SYM_FAILED = "🔒"
 REQUIRED_OPTIONS = {
     "IP": "",
     "THREAD": "Default 1 thread",
-    "PASS": "fill with wordlist",
-    "USER": "fill with wordlist",
+    "PASS": "fill with wordlist password",
+    "PATH": "fill with wordlist username",
 }
 
 
@@ -55,7 +55,7 @@ def execute(options):
     # Take input
     ip = options.get("IP")
     thread = options.get("THREAD")
-    user = options.get("USER")
+    user = options.get("PATH")
     passw = options.get("PASS")
 
     # Binary path

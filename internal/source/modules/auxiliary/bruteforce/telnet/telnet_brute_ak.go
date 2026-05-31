@@ -45,7 +45,7 @@ func main() {
 		fmt.Printf("  [ERROR] Failed to read password file => %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("  [*] Use => %d thread, total combination => %d\n", *threads, len(usernames)*len(passwords))
+	fmt.Printf("[INFO]  [*] Use => %d thread, total combination => %d\n", *threads, len(usernames)*len(passwords))
 
 	// Siapkan context untuk cancel jika sukses
 	ctx, cancel := context.WithCancel(context.Background())
@@ -77,7 +77,7 @@ func main() {
 	wg.Wait()
 	close(results)
 
-	fmt.Println("  [*] Bruteforce completed. No credentials were successful.")
+	fmt.Println("[SUCCESS]  [*] Bruteforce completed. No credentials were successful.")
 }
 
 // Membaca file teks (satu baris per item)
@@ -125,7 +125,7 @@ func worker(ctx context.Context, ip string, port, timeoutSec int, jobs <-chan Cr
 			if !ok {
 				return
 			}
-			fmt.Printf("  [>] TRY => U:%-20s P:%-20s\n", cred.Username, cred.Password)
+			fmt.Printf("  [RESULT] TRY => U:%-20s P:%-20s\n", cred.Username, cred.Password)
 			if tryLogin(ip, port, cred.Username, cred.Password, timeoutSec) {
 				select {
 				case results <- fmt.Sprintf("  [SUCCESS] LOGIN SUCCESS! => U:%s :: P:%s", cred.Username, cred.Password):

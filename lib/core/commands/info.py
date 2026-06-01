@@ -63,6 +63,7 @@ def execute(args, ctx):
                 subsequent_indent=" ",
             )
             smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
+            smf.printf()
 
             # Menangani jika Author ditulis berupa List atau String murni
             authors = info.get("author", ["Unknown"])
@@ -103,6 +104,7 @@ def execute(args, ctx):
             else:
                 smf.printf(f"  {CC.RED}[!] No executable actions defined{CC.RESET}")
 
+            smf.printf()
             smf.printf(
                 f"{CC.CYAN}{'DefAction':<{label_w}} : {CC.YELLOW}{info.get('defaultaction', 'Main')}{CC.RESET}"
             )

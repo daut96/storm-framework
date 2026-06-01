@@ -20,7 +20,7 @@ in the network and can be implemented more dynamically.
     "Action": [
         ["Proxy", {"Description": "Reading headers and bodies"}],
         ["DPI", {"Description": "Perform inspection in body header"}],
-        ["MITM", {"Description": "Perform network packet reconnaissance"}]
+        ["MITM", {"Description": "Perform network packet reconnaissance"}],
     ],
     "DefaultAction": "Proxy",
     "License": "SMF License",

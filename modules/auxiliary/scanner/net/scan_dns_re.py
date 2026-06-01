@@ -14,10 +14,11 @@ used by a website.
 """,
     "Author": ["zxelzy"],
     "Action": [
-        ["Scanner", {"Description": "Scan DNS Records"}],
+        ["Scaner", {"Description": "Scan DNS Records"}],
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2025-09-22",
 }
 SYM_INFO = "💡"
 SYM_SECURITY = "🔒"

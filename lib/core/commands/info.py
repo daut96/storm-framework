@@ -54,7 +54,7 @@ def execute(args, ctx):
                 f"{CC.CYAN}{'Name':<{label_w}} : {CC.YELLOW}{mod_name}{CC.RESET}"
             )
 
-            smf.printf(f"{CC.CYAN}{'Description':<{label_w}} :{CC.RESET}")
+            smf.printf(f"{CC.CYAN}{'Description':<{label_w}}{CC.RESET}")
             raw_desc = info.get("description", "No description provided")
             desc = textwrap.fill(
                 raw_desc.strip(),

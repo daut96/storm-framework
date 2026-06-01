@@ -19,6 +19,7 @@ exploited.
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2026-04-20",
 }
 REQUIRED_OPTIONS = {"DOMAIN": "ex: google.com", "SUBDOM": "subdomain", "THREAD": "100"}
 

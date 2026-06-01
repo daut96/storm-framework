@@ -15,6 +15,7 @@ allows to find ASN, Country, CIDR, etc. data.
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2026-01-06",
 }
 REQUIRED_OPTIONS = {"IP": "(ex: x.x.x.x)"}
 

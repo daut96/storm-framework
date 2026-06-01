@@ -77,6 +77,9 @@ def execute(args, ctx):
             smf.printf(
                 f"{CC.CYAN}{'License':<{label_w}} : {CC.YELLOW}{mod_license}{CC.RESET}"
             )
+
+            mod_date = info.get("date", "N/A")
+            smf.printf(f"{CC.CYAN}{'Date':<{label_w}} : {CC.WHITE}{mod_date}{CC.RESET}")
             smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
             # 2. BLOK WAJIB: Action & Default Action
@@ -122,10 +125,10 @@ def execute(args, ctx):
                         f"  {CC.CYAN}- Severity  :{CC.RESET} {CC.RED}{vuln_clean.get('severity', 'UNKNOWN')}{CC.RESET}"
                     )
                     smf.printf(
-                        f"  {CC.CYAN}- Published :{CC.RESET} {vuln_clean.get('published', 'N/A')}"
+                        f"  {CC.CYAN}- Published :{CC.RESET} {CC.WHITE}{vuln_clean.get('published', 'N/A')}{CC.RESET}"
                     )
                     smf.printf(
-                        f"  {CC.CYAN}- Updated   :{CC.RESET} {vuln_clean.get('updated', 'N/A')}"
+                        f"  {CC.CYAN}- Updated   :{CC.RESET} {CC.WHITE}{vuln_clean.get('updated', 'N/A')}{CC.RESET}"
                     )
 
                     ref_links = vuln_clean.get("references", [])

@@ -17,6 +17,7 @@ and get user login access up to admin.
     ],
     "DefaultAction": "Bruteforce",
     "License": "SMF License",
+    "Date": "2025-08-02",
 }
 REQUIRED_OPTIONS = {"IP": "", "PORT": "", "PASS": ""}
 

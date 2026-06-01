@@ -22,6 +22,7 @@ is FTP login auth that weak or quite strong.
     ],
     "DefaultAction": "Bruteforce",
     "License": "SMF License",
+    "Date": "2025-07-02",
 }
 REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
 

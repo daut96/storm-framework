@@ -16,6 +16,7 @@ until it is slow and even the server crashes.
     ],
     "DefaultAction": "DoS",
     "License": "SMF License",
+    "Date": "2025-10-25",
 }
 REQUIRED_OPTIONS = {
     "HOSTNAME": "ex: mail.storm.com",

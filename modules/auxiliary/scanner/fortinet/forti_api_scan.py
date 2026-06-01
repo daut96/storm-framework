@@ -15,11 +15,10 @@ privileges via crafted requests to Node.js websocket module.
     "Author": ["zxelzy"],
     "Action": [
         ["Bypass", {"Description": "Breaking in without username & password"}],
-        ["Scaner", {"Description": "Scan to ensure security gaps"}]
+        ["Scaner", {"Description": "Scan to ensure security gaps"}],
     ],
     "DefaultAction": "Scaner",
     "License": "SMF License",
-    
     "Vulnerability": {
         "CVE": "CVE-2024-55591",
         "Severity": "CRITICAL",
@@ -27,9 +26,9 @@ privileges via crafted requests to Node.js websocket module.
         "Updated": "2025-01-14",
         "References": [
             "https://nvd.nist.gov/vuln/detail/CVE-2024-55591",
-            "https://attackerkb.com/topics/5K4caFRSPo/cve-2024-55591"
-        ]
-    }
+            "https://attackerkb.com/topics/5K4caFRSPo/cve-2024-55591",
+        ],
+    },
 }
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 REQUIRED_OPTIONS = {"URL": ""}

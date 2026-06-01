@@ -136,9 +136,9 @@ def execute(args, ctx):
                                     f"  {CC.CYAN}- Reference :{CC.RESET} {CC.GREEN}{ref_links[0]}{CC.RESET}"
                                 )
                             elif len(ref_links) > 1:
-                                smf.printf(f"  {CC.CYAN}- Reference :{CC.RESET}")
+                                smf.printf(f"  {CC.CYAN}- Reference{CC.RESET}")
                                 for link in ref_links:
-                                    smf.printf(f"    {CC.GREEN}- {link}{CC.RESET}")
+                                    smf.printf(f"      {CC.GREEN}- {link}{CC.RESET}")
                         else:
                             smf.printf(
                                 f"  {CC.CYAN}- Reference :{CC.RESET} {CC.GREEN}{ref_links}{CC.RESET}"

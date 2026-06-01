@@ -17,6 +17,7 @@ found a match against SSH login auth.
     ],
     "DefaultAction": "Bruteforce",
     "License": "SMF License",
+    "Date": "2025-07-09",
 }
 REQUIRED_OPTIONS = {"IP": "", "PASS": ""}
 

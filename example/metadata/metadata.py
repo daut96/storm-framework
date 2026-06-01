@@ -4,6 +4,7 @@ metadata = {
     "Description": "Complete explanation of what this module does, its impact, and its scope.",
     "Author": ["Your Name"],
     "License": "SMF LICENSE",
+    "Date": "YYYY-MM-DD",
     "Action": [
         ["Bruteforce", {"Description": "Bypass Telnet login"}],
         ["DPI", {"Description": "Deep Packet Inspection"}],

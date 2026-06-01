@@ -14,6 +14,7 @@ MD5-Crypt.
     ],
     "DefaultAction": "Bruteforce",
     "License": "SMF License",
+    "Date": "2025-07-10"
 }
 REQUIRED_OPTIONS = {"HASH": "", "PASS": ""}
 

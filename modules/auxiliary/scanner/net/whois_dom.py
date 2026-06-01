@@ -11,10 +11,11 @@ an active domain, to get email data, servers, org, etc.
 """,
     "Author": ["zxelzy"],
     "Action": [
-        ["Scanner", {"Description": "Searching for data"}],
+        ["Scaner", {"Description": "Searching for data"}],
     ],
-    "DefaultAction": "Scanner",
+    "DefaultAction": "Scaner",
     "License": "SMF License",
+    "Date": "2026-01-18",
 }
 REQUIRED_OPTIONS = {"DOMAIN": "(e.g., example.com)"}
 

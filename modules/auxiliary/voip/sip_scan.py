@@ -20,13 +20,14 @@ target SIP system.
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2025-08-07",
 }
 
 REQUIRED_OPTIONS = {
     "IP": "",
     "PORT": "standar port 5060/5061",
     "PROTOCOL": "example (udp, tls, tcp)",
-    "THREAD": "example 50",
+    "THREAD": "example: 50",
 }
 
 

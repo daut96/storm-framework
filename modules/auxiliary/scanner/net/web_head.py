@@ -17,6 +17,7 @@ public or look for other loopholes to exploit weaknesses.
     ],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2025-11-04",
 }
 REQUIRED_OPTIONS = {"URL": ""}
 

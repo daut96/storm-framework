@@ -15,7 +15,7 @@ forward proxy logic.
     "Action": [
         ["Proxy", {"Description": "Reading headers and bodies"}],
     ],
-    "DefaultAction": "Forward Proxy",
+    "DefaultAction": "Proxy",
     "License": "SMF License",
     "Date": "2026-04-07",
 }

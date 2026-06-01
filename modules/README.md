@@ -1,3 +1,2 @@
-This is the folder where all types of Cyber ​​Pentest modules are located. These modules are written in the Python programming language because it's the easiest and most popular language. The module categories include Auxiliary which searches for weaknesses in a system, Exploit which exploits vulnerabilities, and Vulnerability to manage CVE and their complete information.
-
-There is a template_mod.pyt, this is just a template that you have to use if you want to contribute a module to Cyber ​​Pentest, because this is the standard logic tool for executing a module, without this the module will never be able to be executed even though it can be read.
+This is where various existing modules are stored, each module has a different category so it is easier to find, save, and add.  
+If you are interested in adding a module for **Storm Framework** you can try reading the existing docs, where we have a more detailed explanation.

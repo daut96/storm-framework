@@ -15,6 +15,7 @@ phone delay to error.
     ],
     "DefaultAction": "DoS",
     "License": "SMF Lisense",
+    "Date": "2025-09-13",
 }
 REQUIRED_OPTIONS = {"IP": "", "PORT": "standar port 5060"}
 

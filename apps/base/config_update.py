@@ -9,11 +9,11 @@ from rootmap import ROOT
 
 def check_update():
     # Url to github data json
-    url = "https://raw.githubusercontent.com/StormWorld0/storm-framework/main/data/data_version.json"
+    url = "https://raw.githubusercontent.com/StormWorld0/storm-framework/main/data/data.json"
     try:  # Request get data json
         latest_version = requests.get(url, timeout=3).json()["version"]
         # Get local json data
-        data = os.path.join(ROOT, "data", "data_version.json")
+        data = os.path.join(ROOT, "data", "data.json")
 
         # View contents and search for versions
         with open(data) as f:

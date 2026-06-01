@@ -18,6 +18,7 @@ The second stage uses the custom keyword.
     ],
     "DefaultAction": "Bruteforce",
     "License": "SMF License",
+    "Date": "2025-08-19",
 }
 
 SYM_SUCCESS = "🔑"

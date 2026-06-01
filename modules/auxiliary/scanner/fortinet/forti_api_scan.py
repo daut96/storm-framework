@@ -19,6 +19,8 @@ privileges via crafted requests to Node.js websocket module.
     ],
     "DefaultAction": "Scaner",
     "License": "SMF License",
+    "Date": "2025-01-17",
+    
     "Vulnerability": {
         "CVE": "CVE-2024-55591",
         "Severity": "CRITICAL",

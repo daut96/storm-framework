@@ -28,130 +28,111 @@ def execute(args, ctx):
             found_path = os.path.join(root, f"{query}.py")
             break
 
-    filename = os.path.basename(found_path).lower()
     if found_path:
-        if filename.startswith("cve"):
-            # Used to display cve // vulnerability information
-            # Command => info <cve_name>
-            try:
-                spec = importlib.util.spec_from_file_location("temp_mod", found_path)
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
+        # To display information about a specific module
+        # Command => info <modules_name>
+        try:
+            spec = importlib.util.spec_from_file_location("temp_mod", found_path)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
 
-                # --- GET DICTIONARY CVE_INFO ---
-                info = mod.metadata
-                width = 55
+            # --- GET DICTIONARY MOD_INFO ---
+            raw_info = getattr(mod, "metadata", {})
+            info = {str(k).lower(): v for k, v in raw_info.items()}
+            
+            width = 80
+            label_w = 13
 
-                smf.printf()
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-                smf.printf(
-                    f"{CC.CYAN}{'STORM VULNERABILITY KNOWLEDGE BASE':^55}{CC.RESET}"
-                )
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
+            smf.printf()
+            smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
+            smf.printf(f"{CC.CYAN}{'STORM INFORMATION MODULES':^80}{CC.RESET}")
+            smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
 
-                smf.printf(
-                    f"{CC.CYAN}{'ID CVE':<13} : {CC.YELLOW}{info['cve']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['name']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'LEVEL':<13} : {CC.YELLOW}{info['severity']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'PUBLISHED':<13} : {CC.YELLOW}{info['published']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'UPDATED':<13} : {CC.YELLOW}{info['updated']}{CC.RESET}"
-                )
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+            # 1. BLOK WAJIB: Name, Description, Author, License
+            mod_name = info.get("name", "UNTITLED MODULE")
+            smf.printf(f"{CC.CYAN}{'Name':<{label_w}} : {CC.YELLOW}{mod_name}{CC.RESET}")
+            
+            smf.printf(f"{CC.CYAN}{'Description':<{label_w}} :{CC.RESET}")
+            raw_desc = info.get("description", "No description provided")
+            desc = textwrap.fill(
+                raw_desc.strip(),
+                width=width - 2,
+                initial_indent=" ",
+                subsequent_indent=" ",
+            )
+            smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
 
-                smf.printf(f"{CC.YELLOW}DESCRIPTION{CC.RESET}   :")
-                desc = textwrap.fill(
-                    info["description"].strip(),
-                    width=width - 2,
-                    initial_indent=" ",
-                    subsequent_indent=" ",
-                )
-                smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
+            # Menangani jika Author ditulis berupa List atau String murni
+            authors = info.get("author", ["Unknown"])
+            author_str = ", ".join(authors) if isinstance(authors, list) else str(authors)
+            smf.printf(f"{CC.CYAN}{'Author':<{label_w}} : {CC.YELLOW}{author_str}{CC.RESET}")
+            
+            mod_license = info.get("license", "SMF License")
+            smf.printf(f"{CC.CYAN}{'License':<{label_w}} : {CC.YELLOW}{mod_license}{CC.RESET}")
+            smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}REFERENCES{CC.RESET}    :")
-                for link in info["URL"]:
-                    smf.printf(f" - {CC.YELLOW}{link}{CC.RESET}")
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+            # 2. BLOK WAJIB: Action & Default Action
+            smf.printf(f"{CC.CYAN}{'ACTION':<{label_w}}{CC.RESET}")
+            actions = info.get("action", [])
+            if actions and isinstance(actions, list):
+                for action in actions:
+                    # Antisipasi struktur invalid (bukan list-in-list [nama, dict])
+                    if isinstance(action, (list, tuple)) and len(action) == 2:
+                        act_name = action[0]
+                        # Cari 'Description' atau 'description' di dalam inner-dict
+                        act_dict = {str(k).lower(): v for k, v in action[1].items()} if isinstance(action[1], dict) else {}
+                        act_desc = act_dict.get("description", "No action details")
+                        smf.printf(f"  > {CC.YELLOW}{act_name:<11} : {CC.RESET}{act_desc}")
+            else:
+                smf.printf(f"  {CC.RED}[!] No executable actions defined{CC.RESET}")
 
-                smf.printf(
-                    f"{CC.CYAN}{'SCANNER':<13} : {CC.YELLOW}{info['scanner']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'EXPLOIT':<13} : {CC.YELLOW}{info['exploit']}{CC.RESET}"
-                )
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-                smf.printf()
+            smf.printf(f"{CC.CYAN}{'DefAction':<{label_w}} : {CC.YELLOW}{info.get('defaultaction', 'Main')}{CC.RESET}")
 
-            except Exception as e:
-                smf.printd("FAILED TO READ INFORMATION CVE", e, level="ERROR")
-                smf.printf(f"{CC.YELLOW}[!] Failed to read CVE{CC.RESET}")
+            # 3. BLOK DINAMIS: Vulnerability Intelligence (Kondisional)
+            if "vulnerability" in info and info["vulnerability"]:
+                vuln_data = info["vulnerability"]
+                if isinstance(vuln_data, dict):
+                    # Normalisasi sub-key internal vulnerability data
+                    vuln_clean = {str(k).lower(): v for k, v in vuln_data.items()}
+                    
+                    smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                    smf.printf(f"{CC.RED}{'VULNERABILITY INTELLIGENCE':^80}{CC.RESET}")
+                    smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                    
+                    smf.printf(f"  {CC.CYAN}- CVE       :{CC.RESET} {CC.YELLOW}{vuln_clean.get('cve', 'N/A')}{CC.RESET}")
+                    smf.printf(f"  {CC.CYAN}- Severity  :{CC.RESET} {CC.RED}{vuln_clean.get('severity', 'UNKNOWN')}{CC.RESET}")
+                    smf.printf(f"  {CC.CYAN}- Published :{CC.RESET} {vuln_clean.get('published', 'N/A')}")
+                    smf.printf(f"  {CC.CYAN}- Updated   :{CC.RESET} {vuln_clean.get('updated', 'N/A')}")
+                    
+                    ref_links = vuln_clean.get('references', [])
+                    if ref_links:
+                        ref_str = ref_links[0] if isinstance(ref_links, list) else str(ref_links)
+                        smf.printf(f"  {CC.CYAN}- Reference :{CC.RESET} {CC.GREEN}{ref_str}{CC.RESET}")
 
-        else:
-            # To display information about a specific module
-            # Command => info <modules_name>
-            try:
-                spec = importlib.util.spec_from_file_location("temp_mod", found_path)
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
+            # 4. BLOK DINAMIS: Transforms / Plugins (Kondisional)
+            if "transforms" in info and info["transforms"]:
+                trans_data = info["transforms"]
+                if isinstance(trans_data, dict):
+                    # Normalisasi sub-key internal transforms data
+                    trans_clean = {str(k).lower(): v for k, v in trans_data.items()}
+                    
+                    smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                    smf.printf(f"{CC.YELLOW}{'PAYLOAD TRANSFORMS (PLUGIN MODE)':^80}{CC.RESET}")
+                    smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
+                    
+                    for t_name, t_val in trans_clean.items():
+                        # Berikan indikator warna khusus jika tipenya Boolean (Evasion Status)
+                        if isinstance(t_val, bool):
+                            status_color = CC.GREEN if t_val else CC.RED
+                            smf.printf(f"  * {t_name.upper():<13} : {status_color}{t_val}{CC.RESET}")
+                        else:
+                            smf.printf(f"  * {t_name.upper():<13} : {t_val}")
 
-                # --- GET DICTIONARY MOD_INFO ---
-                info = mod.metadata
-                width = 55
-                label_w = 13
+            smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
+            smf.printf()
 
-                smf.printf()
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'STORM INFORMATION MODULES':^55}{CC.RESET}")
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-
-                smf.printf(
-                    f"{CC.CYAN}{'NAME':<13} : {CC.YELLOW}{info['Name']}{CC.RESET}"
-                )
-                smf.printf(f"{CC.CYAN}DESCRIPTION{CC.RESET}   :")
-                desc = textwrap.fill(
-                    info["Description"].strip(),
-                    width=width - 2,
-                    initial_indent=" ",
-                    subsequent_indent=" ",
-                )
-                smf.printf(f"{CC.YELLOW}{desc}{CC.RESET}")
-
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                authors = info.get("Author", [])
-                first_auth = authors[0] if authors else "Unknown"
-                smf.printf(
-                    f"{CC.CYAN}{'AUTHOR':<{label_w}} : - {CC.YELLOW}{first_auth}{CC.RESET}"
-                )
-                for extra in authors[1:]:
-                    smf.printf(f"{' '*(label_w)} : - {CC.YELLOW}{extra}{CC.RESET}")
-
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                smf.printf(f"{CC.CYAN}{'ACTION':<13}{CC.RESET}")
-                for action in info.get("Action", []):
-                    name = action[0]
-                    desc = action[1].get("Description", "")
-                    smf.printf(f"  > {CC.YELLOW}{name:<9} : {desc}{CC.RESET}")
-
-                smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                smf.printf(
-                    f"{CC.CYAN}{'DefAction':<13} : {CC.YELLOW}{info['DefaultAction']}{CC.RESET}"
-                )
-                smf.printf(
-                    f"{CC.CYAN}{'LICENSE':<13} : {CC.YELLOW}{info['License']}{CC.RESET}"
-                )
-                smf.printf(f"{CC.MAGENTA}{'='*width}{CC.RESET}")
-                smf.printf()
-
-            except Exception as e:
-                smf.printd("FAILED TO READ INFORMATION MODULE", e, level="ERROR")
-                smf.printf(f"{CC.YELLOW}[!] Failed to read MODULE{CC.RESET}")
+        except Exception as e:
+            smf.printd("FAILED TO READ INFORMATION MODULE", e, level="ERROR")
+            smf.printf(f"{CC.YELLOW}[!] Failed to read MODULE{CC.RESET}")
     else:
         smf.printf(f"{CC.YELLOW}[!] WARN => {query} > not found.{CC.RESET}")

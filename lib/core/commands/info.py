@@ -39,7 +39,7 @@ def execute(args, ctx):
             # --- GET DICTIONARY MOD_INFO ---
             raw_info = getattr(mod, "metadata", {})
             info = {str(k).lower(): v for k, v in raw_info.items()}
-            
+
             width = 80
             label_w = 13
 
@@ -50,8 +50,10 @@ def execute(args, ctx):
 
             # 1. BLOK WAJIB: Name, Description, Author, License
             mod_name = info.get("name", "UNTITLED MODULE")
-            smf.printf(f"{CC.CYAN}{'Name':<{label_w}} : {CC.YELLOW}{mod_name}{CC.RESET}")
-            
+            smf.printf(
+                f"{CC.CYAN}{'Name':<{label_w}} : {CC.YELLOW}{mod_name}{CC.RESET}"
+            )
+
             smf.printf(f"{CC.CYAN}{'Description':<{label_w}} :{CC.RESET}")
             raw_desc = info.get("description", "No description provided")
             desc = textwrap.fill(
@@ -64,11 +66,17 @@ def execute(args, ctx):
 
             # Menangani jika Author ditulis berupa List atau String murni
             authors = info.get("author", ["Unknown"])
-            author_str = ", ".join(authors) if isinstance(authors, list) else str(authors)
-            smf.printf(f"{CC.CYAN}{'Author':<{label_w}} : {CC.YELLOW}{author_str}{CC.RESET}")
-            
+            author_str = (
+                ", ".join(authors) if isinstance(authors, list) else str(authors)
+            )
+            smf.printf(
+                f"{CC.CYAN}{'Author':<{label_w}} : {CC.YELLOW}{author_str}{CC.RESET}"
+            )
+
             mod_license = info.get("license", "SMF License")
-            smf.printf(f"{CC.CYAN}{'License':<{label_w}} : {CC.YELLOW}{mod_license}{CC.RESET}")
+            smf.printf(
+                f"{CC.CYAN}{'License':<{label_w}} : {CC.YELLOW}{mod_license}{CC.RESET}"
+            )
             smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
 
             # 2. BLOK WAJIB: Action & Default Action
@@ -80,13 +88,21 @@ def execute(args, ctx):
                     if isinstance(action, (list, tuple)) and len(action) == 2:
                         act_name = action[0]
                         # Cari 'Description' atau 'description' di dalam inner-dict
-                        act_dict = {str(k).lower(): v for k, v in action[1].items()} if isinstance(action[1], dict) else {}
+                        act_dict = (
+                            {str(k).lower(): v for k, v in action[1].items()}
+                            if isinstance(action[1], dict)
+                            else {}
+                        )
                         act_desc = act_dict.get("description", "No action details")
-                        smf.printf(f"  > {CC.YELLOW}{act_name:<11} : {CC.RESET}{act_desc}")
+                        smf.printf(
+                            f"  > {CC.YELLOW}{act_name:<11} : {CC.RESET}{act_desc}"
+                        )
             else:
                 smf.printf(f"  {CC.RED}[!] No executable actions defined{CC.RESET}")
 
-            smf.printf(f"{CC.CYAN}{'DefAction':<{label_w}} : {CC.YELLOW}{info.get('defaultaction', 'Main')}{CC.RESET}")
+            smf.printf(
+                f"{CC.CYAN}{'DefAction':<{label_w}} : {CC.YELLOW}{info.get('defaultaction', 'Main')}{CC.RESET}"
+            )
 
             # 3. BLOK DINAMIS: Vulnerability Intelligence (Kondisional)
             if "vulnerability" in info and info["vulnerability"]:
@@ -94,20 +110,34 @@ def execute(args, ctx):
                 if isinstance(vuln_data, dict):
                     # Normalisasi sub-key internal vulnerability data
                     vuln_clean = {str(k).lower(): v for k, v in vuln_data.items()}
-                    
+
                     smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
                     smf.printf(f"{CC.RED}{'VULNERABILITY INTELLIGENCE':^80}{CC.RESET}")
                     smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                    
-                    smf.printf(f"  {CC.CYAN}- CVE       :{CC.RESET} {CC.YELLOW}{vuln_clean.get('cve', 'N/A')}{CC.RESET}")
-                    smf.printf(f"  {CC.CYAN}- Severity  :{CC.RESET} {CC.RED}{vuln_clean.get('severity', 'UNKNOWN')}{CC.RESET}")
-                    smf.printf(f"  {CC.CYAN}- Published :{CC.RESET} {vuln_clean.get('published', 'N/A')}")
-                    smf.printf(f"  {CC.CYAN}- Updated   :{CC.RESET} {vuln_clean.get('updated', 'N/A')}")
-                    
-                    ref_links = vuln_clean.get('references', [])
+
+                    smf.printf(
+                        f"  {CC.CYAN}- CVE       :{CC.RESET} {CC.YELLOW}{vuln_clean.get('cve', 'N/A')}{CC.RESET}"
+                    )
+                    smf.printf(
+                        f"  {CC.CYAN}- Severity  :{CC.RESET} {CC.RED}{vuln_clean.get('severity', 'UNKNOWN')}{CC.RESET}"
+                    )
+                    smf.printf(
+                        f"  {CC.CYAN}- Published :{CC.RESET} {vuln_clean.get('published', 'N/A')}"
+                    )
+                    smf.printf(
+                        f"  {CC.CYAN}- Updated   :{CC.RESET} {vuln_clean.get('updated', 'N/A')}"
+                    )
+
+                    ref_links = vuln_clean.get("references", [])
                     if ref_links:
-                        ref_str = ref_links[0] if isinstance(ref_links, list) else str(ref_links)
-                        smf.printf(f"  {CC.CYAN}- Reference :{CC.RESET} {CC.GREEN}{ref_str}{CC.RESET}")
+                        ref_str = (
+                            ref_links[0]
+                            if isinstance(ref_links, list)
+                            else str(ref_links)
+                        )
+                        smf.printf(
+                            f"  {CC.CYAN}- Reference :{CC.RESET} {CC.GREEN}{ref_str}{CC.RESET}"
+                        )
 
             # 4. BLOK DINAMIS: Transforms / Plugins (Kondisional)
             if "transforms" in info and info["transforms"]:
@@ -115,16 +145,20 @@ def execute(args, ctx):
                 if isinstance(trans_data, dict):
                     # Normalisasi sub-key internal transforms data
                     trans_clean = {str(k).lower(): v for k, v in trans_data.items()}
-                    
+
                     smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                    smf.printf(f"{CC.YELLOW}{'PAYLOAD TRANSFORMS (PLUGIN MODE)':^80}{CC.RESET}")
+                    smf.printf(
+                        f"{CC.YELLOW}{'PAYLOAD TRANSFORMS (PLUGIN MODE)':^80}{CC.RESET}"
+                    )
                     smf.printf(f"{CC.MAGENTA}{'-'*width}{CC.RESET}")
-                    
+
                     for t_name, t_val in trans_clean.items():
                         # Berikan indikator warna khusus jika tipenya Boolean (Evasion Status)
                         if isinstance(t_val, bool):
                             status_color = CC.GREEN if t_val else CC.RED
-                            smf.printf(f"  * {t_name.upper():<13} : {status_color}{t_val}{CC.RESET}")
+                            smf.printf(
+                                f"  * {t_name.upper():<13} : {status_color}{t_val}{CC.RESET}"
+                            )
                         else:
                             smf.printf(f"  * {t_name.upper():<13} : {t_val}")
 

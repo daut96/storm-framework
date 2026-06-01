@@ -20,9 +20,11 @@ in the network and can be implemented more dynamically.
     "Action": [
         ["Proxy", {"Description": "Reading headers and bodies"}],
         ["DPI", {"Description": "Perform inspection in body header"}],
+        ["MITM", {"Description": "Perform network packet reconnaissance"}]
     ],
-    "DefaultAction": "Forward Proxy",
+    "DefaultAction": "Proxy",
     "License": "SMF License",
+    "Date": "2025-04-16",
 }
 REQUIRED_OPTIONS = {"IP": "ip address standar = 0.0.0.0", "PORT": "standar port = 6443"}
 

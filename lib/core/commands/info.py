@@ -95,7 +95,7 @@ def execute(args, ctx):
                         )
                         act_desc = act_dict.get("description", "No action details")
                         smf.printf(
-                            f"  > {CC.CYAN}{act_name:<10} : {CC.RESET}{CC.YELLOW}{act_desc}{CC.RESET}"
+                            f"  > {CC.CYAN}{act_name:<9} : {CC.RESET}{CC.YELLOW}{act_desc}{CC.RESET}"
                         )
             else:
                 smf.printf(f"  {CC.RED}[!] No executable actions defined{CC.RESET}")

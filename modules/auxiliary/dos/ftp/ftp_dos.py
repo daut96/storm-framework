@@ -15,6 +15,7 @@ and make the server slow until it crashes.
     ],
     "DefaultAction": "DoS",
     "License": "SMF License",
+    "Date": "2025-07-17",
 }
 REQUIRED_OPTIONS = {"IP": "Fill in with target IP", "THREAD": "example: 1000"}
 

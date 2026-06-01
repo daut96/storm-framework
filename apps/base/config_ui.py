@@ -8,7 +8,7 @@ from rootmap import ROOT
 
 
 def show_about():
-    data = os.path.join(ROOT, "data", "data_version.json")
+    data = os.path.join(ROOT, "data", "data.json")
     with open(data) as f:
         VERSION = json.load(f)["version"]
 
@@ -37,13 +37,14 @@ def show_help():
 {C.INPUT}
   show options                  : View the variables that have been set
   show modules                  : Displaying module categories
-  show <name_categories>        : Displays the complete contents
+  show <categories>             : Displays the complete contents
   show plugin                   : Displays existing plugins & plugin status
 
 
   help                          : Displaying the manual
   export log <val>              : Export logs from internal database and save as txt
-  search <filename>             : To search for files
+  search                        : To search for modules, you can also use
+                                  filters such as (action:...) / (defaction:...)
   about                         : Information Development
   info <cve_name>               : Complete CVE information
   info <module_name>            : Complete Modules information
@@ -54,7 +55,8 @@ def show_help():
   unload <plugin_name>          : Remove plugins from memory
 
   
-  use <module_name>             : To select a module, you can also use <path_module>
+  use                           : To use the module, you can use
+                                  <module_name> / <path_module>
   set <key> <val>               : Filling in the parameters
   run                           : Run the selected module
 

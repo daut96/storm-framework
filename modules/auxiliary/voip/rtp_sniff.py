@@ -14,10 +14,11 @@ in Real-time on RTP connection.
 """,
     "Author": ["zxelzy"],
     "Action": [
-        ["RTP", {"Description": "Audio & video analysis"}],
+        ["Snifer", {"Description": "Audio & video analysis"}],
     ],
-    "DefaultAction": "RTP",
+    "DefaultAction": "Snifer",
     "License": "SMF License",
+    "Date": "2025-12-21",
 }
 REQUIRED_OPTIONS = {"INTERFACE": "example: eth0"}
 

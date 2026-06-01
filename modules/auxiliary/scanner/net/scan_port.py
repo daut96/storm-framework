@@ -17,6 +17,7 @@ to find vulnerabilities, do a quick scan of.
     "Action": [["Scan", {"Description": "Searching for open ports"}]],
     "DefaultAction": "Scanner",
     "License": "SMF License",
+    "Date": "2025-11-02",
 }
 
 

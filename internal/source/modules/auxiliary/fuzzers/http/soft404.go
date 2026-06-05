@@ -16,6 +16,8 @@ func extractFeaturesRobust(htmlContent string) HeuristicBaseline {
 	var dom, text strings.Builder
 	var title, h1, currentTag string
 
+	const maxTextSize = 8192
+	
 	for {
 		tt := tokenizer.Next()
 		if tt == html.ErrorToken {
@@ -32,9 +34,10 @@ func extractFeaturesRobust(htmlContent string) HeuristicBaseline {
 		case html.TextToken:
 			if currentTag != "script" && currentTag != "style" {
 				trimmed := strings.TrimSpace(token.Data)
-				if trimmed != "" {
-					text.WriteString(trimmed + " ")
-				}
+				if trimmed != "" && text.Len() < maxTextSize {
+                	text.WriteString(trimmed)
+	                text.WriteByte(' ')
+                }
 				if currentTag == "title" {
 					title += token.Data
 				} else if currentTag == "h1" {
@@ -45,7 +48,7 @@ func extractFeaturesRobust(htmlContent string) HeuristicBaseline {
 	}
 	return HeuristicBaseline{
 		DOMFingerprint: dom.String(),
-		BodyText:       strings.Join(strings.Fields(text.String()), " "),
+		BodyText:       strings.TrimSpace(text.String()),
 		Title:          strings.TrimSpace(title),
 		H1:             strings.TrimSpace(h1),
 	}
@@ -53,6 +56,12 @@ func extractFeaturesRobust(htmlContent string) HeuristicBaseline {
 
 // 2. FUNGSI MATEMATIKA LEVENSHTEIN & SIMILARITY
 func levenshteinDistance(s1, s2 string) int {
+	if s1 == s2 {
+		return 0
+	}
+	if len(s1) > 4096 || len(s2) > 4096 {
+		return max(len(s1), len(s2))
+	}
 	r1, r2 := []rune(s1), []rune(s2)
 	len1, len2 := len(r1), len(r2)
 	if len1 == 0 { return len2 }
@@ -108,20 +117,6 @@ func isHeuristicSoft404(currentStatusCode int, currentHTML string) bool {
 	// MAKRO STEP 2: Single Extraction & Keyword Check (Layer 2)
 	current := extractFeaturesRobust(currentHTML)
 	
-	errorKeywords := []string{
-		"404", "not found", "page not found", "resource not found",
-		"file not found", "document not found", "content not found",
-		"does not exist", "doesn't exist", "page does not exist", "page doesn't exist",
-		"cannot find", "can't find", "could not find", "couldn't find",
-		"page unavailable", "resource unavailable", "requested resource",
-		"invalid url", "invalid request", "invalid path", "unknown page", "unknown route",
-		"oops", "something went wrong",
-		// Indonesia
-		"tidak ditemukan", "halaman tidak ditemukan", "resource tidak ditemukan",
-		"konten tidak ditemukan", "file tidak ditemukan", "url tidak valid",
-		"permintaan tidak valid", "halaman tidak tersedia",
-	}
-
 	// Cek Keyword Error HANYA SEKALI
 	simKW := 0.0
 	currentLower := strings.ToLower(current.Title + " " + current.H1)
@@ -141,7 +136,10 @@ func isHeuristicSoft404(currentStatusCode int, currentHTML string) bool {
 			continue
 		}
 
-		simDOM := calculateSimilarity(current.DOMFingerprint, baseline.DOMFingerprint)
+		simDOM := 0.0
+        if current.DOMFingerprint == baseline.DOMFingerprint {
+	       simDOM = 1.0
+        }
 		simText := calculateSimilarity(current.BodyText, baseline.BodyText)
 		simTitle := calculateSimilarity(current.Title, baseline.Title)
 		simH1 := calculateSimilarity(current.H1, baseline.H1)

@@ -22,6 +22,7 @@ type CrawlJob struct {
 
 // Soft 404 detection
 type HeuristicBaseline struct {
+	StatusCode     int
 	DOMFingerprint string
 	BodyText       string
 	Title          string

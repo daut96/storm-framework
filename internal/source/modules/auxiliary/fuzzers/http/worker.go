@@ -67,27 +67,14 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			}
 
 			logType := "Valid"
-			isSoft404 := false
-			
-			for _, profile := range Soft404Baselines {
-				// Cek apakah status code-nya sama dengan salah satu profil jebakan
-				if statusCode == profile.StatusCode {
-					// Lakukan pengecekan berlapis
-					if isHeuristicSoft404(statusCode, currentBodyString) {
-						isSoft404 = true
-						break // Langsung keluar loop, halaman ini positif sampah!
-					}
-				}
-			}
-			
-			if isSoft404 {
-				logType = "Soft"
-			} else if statusCode == http.StatusNotFound {
-				logType = "Not"
-			} else if statusCode >= 500 {
-				logType = "Error"
-			}
 
+            if isHeuristicSoft404(statusCode, currentBodyString) {
+	            logType = "Soft"
+            } else if statusCode == http.StatusNotFound {
+	            logType = "Not"
+            } else if statusCode >= 500 {
+        	    logType = "Error"
+            }
 			// =========================================================================
 			// LOGIKA HYBRID CROSSOVER: JIT TRIGGER
 			// =========================================================================

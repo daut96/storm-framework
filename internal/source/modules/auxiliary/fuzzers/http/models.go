@@ -45,7 +45,7 @@ var DiscoveryChannel = make(chan CrawlJob)
 // WorkerQueue adalah antrean yang dikonsumsi oleh barisan Worker untuk eksekusi HTTP
 var WorkerQueue = make(chan CrawlJob)
 
-var errorKeywords := []string{
+var errorKeywords = []string{
 		"404", "not found", "page not found", "resource not found",
 		"file not found", "document not found", "content not found",
 		"does not exist", "doesn't exist", "page does not exist", "page doesn't exist",

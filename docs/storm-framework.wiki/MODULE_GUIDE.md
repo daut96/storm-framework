@@ -12,17 +12,28 @@ This is important as metadata to make it easier to find descriptions of modules 
 
 ```python
 metadata = {
-    "Name": "fill in the module name",
+    # Unique Identification & Attribution Module
+    "Name": "Module Name",
     "Description": """
-For a complete explanation
-""",
-    "Author": ["zxelzy"],
+Complete explanation of what this module does, its impact, and its scope.
+    """,
+    "Author": ["Your Name"],
+    "License": "SMF LICENSE",
+    "Date": "YYYY-MM-DD",
     "Action": [
-        ["Function name", {"Description": "Brief explanation of the function"}],
-        ["Function name", {"Description": "Brief explanation of the function"}],
+        ["action name", {"Description": "brief explanation"}],
+        ["action name", {"Description": "brief explanation"}],
     ],
-    "DefaultAction": "Main function",
-    "License": "SMF License",
+    "DefaultAction": "default action name",
+
+    # Vulnerability Intelligence (optional)
+    "Vulnerability": {
+        "CVE": "CVE-XXXX-XXXX",
+        "Severity": "CRITICAL",  # CRITICAL/HIGH/MEDIUM/LOW
+        "Published": "YYYY-MM-DD",
+        "Updated": "YYYY-MM-DD",
+        "References": ["https://nvd.nist.gov/vuln/detail/CVE-XXXX-XXXX"]
+    }
 }
 ```
 
@@ -55,7 +66,7 @@ REQUIRED_OPTIONS = {
 ```
 
 > [!IMPORTANT]
-> **REQUIRED_OPTIONS:** For `PASS` and `SUBDOM` will be automatically directed to `assets/wordlist`,
+> **REQUIRED_OPTIONS:** For `PASS`, `SUBDOM` and `PATH` will be automatically directed to `assets/wordlist`,
 > So just enter the wordlist name, for example: (`set PASS pasword_unix`) will automatically be
 > pathed to `../storm-framework/assets/wordlist/password_unix.txt`.
 
@@ -123,6 +134,6 @@ Make sure the binary source code is placed inside `internal/source/modules` and 
 
 To save your python loader, place it in the modules folder because this is what will be executed first before running the binary.
 
-## Important Warning
-
-When you submit a PR for a compiled language module, make sure you submit readable language source code. Don't submit a binary file because I will immediately reject it.
+> [!IMPORTANT]
+> When you submit a PR for a compiled language module, make sure you submit readable language source code. Don't submit a
+> binary file because I will immediately reject it.

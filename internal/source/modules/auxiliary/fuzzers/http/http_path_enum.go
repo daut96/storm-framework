@@ -7,7 +7,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -23,14 +22,14 @@ func main() {
 	flag.Parse()
 
 	if *targetURL == "" {
-		log.Printf("Error => The url parameter is absolutely required.")
+		fmt.Errorf("Error => The url parameter is absolutely required.")
 		os.Exit(1)
 	}
 
 	if *regex != "" {
 		err := initDynamicRegex(*regex)
 		if err != nil {
-			log.Fatalf("Error => Failed to initialize custom regex: %v\n", err)
+			fmt.Errorf("Error => Failed to initialize custom regex: %v\n", err)
 		}
 	}
 
@@ -55,7 +54,7 @@ func main() {
 
 	advancedCalibration(client, *targetURL)
 
-	results := make(chan DiagnosticResult, 50000)
+	results := make(chan DiagnosticResult, 100000)
 	
 	var workerWG sync.WaitGroup
 

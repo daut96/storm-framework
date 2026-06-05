@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"io"
-	"log"
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -22,19 +22,20 @@ func main() {
 	port := flag.String("port", "6880", "Port for the proxy server")
 	flag.Parse() // Mengeksekusi parser argumen
 
-	log.Printf("[INIT] Initializing HTTPS Intercepting Proxy on %s:%s", *ip, *port)
+	fmt.Printf("[INIT] Initializing HTTPS Intercepting Proxy on %s:%s", *ip, *port)
 
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = true
+	proxy.Logger = log.New(os.Stdout, "", 0)
 
 	// 2. Logika Injeksi Custom Root CA
 	if *certPath != "" && *keyPath != "" {
-		log.Printf("[INIT] Loading Custom Root CA from: %s & %s", *certPath, *keyPath)
+		fmt.Printf("[INIT] Load Root CA from: %s & %s", *certPath, *keyPath)
 		
 		// Memuat pasangan kunci publik (CRT) dan privat (KEY)
 		caCert, err := tls.LoadX509KeyPair(*certPath, *keyPath)
 		if err != nil {
-			log.Fatalf("[FATAL] Failed to load Custom CA: %v", err)
+			fmt.Printf("[FATAL] Failed to load Custom CA: %v", err)
 		}
 		
 		// Override CA internal goproxy
@@ -48,7 +49,7 @@ func main() {
 			}, host
 		}))
 	} else {
-		log.Println("[WARN] No CA flags provided. Using goproxy default internal CA.")
+		fmt.Println("[WARN] No CA flags provided. Using goproxy default internal CA.")
 		proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 	}
 
@@ -63,18 +64,18 @@ func main() {
 			contentType := req.Header.Get("Content-Type")
 			contentEncoding := req.Header.Get("Content-Encoding")
 
-			log.Printf("[DPI-REQ] Intercepting request from: %s%s", req.Host, req.URL.Path)
+			fmt.Printf("[DPI-REQ] Intercepting request from: %s%s", req.Host, req.URL.Path)
 
 			// Dump request header
 			reqDump, _ := httputil.DumpRequestOut(req, false)
-			log.Printf("========== OUTGOING REQUEST HEADERS ==========\n%s\n", string(reqDump))
+			fmt.Printf("========== OUTGOING REQUEST HEADERS ==========\n%s\n", string(reqDump))
 
 			// Baca body jika ada
 			if req.Body != nil && req.Body != http.NoBody {
 				rawBodyBytes, err := io.ReadAll(req.Body)
 				req.Body.Close()
 				if err != nil {
-					log.Printf("[ERROR] Failed to read request body: %v", err)
+					fmt.Printf("[ERROR] Failed to read request body: %v", err)
 					// Kembalikan body kosong agar request tidak rusak
 					req.Body = io.NopCloser(bytes.NewBuffer(nil))
 					return req, nil
@@ -84,19 +85,19 @@ func main() {
 
 				// Parsing contentType html
 				if strings.Contains(contentType, "text/html") {
-				    log.Printf("[DPI-BYPASS] Ignoring HTML request from: %s", req.Host)
+				    fmt.Printf("[DPI-BYPASS] Ignoring HTML request from: %s", req.Host)
 				    return req, nil
 			    }
 
 				// Parsing contentType css
 			    if strings.Contains(contentType, "text/css") {
-				    log.Printf("[DPI-BYPASS] Ignoring CSS request from: %s", req.Host)
+				    fmt.Printf("[DPI-BYPASS] Ignoring CSS request from: %s", req.Host)
 				    return req, nil
 			    }
 
 				// Parsing contentType js
 			    if strings.Contains(contentType, "application/x-javascript") {
-				    log.Printf("[DPI-BYPASS] Ignoring JavaScript request from: %s", req.Host)
+				    fmt.Printf("[DPI-BYPASS] Ignoring JavaScript request from: %s", req.Host)
 				    return req, nil
 		    	}
 
@@ -104,26 +105,26 @@ func main() {
 				if contentEncoding == "gzip" {
 					gzipReader, err := gzip.NewReader(bytes.NewReader(rawBodyBytes))
 					if err != nil {
-						log.Printf("[WARN] Failed to init gzip for requests: %v", err)
+						fmt.Printf("[WARN] Failed to init gzip for requests: %v", err)
 						return req, nil
 					}
 					defer gzipReader.Close()
 
 					uncompressedBytes, err := io.ReadAll(gzipReader)
 					if err != nil {
-						log.Printf("[WARN] Failed to read gzip request body: %v", err)
+						fmt.Printf("[WARN] Failed to read gzip request body: %v", err)
 						return req, nil
 					}
 					safeText := strings.ToValidUTF8(string(uncompressedBytes), "")
-					log.Printf("========== DECOMPRESSED GZIP REQUEST PAYLOAD ==========\n%s\n=====================================================\n\n", safeText)
+					fmt.Printf("========== DECOMPRESSED GZIP REQUEST PAYLOAD ==========\n%s\n=====================================================\n\n", safeText)
 				
 				} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/json") ||
                           strings.HasPrefix(contentType, "application/xml") || strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
 					safeText := strings.ToValidUTF8(string(rawBodyBytes), "")
-					log.Printf("========== PLAINTEXT REQUEST PAYLOAD ==========\n%s\n===============================================\n\n", safeText)
+					fmt.Printf("========== PLAINTEXT REQUEST PAYLOAD ==========\n%s\n===============================================\n\n", safeText)
 
 			    } else {
-					log.Printf("[DPI-REQ-INFO] Ignoring binary request body with type: %s\n", contentType)
+					fmt.Printf("[DPI-REQ-INFO] Ignoring binary request body with type: %s\n", contentType)
 				}
 			}
 			return req, nil
@@ -140,33 +141,33 @@ func main() {
 			contentType := resp.Header.Get("Content-Type")
 			contentEncoding := resp.Header.Get("Content-Encoding")
 
-			log.Printf("[DPI-RES] Intercepting responses from: %s%s", ctx.Req.Host, ctx.Req.URL.Path)
+			fmt.Printf("[DPI-RES] Intercepting responses from: %s%s", ctx.Req.Host, ctx.Req.URL.Path)
 
 			// Dump Header
 			responseHeaders, _ := httputil.DumpResponse(resp, false)
-			log.Printf("========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
+			fmt.Printf("========== INCOMING RESPONSE HEADERS ==========\n%s\n", string(responseHeaders))
 
 			// Ekstrak Stream Body
 			rawBodyBytes, err := io.ReadAll(resp.Body)
 			if err != nil {
-				log.Printf("[ERROR] Failed to read response body: %v\n", err)
+				fmt.Printf("[ERROR] Failed to read response body: %v\n", err)
 				return resp
 			}
 			resp.Body.Close()
 			resp.Body = io.NopCloser(bytes.NewBuffer(rawBodyBytes))
 
 			if strings.Contains(contentType, "text/html") {
-				log.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
+				fmt.Printf("[DPI-BYPASS] Ignoring HTML payload from: %s", ctx.Req.Host)
 				return resp
 			}
 
 			if strings.Contains(contentType, "text/css") {
-				log.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
+				fmt.Printf("[DPI-BYPASS] Ignoring CSS payload from: %s", ctx.Req.Host)
 				return resp
 			}
 
 			if strings.Contains(contentType, "application/x-javascript") {
-				log.Printf("[DPI-BYPASS] Ignoring JavaScript payload from: %s", ctx.Req.Host)
+			    fmt.Printf("[DPI-BYPASS] Ignoring JavaScript payload from: %s", ctx.Req.Host)
 				return resp
 			}
 			
@@ -174,27 +175,27 @@ func main() {
 			if contentEncoding == "gzip" {
 				gzipReader, err := gzip.NewReader(bytes.NewReader(rawBodyBytes))
 				if err != nil {
-					log.Printf("[WARN] Failed to initialize gzip decompressor: %v\n", err)
+					fmt.Printf("[WARN] Failed to initialize gzip decompressor: %v\n", err)
 					return resp
 				}
 				defer gzipReader.Close()
 
 				uncompressedBytes, err := io.ReadAll(gzipReader)
 				if err != nil {
-					log.Printf("[WARN] Failed to read gzip contents: %v\n", err)
+					fmt.Printf("[WARN] Failed to read gzip contents: %v\n", err)
 					return resp
 				}
 
 				safeGzipText := strings.ToValidUTF8(string(uncompressedBytes), "")
-				log.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n\n", safeGzipText)
+				fmt.Printf("========== DECOMPRESSED GZIP PAYLOAD ==========\n%s\n===============================================\n\n", safeGzipText)
 			
 			} else if strings.HasPrefix(contentType, "text/") || strings.HasPrefix(contentType, "application/json") ||
                       strings.HasPrefix(contentType, "application/xml") || strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
 				safePlainText := strings.ToValidUTF8(string(rawBodyBytes), "")
-				log.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n\n", safePlainText)
+				fmt.Printf("========== PLAINTEXT PAYLOAD ==========\n%s\n=======================================\n\n", safePlainText)
 
 			} else {
-				log.Printf("[DPI-INFO] Ignore binary payloads with type: %s\n", contentType)
+				fmt.Printf("[DPI-INFO] Ignore binary payloads with type: %s\n", contentType)
 			}
 
 			return resp
@@ -205,8 +206,8 @@ func main() {
 		Handler: proxy,
 	}
 
-	log.Printf("[START] Waiting for encryption traffic...")
+	fmt.Println("[START] Waiting for encryption traffic...")
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("[FATAL] Failed to run proxy server: %v", err)
+		fmt.Printf("[FATAL] Failed to run proxy server: %v", err)
 	}
 }

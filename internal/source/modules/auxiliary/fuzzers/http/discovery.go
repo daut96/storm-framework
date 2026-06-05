@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -38,7 +37,7 @@ func initDynamicRegex(filePath string) error {
 func loadWordlist(path string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("Failed to read wordlist => %v\n", err)
+		fmt.Errorf("Failed to read wordlist => %v\n", err)
 		return
 	}
 	defer file.Close()
@@ -47,7 +46,6 @@ func loadWordlist(path string) {
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" && !strings.HasPrefix(line, "#") {
-			// PERBAIKAN: Gunakan tanda kurung biasa untuk fungsi
 			SubmitJob(line, "WORDLIST")
 		}
 	}
@@ -60,7 +58,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		log.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
+		fmt.Errorf("[ERROR] Failed to perform basic crawl => %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -69,7 +67,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
-		log.Printf("[ERROR] Failed to parse base URL => %v\n", err)
+		fmt.Errorf("[ERROR] Failed to parse base URL => %v\n", err)
 		return
 	}
 

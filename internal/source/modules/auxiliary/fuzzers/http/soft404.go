@@ -89,52 +89,40 @@ func calculateSimilarity(s1, s2 string) float64 {
 }
 
 // 3. FUNGSI EVALUASI UTAMA (Dipanggil oleh Worker)
-func isHeuristicSoft404(currentHTML string) bool {
+func isHeuristicSoft404(currentStatusCode int, currentHTML string) bool {
+	// MAKRO STEP 1: Fast Fail (Layer 1)
+	isPotentialAnomaly := false
+	for _, baseline := range Soft404Baselines {
+		if currentStatusCode == baseline.StatusCode {
+			isPotentialAnomaly = true
+			break
+		}
+	}
+
+	// Jika status code target murni valid dan tidak ada di daftar profil kalibrasi, 
+	// langsung buang! Hemat jutaan cycle CPU.
+	if !isPotentialAnomaly {
+		return false
+	}
+
+	// MAKRO STEP 2: Single Extraction & Keyword Check (Layer 2)
 	current := extractFeaturesRobust(currentHTML)
-	errorKeywords := []string{
-        "404",
-        "not found",
-        "page not found",
-        "resource not found",
-        "file not found",
-        "document not found",
-        "content not found",
-
-        "does not exist",
-        "doesn't exist",
-        "page does not exist",
-        "page doesn't exist",
-
-        "cannot find",
-        "can't find",
-        "could not find",
-        "couldn't find",
-
-        "page unavailable",
-        "resource unavailable",
-        "requested resource",
-
-        "invalid url",
-        "invalid request",
-        "invalid path",
-        "unknown page",
-        "unknown route",
-
-        "oops",
-        "something went wrong",
-
-        // Indonesia
-        "tidak ditemukan",
-        "halaman tidak ditemukan",
-        "resource tidak ditemukan",
-        "konten tidak ditemukan",
-        "file tidak ditemukan",
-        "url tidak valid",
-        "permintaan tidak valid",
-        "halaman tidak tersedia",
-    }
 	
-	// Cek Keyword Error
+	errorKeywords := []string{
+		"404", "not found", "page not found", "resource not found",
+		"file not found", "document not found", "content not found",
+		"does not exist", "doesn't exist", "page does not exist", "page doesn't exist",
+		"cannot find", "can't find", "could not find", "couldn't find",
+		"page unavailable", "resource unavailable", "requested resource",
+		"invalid url", "invalid request", "invalid path", "unknown page", "unknown route",
+		"oops", "something went wrong",
+		// Indonesia
+		"tidak ditemukan", "halaman tidak ditemukan", "resource tidak ditemukan",
+		"konten tidak ditemukan", "file tidak ditemukan", "url tidak valid",
+		"permintaan tidak valid", "halaman tidak tersedia",
+	}
+
+	// Cek Keyword Error HANYA SEKALI
 	simKW := 0.0
 	currentLower := strings.ToLower(current.Title + " " + current.H1)
 	for _, kw := range errorKeywords {
@@ -144,21 +132,30 @@ func isHeuristicSoft404(currentHTML string) bool {
 		}
 	}
 
-	// Loop pengecekan terhadap 6 profil kalibrasi
+	// -------------------------------------------------------------
+	// MAKRO STEP 3: Heuristic Scoring (Layer 3)
+	// -------------------------------------------------------------
 	for _, baseline := range Soft404Baselines {
+		// Pastikan kita HANYA mencocokkan dengan baseline yang status code-nya sama
+		if currentStatusCode != baseline.StatusCode {
+			continue
+		}
+
 		simDOM := calculateSimilarity(current.DOMFingerprint, baseline.DOMFingerprint)
 		simText := calculateSimilarity(current.BodyText, baseline.BodyText)
 		simTitle := calculateSimilarity(current.Title, baseline.Title)
 		simH1 := calculateSimilarity(current.H1, baseline.H1)
 
 		finalScore := (simDOM * 40.0) + (simText * 25.0) + (simTitle * 15.0) + (simH1 * 10.0) + (simKW * 10.0)
-		
+
 		if finalScore >= 80.0 {
 			return true // Positif Soft 404
 		}
 	}
-	return false // Valid (Bukan Soft 404)
+
+	return false // Lolos dari semua jebakan baseline (Valid)
 }
+
 
 // 4. FUNGSI KALIBRASI (Dipindahkan dari worker.go)
 func recordProfile(client *http.Client, targetURL string, category string) {
@@ -167,9 +164,11 @@ func recordProfile(client *http.Client, targetURL string, category string) {
 	resp, err := client.Do(req)
 	if err != nil { return }
 	defer resp.Body.Close()
-
+	
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 5*1024*1024))
-	Soft404Baselines[category] = extractFeaturesRobust(string(body))
+	baseline := extractFeaturesRobust(string(body))
+    baseline.StatusCode = resp.StatusCode
+    Soft404Baselines[category] = baseline
 }
 
 func advancedCalibration(client *http.Client, baseURL string) {

@@ -59,9 +59,19 @@
   Tool Suite for Information Gathering and Initial Vulnerability Analysis.
 </p>
 
+---
+
 ### 🚀 Introduction
 
 **Storm-Framework** is a cyber tool suite specifically designed to assist cybersecurity professionals, bug bounty hunters, and researchers in the cybersecurity phase **information gathering (reconnaissance)** and **initial vulnerability analysis**. This tool aims to simplify the initial steps in the penetration testing process (pentest).
+
+### ⚙️ Arshitecture
+
+See the explanation about **storm framework architecture** in docs or in [ARCHITECTURE](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/ARCHITECTURE.md)
+
+We explain the essence so that it is easier to understand and not ambiguous, perhaps we do not explain some of the other logic because we are not yet sure about its maturity. But don't worry, we will continue to update it little by little in the future.
+
+---
 
 ### ⚠️ Important Warning & Legal Disclaimer
 
@@ -83,6 +93,8 @@ Developer **NO** responsible for any damage, loss, or illegal actions arising fr
 
 > **UNAUTHORIZED USE IS ILLEGAL. Use with caution and at your own risk.**
 
+---
+
 ## Installation
 
 ### Recommended installation
@@ -93,11 +105,14 @@ We recommend the standard installation provided:
 - [Installation Docker](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_DOCKER.md)
 - [Installation Termux](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_TERMUX.md)
 
+
+
 ## Using Storm
 
 To get started with Storm:
 
 **Start `storm`:** This is the main interface for interacting with Storm.
+
 
 ## Communication and Questions
 
@@ -107,9 +122,13 @@ For questions or suggestions, etc:
 - Send [GitHub issues](https://github.com/StormWorld0/storm-framework/issues) for bug reports and feature requests.
 - Follow [@elzyone](https://x.com/elzyone) for X or [@zxelzy](https://github.com/zxelzy) for github account.
 
+
+
 ### 📖 Wiki
 
 In the wiki where we explain various feature logic and others, you can read about it at [wiki](https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki)
+
+
 
 ### 🤝 Contributing 
 

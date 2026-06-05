@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 )
 
 
@@ -74,7 +73,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 				// Cek apakah status code-nya sama dengan salah satu profil jebakan
 				if statusCode == profile.StatusCode {
 					// Lakukan pengecekan berlapis
-					if isHeuristicSoft404(currentBodyString) {
+					if isHeuristicSoft404(statusCode, currentBodyString) {
 						isSoft404 = true
 						break // Langsung keluar loop, halaman ini positif sampah!
 					}

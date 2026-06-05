@@ -21,17 +21,16 @@ type CrawlJob struct {
 }
 
 // Soft 404 detection
-type Soft404Profile struct {
-	StatusCode  int
-	Size        int64
-	WordCount   int
-	Fingerprint string
+type HeuristicBaseline struct {
+	DOMFingerprint string
+	BodyText       string
+	Title          string
+	H1             string
 }
-var Soft404Monsters map[string]Soft404Profile
+var Soft404Baselines map[string]HeuristicBaseline
 
 // Regex / Sync / Max Goroutine
 var linkFinderEngine *regexp.Regexp
-var tagRegex = regexp.MustCompile(`<[^>]+>`)
 var visitedMap sync.Map
 var jsParseSemaphore = make(chan struct{}, 50)
 

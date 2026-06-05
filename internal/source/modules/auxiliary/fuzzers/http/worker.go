@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,58 +11,6 @@ import (
 	"time"
 )
 
-func recordProfile(client *http.Client, targetURL string, category string) {
-	req, _ := http.NewRequest("GET", targetURL, nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0")
-	
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("[!] Failed category calibration => %s : %v\n", category, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	safeReader := io.LimitReader(resp.Body, 5*1024*1024)
-	body, _ := io.ReadAll(safeReader)
-	bodyString := string(body)
-
-	// Simpan profil anomali ke dalam memori global
-	Soft404Monsters[category] = Soft404Profile{
-		StatusCode:  resp.StatusCode,
-		Size:        int64(len(body)),
-		WordCount:   len(strings.Fields(bodyString)),
-		Fingerprint: getHTMLStructureFingerprint(bodyString),
-	}
-	fmt.Printf("[INFO] Calibration 404 => Status: %d | Size: %d | Word: %d\n", 
-		resp.StatusCode, len(body), len(strings.Fields(bodyString)))
-}
-
-func advancedCalibration(client *http.Client, baseURL string) {
-	// Inisialisasi Map Global
-	Soft404Monsters = make(map[string]Soft404Profile)
-	
-	// Root dengan ekstensi statis
-	probe1 := fmt.Sprintf("%sanomaly_storm_%d.html", baseURL, time.Now().Unix())
-	recordProfile(client, probe1, "first anomaly")
-
-	// Rute bersarang / multi-level
-	probe2 := fmt.Sprintf("%sfastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano())
-	recordProfile(client, probe2, "second anomaly")
-
-	// Subfolder multi-level file
-	probe3 := fmt.Sprintf("%sbj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano())
-	recordProfile(client, probe3, "third anomaly")
-
-	// Root tanpa ekstensi
-	probe4 := fmt.Sprintf("%sushqrt_%d", baseURL, time.Now().Unix())
-	recordProfile(client, probe4, "fourth anomaly")
-
-	probe5 := fmt.Sprintf("%s0xjktt99/%d", baseURL, time.Now().Unix())
-	recordProfile(client, probe5, "fifth anomaly")
-
-	probe6 := fmt.Sprintf("%s00PBB190/%dh2PP.html", baseURL, time.Now().Unix())
-	recordProfile(client, probe6, "sixth anomaly")
-}
 
 // Parameter 'jobs' dihapus, worker membaca langsung dari WorkerQueue global
 func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult, wg *sync.WaitGroup) {
@@ -72,7 +19,7 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
-		log.Printf("[FATAL] Worker engine failed to parse Base URL: %v", err)
+		fmt.Printf("[FATAL] Worker engine failed to parse Base URL: %v", err)
 		return
 	}
 
@@ -123,11 +70,11 @@ func worker(client *http.Client, baseURL string, results chan<- DiagnosticResult
 			logType := "Valid"
 			isSoft404 := false
 			
-			for _, profile := range Soft404Monsters {
+			for _, profile := range Soft404Baselines {
 				// Cek apakah status code-nya sama dengan salah satu profil jebakan
 				if statusCode == profile.StatusCode {
-					// Lakukan pengecekan berlapis (Size ATAU Word Count ATAU Fuzzy HTML)
-					if size == profile.Size || currentWordCount == profile.WordCount || isSoft404Fuzzy(currentBodyString, profile.Fingerprint) {
+					// Lakukan pengecekan berlapis
+					if isHeuristicSoft404(currentBodyString) {
 						isSoft404 = true
 						break // Langsung keluar loop, halaman ini positif sampah!
 					}

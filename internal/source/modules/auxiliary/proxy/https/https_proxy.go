@@ -7,6 +7,8 @@ import (
 	"flag"
 	"io"
 	"fmt"
+	"log"
+	"os"
 	"net/http"
 	"net/http/httputil"
 	"strings"

@@ -73,7 +73,7 @@ def execute(options):
         socket.gethostbyname(target_domain)
         for record_type in DNS_RECORDS:
             try:
-                answers = resolver.resolve(target_domain, record_type)
+                answers = resolver.resolve(target_domain, record_type, tcp=True)
                 smf.printf(f"{C.MENU} \n[{record_type} Records]:")
                 for rdata in answers:
                     if record_type == "TXT":

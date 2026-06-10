@@ -67,7 +67,7 @@
 
 ### ⚙️ Arshitecture
 
-See the explanation about **storm framework architecture** in docs or in [ARCHITECTURE](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/ARCHITECTURE.md)
+See the explanation about **storm framework flow** in docs or in [FLOW](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/FLOW.md)
 
 We explain the essence so that it is easier to understand and not ambiguous, perhaps we do not explain some of the other logic because we are not yet sure about its maturity. But don't worry, we will continue to update it little by little in the future.
 

@@ -95,13 +95,14 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 					}
 
 					pathOnly := resolvedURL.Path
-					if pathOnly == "" {
+					cleanPath := strings.TrimPrefix(pathOnly, "/")
+					if cleanPath == "" {
 						continue
 					}
 
 					// OPTIMASI: Langsung lempar ke SubmitJob. 
 					// Deduplikasi akan diurus oleh Central Dispatcher!
-					SubmitJob(pathOnly, "HTML")
+					SubmitJob(cleanPath, "HTML")
 				}
 			}
 		}
@@ -177,7 +178,8 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 		}
 
 		pathOnly := finalAbsoluteURL.Path
-		lowerPath := strings.ToLower(pathOnly)
+		cleanPath := strings.TrimPrefix(pathOnly, "/")
+		lowerPath := strings.ToLower(cleanPath)
 
 		if lowerPath == "" ||
 			strings.HasSuffix(lowerPath, ".css") ||
@@ -196,6 +198,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 
 		// OPTIMASI: Langsung lempar temuan JS ini ke Central Dispatcher!
 		// Pekerjaan HTTP Request dan pengecekan file .js rekursif akan diserahkan kembali ke pasukan Worker.
-		SubmitJob(pathOnly, "JS")
+		SubmitJob(cleanPath, "JS")
 	}
 }

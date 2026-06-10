@@ -65,11 +65,17 @@
 
 **Storm-Framework** is a cyber tool suite specifically designed to assist cybersecurity professionals, bug bounty hunters, and researchers in the cybersecurity phase **information gathering (reconnaissance)** and **initial vulnerability analysis**. This tool aims to simplify the initial steps in the penetration testing process (pentest).
 
-### ⚙️ Arshitecture
+### ⚙️ FLOW
 
-See the explanation about **storm framework flow** in docs or in [FLOW](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/FLOW.md)
+See the explanation about **storm framework flow** in docs or in [FLOW](https://github.com/StormWorld0/storm-framework/blob/main/FLOW.md)
 
 We explain the essence so that it is easier to understand and not ambiguous, perhaps we do not explain some of the other logic because we are not yet sure about its maturity. But don't worry, we will continue to update it little by little in the future.
+
+### 🗺️ TREE
+
+To see **storm framework structure** clearly and completely, we made it in [TREE](https://github.com/StormWorld0/storm-framework/blob/main/TREE.md) you can see it.
+
+TREE is used to see the complete structure of the Storm Framework so that it is easier to map directly without having to do it `tree` manual in **CLI**, It's also good for knowledge from the basics to the deepest subfolders.
 
 ---
 

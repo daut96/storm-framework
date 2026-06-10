@@ -113,7 +113,7 @@ def output_stream(line: str) -> str:
 
     # Normal info detection
     if "[INFO]" in clean_line:
-        return f"{CC.YELLOW}{clean_line}{CC.RESET}\n"
+        return f"{CC.YELLOW}{clean_line}{CC.RESET}\n\n"
 
     # Detection error
     if "[ERROR]" in clean_line:

@@ -1,3 +1,10 @@
+# Storm Framework Structure
+
+TREE.md is the entire structure of the Storm Framework that is `tree -d -I ".git|__pycache__"` for the deepest knowledge of folder & subfolder mapping.
+
+> [!IMPORTANT]
+> Updated regularly
+
 ```bash
 .
 ├── apps

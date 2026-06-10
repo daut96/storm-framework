@@ -168,21 +168,25 @@ func recordProfile(client *http.Client, targetURL string, category string) {
     baseline.StatusCode = resp.StatusCode  
     Soft404Baselines[category] = baseline
 
+	fmt.Printf("[INFO] Soft 404 Detected => %d >> %d", category, resp.StatusCode)
+
 }
 
 func advancedCalibration(client *http.Client, baseURL string) {
+	fmt.Printf("[INFO] Starting testing 404...")
     Soft404Baselines = make(map[string]HeuristicBaseline)
 
     probes := map[string]string{  
-	    "first anomaly":  fmt.Sprintf("%sanomaly_storm_%d.html", baseURL, time.Now().Unix()),  
-	    "second anomaly": fmt.Sprintf("%sfastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano()),  
-	    "third anomaly":  fmt.Sprintf("%sbj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano()),  
-	    "fourth anomaly": fmt.Sprintf("%sushqrt_%d", baseURL, time.Now().Unix()),  
-	    "fifth anomaly":  fmt.Sprintf("%s0xjktt99/%d", baseURL, time.Now().Unix()),  
-	    "sixth anomaly":  fmt.Sprintf("%s00PBB190/%dh2PP.html", baseURL, time.Now().Unix()),  
+	    "1":  fmt.Sprintf("%sanomaly_storm_%d.html", baseURL, time.Now().Unix()),  
+	    "2": fmt.Sprintf("%sfastj/anomaly/%dq17rrp", baseURL, time.Now().UnixNano()),  
+	    "3":  fmt.Sprintf("%sbj4l40krd/yyanon/%d1.html", baseURL, time.Now().UnixNano()),  
+	    "4": fmt.Sprintf("%sushqrt_%d", baseURL, time.Now().Unix()),  
+	    "5":  fmt.Sprintf("%s0xjktt99/%d", baseURL, time.Now().Unix()),  
+	    "6":  fmt.Sprintf("%s00PBB190/%dh2PP.html", baseURL, time.Now().Unix()),  
     }  
 
-    for category, url := range probes {  
+    for category, url := range probes {
 	    recordProfile(client, url, category)  
     }
+	fmt.Printf("[INFO] Testing 404 done")
 }

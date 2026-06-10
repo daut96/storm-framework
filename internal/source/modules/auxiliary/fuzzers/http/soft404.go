@@ -167,13 +167,9 @@ func recordProfile(client *http.Client, targetURL string, category string) {
     baseline := extractFeaturesRobust(string(body))  
     baseline.StatusCode = resp.StatusCode  
     Soft404Baselines[category] = baseline
-
-	fmt.Printf("[INFO] Soft 404 Detected => %s >> %d", category, resp.StatusCode)
-
 }
 
 func advancedCalibration(client *http.Client, baseURL string) {
-	fmt.Printf("[INFO] Starting testing 404...")
     Soft404Baselines = make(map[string]HeuristicBaseline)
 
     probes := map[string]string{  
@@ -188,5 +184,4 @@ func advancedCalibration(client *http.Client, baseURL string) {
     for category, url := range probes {
 	    recordProfile(client, url, category)  
     }
-	fmt.Printf("[INFO] Testing 404 done")
 }

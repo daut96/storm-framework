@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="https://github.com/StormWorld0/storm-framework/blob/main/assets/images/Architecture_storm.png">
+  <img src="https://github.com/StormWorld0/storm-framework/blob/main/assets/images/flow_storm.png">
 </p>
 
-<h1 align="center">⚡ Storm Framework Architecture</h1>
+<h1 align="center">⚡ Storm Framework FLOW</h1>
 
 Storm is a web-based framework **Stateful REPL (Read-Eval-Print Loop)** designed with an isolated modular architecture. This framework uses SQLite as *embedded database* for state management, session tracking, and internal logging, ensuring data consistency across the execution cycle.
 
 ---
 
-## 🏗️ Architecture & Booting Sequence
+## 🏗️ FLOW & Booting Sequence
 
 When the command `storm` executed, A *global wrapper* will trigger the script *startup* on *root directory* to start the process *booting* a system consisting of 4 critical stages:
 

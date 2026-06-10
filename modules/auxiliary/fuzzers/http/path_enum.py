@@ -110,7 +110,7 @@ def output_stream(line: str) -> str:
     # Detect COMBO or JIT mode info
     if "[INFO] Mode =>" in clean_line:
         return f"{CC.YELLOW}{clean_line}{CC.RESET}\n\n"
-        
+
     # Normal info detection
     if "[INFO]" in clean_line:
         return f"{CC.YELLOW}{clean_line}{CC.RESET}\n"

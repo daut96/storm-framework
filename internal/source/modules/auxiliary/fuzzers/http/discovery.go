@@ -182,10 +182,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 		}
 
 		pathOnly := finalAbsoluteURL.Path
-		if idx := strings.IndexAny(pathOnly, "?#"); idx != -1 {
-			pathOnly = pathOnly[:idx]
-		}
-
 		cleanPath := strings.TrimPrefix(pathOnly, "/")
 		lowerPath := strings.ToLower(cleanPath)
 

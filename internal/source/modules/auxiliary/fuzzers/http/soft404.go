@@ -168,7 +168,7 @@ func recordProfile(client *http.Client, targetURL string, category string) {
     baseline.StatusCode = resp.StatusCode  
     Soft404Baselines[category] = baseline
 
-	fmt.Printf("[INFO] Soft 404 Detected => %d >> %d", category, resp.StatusCode)
+	fmt.Printf("[INFO] Soft 404 Detected => %s >> %d", category, resp.StatusCode)
 
 }
 

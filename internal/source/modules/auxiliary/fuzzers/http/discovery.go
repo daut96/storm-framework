@@ -17,17 +17,17 @@ import (
 func initDynamicRegex(filePath string) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("cannot read file: %w", err)
+		return fmt.Printf("cannot read file: %w", err)
 	}
 
 	rawRegex := strings.TrimSpace(string(content))
 	if rawRegex == "" {
-		return fmt.Errorf("regex file is empty")
+		return fmt.Printf("regex file is empty")
 	}
 
 	compiled, err := regexp.Compile(rawRegex)
 	if err != nil {
-		return fmt.Errorf("invalid regex syntax: %w", err)
+		return fmt.Printf("invalid regex syntax: %w", err)
 	}
 
 	linkFinderEngine = compiled
@@ -37,7 +37,7 @@ func initDynamicRegex(filePath string) error {
 func loadWordlist(path string) {
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Errorf("Failed to read wordlist => %v\n", err)
+		fmt.Printf("Failed to read wordlist => %v\n", err)
 		return
 	}
 	defer file.Close()
@@ -58,7 +58,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		fmt.Errorf("[ERROR] Failed to perform basic crawl => %v\n", err)
+		fmt.Printf("[ERROR] Failed to perform basic crawl => %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -67,7 +67,7 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
-		fmt.Errorf("[ERROR] Failed to parse base URL => %v\n", err)
+		fmt.Printf("[ERROR] Failed to parse base URL => %v\n", err)
 		return
 	}
 
@@ -95,18 +95,13 @@ func discoverPathsAutomatically(client *http.Client, baseURL string) {
 					}
 
 					pathOnly := resolvedURL.Path
-					if idx := strings.IndexAny(pathOnly, "?#"); idx != -1 {
-						pathOnly = pathOnly[:idx]
-					}
-
-					cleanPath := strings.TrimPrefix(pathOnly, "/")
-					if cleanPath == "" {
+					if pathOnly == "" {
 						continue
 					}
 
 					// OPTIMASI: Langsung lempar ke SubmitJob. 
 					// Deduplikasi akan diurus oleh Central Dispatcher!
-					SubmitJob(cleanPath, "HTML")
+					SubmitJob(pathOnly, "HTML")
 				}
 			}
 		}
@@ -182,8 +177,7 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 		}
 
 		pathOnly := finalAbsoluteURL.Path
-		cleanPath := strings.TrimPrefix(pathOnly, "/")
-		lowerPath := strings.ToLower(cleanPath)
+		lowerPath := strings.ToLower(pathOnly)
 
 		if lowerPath == "" ||
 			strings.HasSuffix(lowerPath, ".css") ||
@@ -202,6 +196,6 @@ func extractFromJS(client *http.Client, jsURL string, parsedBase *url.URL) {
 
 		// OPTIMASI: Langsung lempar temuan JS ini ke Central Dispatcher!
 		// Pekerjaan HTTP Request dan pengecekan file .js rekursif akan diserahkan kembali ke pasukan Worker.
-		SubmitJob(cleanPath, "JS")
+		SubmitJob(pathOnly, "JS")
 	}
 }

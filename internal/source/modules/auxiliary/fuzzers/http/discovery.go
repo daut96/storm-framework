@@ -17,17 +17,17 @@ import (
 func initDynamicRegex(filePath string) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Printf("cannot read file: %w", err)
+		return fmt.Errorf("cannot read file: %w", err)
 	}
 
 	rawRegex := strings.TrimSpace(string(content))
 	if rawRegex == "" {
-		return fmt.Printf("regex file is empty")
+		return fmt.Errorf("regex file is empty")
 	}
 
 	compiled, err := regexp.Compile(rawRegex)
 	if err != nil {
-		return fmt.Printf("invalid regex syntax: %w", err)
+		return fmt.Errorf("invalid regex syntax: %w", err)
 	}
 
 	linkFinderEngine = compiled

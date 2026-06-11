@@ -79,28 +79,6 @@ TREE is used to see the complete structure of the Storm Framework so that it is 
 
 ---
 
-### ⚠️ Important Warning & Legal Disclaimer
-
-**PLEASE READ BEFORE USE!**
-
-This tool was developed for the purpose only:
-
-* **Education**
-* **Study**
-* **Legal and Licensed Penetration Testing**
-
-#### User Responsibilities
-
-Developer **NO** responsible for any damage, loss, or illegal actions arising from the use of this tool. The user is fully responsible for the following:
-
-1.  **Legal Compliance:** Comply with all applicable local, national and international laws and regulations.
-2.  **Written Permission:** Get **written and explicit permission** from the system or network owner before performing any testing using this tool.
-3.  **Ethical Use:** Use this tool ethically and responsibly.
-
-> **UNAUTHORIZED USE IS ILLEGAL. Use with caution and at your own risk.**
-
----
-
 ## Installation
 
 ### Recommended installation
@@ -110,7 +88,6 @@ We recommend the standard installation provided:
 - [Installation Venv](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_VENV.md)
 - [Installation Docker](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_DOCKER.md)
 - [Installation Termux](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_TERMUX.md)
-
 
 
 ## Using Storm

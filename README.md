@@ -79,8 +79,6 @@ TREE is used to see the complete structure of the Storm Framework so that it is 
 
 ---
 
-## Installation
-
 ### Recommended installation
 
 We recommend the standard installation provided: 

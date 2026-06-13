@@ -47,7 +47,8 @@ def boot():
         smf.printf("\n[*] Booting successfully stopped.")
         sys.exit(2)
     except Exception as e:
-        smf.printf("[*] There was a failure while booting =>", e, file=sys.stderr, flush=True)
+        smf.printf(
+            "[*] There was a failure while booting =>", e, file=sys.stderr, flush=True
+        )
         smf.printd("Failed to boot Storm Framework", e, level="CRITICAL")
         sys.exit(1)
-

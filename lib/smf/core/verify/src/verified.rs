@@ -152,6 +152,7 @@ fn main() {
                 // Priority 2: Modified or Lost Files
                 println!("\nSTATUS: WARNING");
                 println!("MESSAGE: Integrity mismatch. Run (storm --update) to re-sign.\n");
+                std::process::exit(1);
             }
             (false, false) => {
                 unreachable!() 

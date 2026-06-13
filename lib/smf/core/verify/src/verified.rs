@@ -3,10 +3,9 @@
 // See LICENSE file in the project root for full license information.
 use sha2::{Sha256, Digest};
 use std::fs;
-use std::io::{self, Write};
+use std::io;
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
-use std::time::{Instant, Duration};
 use walkdir::WalkDir;
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
@@ -83,12 +82,6 @@ fn main() {
         ".Trashes"
     ];
 
-    // --- SETUP STATE FOR UI SPINNER ---
-    let spinner_frames = ['|', '/', '-', '\\'];
-    let mut spinner_idx = 0;
-    let mut last_render = Instant::now();
-    let render_interval = Duration::from_millis(80);
-
     for entry in WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
         if path.is_file() {
@@ -119,21 +112,8 @@ fn main() {
                 }
                 None => { untracked_files.push(clean_path.to_string()); }
             }
-
-            // --- UI EXECUTION THROTTLING (SILENT LOG) ---
-            if last_render.elapsed() >= render_interval {
-                print!("\r\x1b[K[*] Starting Storm Framework ({})", spinner_frames[spinner_idx]);
-                io::stdout().flush().unwrap();
-                
-                spinner_idx = (spinner_idx + 1) % spinner_frames.len();
-                last_render = Instant::now();
-            }
         }
     }
-
-    // --- CLEANUP TERMINAL ---
-    print!("\r\x1b[K");
-    io::stdout().flush().unwrap();
 
     let mut missing_files = Vec::new();
     for json_path in manifest.files.keys() {

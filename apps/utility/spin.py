@@ -33,3 +33,37 @@ class StormSpin:
 
         sys.stdout.write("\r\033[K")
         sys.stdout.flush()
+
+
+# Spinner used for booting so that it looks stuck or moving
+# without visual loading it will be difficult to distinguish whether it is stuck or running
+class SpinBoot:
+    def __init__(self):
+        self._done = False
+        self._thread = None
+
+    def _animate(self):
+        chars = ['|', '/', '-', '\\'];
+        while not self._done:
+            for cursor in chars:
+                if self._done:
+                    break
+
+                sys.stdout.write(f"\r[*] Starting Storm Framework ({cursor}) ")
+                sys.stdout.flush()
+                time.sleep(0.08)
+
+    def __enter__(self):
+        self._done = False
+        self._thread = threading.Thread(target=self._animate)
+        self._thread.daemon = True
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._done = True
+        if self._thread:
+            self._thread.join()
+
+        sys.stdout.write("\r\033[K")
+        sys.stdout.flush()

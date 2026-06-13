@@ -183,7 +183,7 @@ fn main() {
             (true, true) => {
                 // Priority 1: Compound Threat (Injection + Modification/Loss)
                 println!("\n[*] STATUS: CRITICAL");
-                println!("[*] MESSAGE: Compound threat detected (File Injection + Tempering).");
+                println!("[*] MESSAGE: Compound threat detected (File Injection + Tampering).");
                 println!("[*] ACTION:  1. Delete the files that injection detects.");
                 println!("             2. Run (storm --update) to re-sign and back to default.");
                 std::process::exit(203);

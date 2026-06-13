@@ -125,18 +125,40 @@ fn main() {
     if !modified_files.is_empty() || !missing_files.is_empty() || !untracked_files.is_empty() {
         println!("\n\n[!] INTEGRITY BREACH DETECTED [!]");
         for f in &modified_files { println!("    [MODIFIED]  -> {}", f); }
-        for f in &missing_files { println!("    [MISSING]  -> {}", f); }
-        for f in &untracked_files { println!("    [UNTRACKED]  -> {}", f); }
+        for f in &missing_files { println!("    [MISSING]   -> {}", f); }
+        for f in &untracked_files { println!("    [INJECTION] -> {}", f); }
 
-        if !untracked_files.is_empty() {
-            println!("\nSTATUS: CRITICAL");
-            println!("MESSAGE: File injection detected");
-            std::process::exit(203);
-        } else {
-            println!("\nSTATUS: WARNING");
-            println!("MESSAGE: Run the command (storm --update) to re-sign");
+        // Threat vector extraction into boolean flags
+        let has_injection = !untracked_files.is_empty();
+        let has_tampering = !modified_files.is_empty() || !missing_files.is_empty();
+
+        // Exclusive evaluation of the severity matrix (Severity Matrix)
+        match (has_injection, has_tampering) {
+            (true, true) => {
+                // Priority 1: Compound Threat (Injection + Modification/Loss)
+                println!("\nSTATUS: CRITICAL");
+                println!("MESSAGE: Compound threat detected (File Injection + Tampering).");
+                println!("ACTION:  1. Quarantine Injection files.");
+                println!("         2. Run (storm --update) to re-sign authorized modifications.");
+                std::process::exit(203);
+            }
+            (true, false) => {
+                // Priority 1: Pure Injection
+                println!("\nSTATUS: CRITICAL");
+                println!("MESSAGE: File injection detected.");
+                std::process::exit(203);
+            }
+            (false, true) => {
+                // Priority 2: Modified or Lost Files
+                println!("\nSTATUS: WARNING");
+                println!("MESSAGE: Integrity mismatch. Run (storm --update) to re-sign.\n");
+            }
+            (false, false) => {
+                unreachable!() 
+            }
         }
     } else {
         // just leave it empty and fill it with python
     }
+    
 }

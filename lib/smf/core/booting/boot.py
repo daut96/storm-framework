@@ -5,33 +5,42 @@ import time
 import sys
 
 from apps.utility.verify import *
+from apps.utility.spin import SpinBoot
+
 from lib.roar.plugin_api import plugin
 from lib.roar.cache import cache_modules as cache
 from lib.roar.callbin import manager
 
 
 def boot():
-    smf.printd("Boot starting...", level="INFO")
+    smf.printd("Booting Storm Framework", level="INFO")
 
-    # Check core startup security
-    check_critical_files()
-    smf.printd("Check core success", level="INFO")
+    try:
+        with SpinBoot():
+            # Check core startup security
+            smf.printd("System synchronization is running", level="INFO")
+            check_critical_files()
+        
+            # Plugin Daemon Service Manager
+            smf.printd("Plugin daemon service is running", level="INFO")
+            plugin.boot()
 
-    # Boot Plugin Manager
-    plugin.boot()
-    smf.printd("Boot plugin successfuls", level="INFO")
+            # Cache modules synchronization
+            smf.printd("Modules synchronization is running", level="INFO")
+            cache.sync_modules()
 
-    # Cache modules synchronization
-    cache.sync_modules()
-    smf.printd("Module synchronization successful", level="INFO")
+            # Cache Binary synchronization
+            smf.printd("Binary synchronization is running", level="INFO")
+            manager.sync_bin()
 
-    # Cache binary synchronization
-    manager.sync_bin()
-    smf.printd("Binary synchronization successful", level="INFO")
-
-    # Verify file integrity
-    run_verif()
-    smf.printd("Verification of integrity check success", level="INFO")
+            # Verify file integrity
+            smf.printd("Integrity verification is running", level="INFO")
+            run_verif()
+            
+    except Exception as e:
+        smf.printf("There was a failure while booting, check SQLite for errors.")
+        smf.printd("Failed to boot Storm Framework", e, level="CRITICAL")
+        sys.exit(200)
 
     # Countdown to pause and start
     try:

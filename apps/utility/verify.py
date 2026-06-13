@@ -24,7 +24,7 @@ def run_verif():
         # Granular Return Code Evaluation
         if result.returncode == 203:
             # Priority 1: Pure Injection or Compound Threat (Injection + Tampering)
-            smf.printf("\n[!] CRITICAL => Reinstall Storm for security.")
+            smf.printf("\n[!] CRITICAL => Integrity detects file injection anomalies against the internal ecosystem")
             smf.printd(
                 "Integrity detects file Injection danger", result, level="CRITICAL"
             )

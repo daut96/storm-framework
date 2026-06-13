@@ -33,7 +33,7 @@ def run_verif():
         elif result.returncode != 0:
             # Priority 2: Pure tampering (Modified / Missing files)
             smf.printf(
-                "\n[!] WARNING => Integrity mismatch. Please run (storm --update)."
+                "\n[!] WARNING => System refuses to boot in favor of internal integration"
             )
             smf.printd(
                 "Integrity detects modified/missing files", result, level="WARNING"

@@ -55,4 +55,3 @@ def boot():
             time.sleep(1)
     except KeyboardInterrupt:
         sys.exit(2)
-            

@@ -128,13 +128,13 @@ fn main() {
         for f in &missing_files { println!("    [MISSING]  -> {}", f); }
         for f in &untracked_files { println!("    [UNTRACKED]  -> {}", f); }
 
-        if !modified_files.is_empty() || !missing_files.is_empty() {
-            println!("\nSTATUS: WARNING");
-            println!("MESSAGE: Run the command (storm --update) to re-sign");
-        } else {
+        if !untracked_files.is_empty() {
             println!("\nSTATUS: CRITICAL");
             println!("MESSAGE: File injection detected");
             std::process::exit(203);
+        } else {
+            println!("\nSTATUS: WARNING");
+            println!("MESSAGE: Run the command (storm --update) to re-sign");
         }
     } else {
         // just leave it empty and fill it with python

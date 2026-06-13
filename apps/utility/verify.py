@@ -85,8 +85,7 @@ def validate_binary_core():
     # Binary check loop
     for file_name, is_found in found_map.items():
         if not is_found:
-            smf.printd("BINARY CORE MISSING", file_name, level="CRITICAL")
-            smf.printf("[!] Binary core missing =>", file_name)
+            print(f"[!] Binary core missing => {file_name}")
             failed = True
 
     return failed

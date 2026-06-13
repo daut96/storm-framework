@@ -21,21 +21,31 @@ def run_verif():
     try:  # Run verification
         result = subprocess.run([lib])
 
-        # Stop if the binary issues a command
-        if result.returncode != 0:
-            smf.printf("\n[!] INFO => Reinstall Storm for security.")
-            smf.printd(
-                "Integrity detects file Injection danger", result, level="CRITICAL"
-            )
+        # Granular Return Code Evaluation
+        if result.returncode == 203:
+            # Priority 1: Pure Injection or Compound Threat (Injection + Tampering)
+            smf.printf("\n[!] CRITICAL => Reinstall Storm for security.")
+            smf.printd("Integrity detects file Injection danger", result, level="CRITICAL")
+            sys.exit(result.returncode)
+            
+        elif result.returncode != 0:
+            # Priority 2: Pure tampering (Modified / Missing files)
+            smf.printf("\n[!] WARNING => Integrity mismatch. Please run (storm --update).")
+            smf.printd("Integrity detects modified/missing files", result, level="WARNING")
+            
+            # Disable boot sequence due to compromised integrity
             sys.exit(result.returncode)
 
+        # If returncode == 0, execution continues (Safe)
         return True
+
     except KeyboardInterrupt:
         return
     except Exception as e:
         smf.printd("INTEGRITY VERIFICATION", e, level="CRITICAL")
         smf.printf("[!] ERROR INTEGRITY CHECK =>", e, file=sys.stderr, flush=True)
         sys.exit(201)
+        
 
 
 # Check the binary integrity check file

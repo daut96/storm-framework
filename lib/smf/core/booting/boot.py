@@ -20,7 +20,7 @@ def boot():
             # Check core startup security
             smf.printd("System synchronization is running", level="INFO")
             check_critical_files()
-        
+
             # Plugin Daemon Service Manager
             smf.printd("Plugin daemon service is running", level="INFO")
             plugin.boot()
@@ -36,7 +36,7 @@ def boot():
             # Verify file integrity
             smf.printd("Integrity verification is running", level="INFO")
             run_verif()
-            
+
     except Exception as e:
         smf.printf("There was a failure while booting, check SQLite for errors.")
         smf.printd("Failed to boot Storm Framework", e, level="CRITICAL")

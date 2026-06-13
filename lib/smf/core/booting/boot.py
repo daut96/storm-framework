@@ -37,12 +37,6 @@ def boot():
             smf.printd("Integrity verification is running", level="INFO")
             run_verif()
 
-        # Countdown to pause and start
-        for i in range(5, 0, -1):
-            sys.stdout.write(f"\r[✓] Successfully Starting Storm Framework [{i}]")
-            sys.stdout.flush()
-            time.sleep(1)
-
     except KeyboardInterrupt:
         smf.printf("\n[*] Booting successfully stopped.")
         sys.exit(2)
@@ -52,3 +46,13 @@ def boot():
         )
         smf.printd("Failed to boot Storm Framework", e, level="CRITICAL")
         sys.exit(1)
+
+    try:
+        # Countdown to pause and start
+        for i in range(5, 0, -1):
+            sys.stdout.write(f"\r[✓] Successfully Starting Storm Framework [{i}]")
+            sys.stdout.flush()
+            time.sleep(1)
+    except KeyboardInterrupt;
+        sys.exit(2)
+            

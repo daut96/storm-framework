@@ -53,6 +53,6 @@ def boot():
             sys.stdout.write(f"\r[✓] Successfully Starting Storm Framework [{i}]")
             sys.stdout.flush()
             time.sleep(1)
-    except KeyboardInterrupt;
+    except KeyboardInterrupt:
         sys.exit(2)
             

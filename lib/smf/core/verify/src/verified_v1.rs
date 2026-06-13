@@ -5,10 +5,9 @@ use rayon::prelude::*;
 use sha2::{Sha256, Digest};
 use std::sync::{mpsc, Arc};
 use std::fs;
-use std::io::{self, Write};
+use std::io;
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
-use std::time::{Instant, Duration};
 use walkdir::{WalkDir, DirEntry};
 use serde::{Deserialize, Serialize};
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
@@ -144,12 +143,6 @@ fn main() {
         });
     });
 
-    // Setup state untuk UI Spinner
-    let spinner_frames = ['|', '/', '-', '\\'];
-    let mut spinner_idx = 0;
-    let mut last_render = Instant::now();
-    let render_interval = Duration::from_millis(80);
-
     // The main thread executes the UI loop smoothly.
     while let Ok(message) = rx.recv() {
         // 1. Kumpulkan state secara silent (tanpa mencetak angka)
@@ -166,22 +159,7 @@ fn main() {
                 untracked_files.push(path);
             }
         }
-
-        // 2. Render UI hanya ketika interval waktu tercapai (Throttling)
-        if last_render.elapsed() >= render_interval {
-            print!("\r\x1b[K[*] Starting Storm Framework ({})", spinner_frames[spinner_idx]);
-            io::stdout().flush().unwrap();
-            
-            // Rotasi frame spinner menggunakan modulo agar tidak out-of-bounds
-            spinner_idx = (spinner_idx + 1) % spinner_frames.len();
-            last_render = Instant::now(); // Reset timer
-        }
     }
-
-    // \r   : kembali ke kolom pertama
-    // \x1b[K : ANSI escape code untuk menghapus teks dari kursor sampai akhir baris
-    print!("\r\x1b[K");
-    io::stdout().flush().unwrap();
     
     // --- IDENTIFICATION OF MISSING FILES ---
     // The main thread still has access via the original manifest_files

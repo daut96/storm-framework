@@ -43,7 +43,7 @@ class SpinBoot:
         self._thread = None
 
     def _animate(self):
-        chars = ['|', '/', '-', '\\'];
+        chars = ["|", "/", "-", "\\"]
         while not self._done:
             for cursor in chars:
                 if self._done:

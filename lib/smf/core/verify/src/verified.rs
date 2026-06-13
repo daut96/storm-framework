@@ -138,7 +138,7 @@ fn main() {
                 // Priority 1: Compound Threat (Injection + Modification/Loss)
                 println!("\n[*] STATUS: CRITICAL");
                 println!("[*] MESSAGE: Compound threat detected (File Injection + Tempering).");
-                println!("[*] ACTION:  1. Delete the files that Injection detects.");
+                println!("[*] ACTION:  1. Delete the files that injection detects.");
                 println!("             2. Run (storm --update) to re-sign and back to default.");
                 std::process::exit(203);
             }
@@ -146,20 +146,19 @@ fn main() {
                 // Priority 1: Pure Injection
                 println!("\n[*] STATUS: CRITICAL");
                 println!("[*] MESSAGE: File injection detected.");
+                println!("[*] ACTION: Delete the files that injection detects OR Reinstall Storm Framework.")
                 std::process::exit(203);
             }
             (false, true) => {
                 // Priority 2: Modified or Lost Files
                 println!("\n[*] STATUS: WARNING");
-                println!("[*] MESSAGE: Integrity mismatch. Run (storm --update) to re-sign.");
+                println!("[*] MESSAGE: Integrity mismatch.")
+                println!("[*] ACTION: Run (storm --update) to re-sign and back to default.");
                 std::process::exit(1);
             }
             (false, false) => {
                 unreachable!() 
             }
         }
-    } else {
-        // just leave it empty and fill it with python
     }
-    
 }

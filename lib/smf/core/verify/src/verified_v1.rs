@@ -192,13 +192,13 @@ fn main() {
                 // Priority 1: Pure Injection
                 println!("\n[*] STATUS: CRITICAL");
                 println!("[*] MESSAGE: File injection detected.");
-                println!("[*] ACTION: Delete the files that injection detects OR Reinstall Storm Framework.")
+                println!("[*] ACTION: Delete the files that injection detects OR Reinstall Storm Framework.");
                 std::process::exit(203);
             }
             (false, true) => {
                 // Priority 2: Modified or Lost Files
                 println!("\n[*] STATUS: WARNING");
-                println!("[*] MESSAGE: Integrity mismatch.")
+                println!("[*] MESSAGE: Integrity mismatch.");
                 println!("[*] ACTION: Run (storm --update) to re-sign and back to default.");
                 std::process::exit(1);
             }

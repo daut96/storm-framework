@@ -24,7 +24,9 @@ def run_verif():
         # Stop if the binary issues a command
         if result.returncode != 0:
             smf.printf("\n[!] INFO => Reinstall Storm for security.")
-            smf.printd("Integrity detects file Injection danger", result, level="CRITICAL")
+            smf.printd(
+                "Integrity detects file Injection danger", result, level="CRITICAL"
+            )
             sys.exit(result.returncode)
 
         return True

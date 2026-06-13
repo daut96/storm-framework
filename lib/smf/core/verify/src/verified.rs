@@ -136,22 +136,22 @@ fn main() {
         match (has_injection, has_tampering) {
             (true, true) => {
                 // Priority 1: Compound Threat (Injection + Modification/Loss)
-                println!("\nSTATUS: CRITICAL");
-                println!("MESSAGE: Compound threat detected (File Injection + Tampering).");
-                println!("ACTION:  1. Quarantine Injection files.");
-                println!("         2. Run (storm --update) to re-sign authorized modifications.");
+                println!("\n[*] STATUS: CRITICAL");
+                println!("[*] MESSAGE: Compound threat detected (File Injection + Tempering).");
+                println!("[*] ACTION:  1. Delete the files that Injection detects.");
+                println!("             2. Run (storm --update) to re-sign and back to default.");
                 std::process::exit(203);
             }
             (true, false) => {
                 // Priority 1: Pure Injection
-                println!("\nSTATUS: CRITICAL");
-                println!("MESSAGE: File injection detected.");
+                println!("\n[*] STATUS: CRITICAL");
+                println!("[*] MESSAGE: File injection detected.");
                 std::process::exit(203);
             }
             (false, true) => {
                 // Priority 2: Modified or Lost Files
-                println!("\nSTATUS: WARNING");
-                println!("MESSAGE: Integrity mismatch. Run (storm --update) to re-sign.\n");
+                println!("\n[*] STATUS: WARNING");
+                println!("[*] MESSAGE: Integrity mismatch. Run (storm --update) to re-sign.");
                 std::process::exit(1);
             }
             (false, false) => {

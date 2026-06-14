@@ -51,7 +51,7 @@ class SpinBoot:
 
                 sys.stdout.write(f"\r[*] Starting Storm Framework ({cursor}) ")
                 sys.stdout.flush()
-                time.sleep(1)
+                time.sleep(0.15)
 
     def __enter__(self):
         self._done = False

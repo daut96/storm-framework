@@ -28,6 +28,7 @@ REQUIRED_OPTIONS = {
 }
 log_lock = threading.Lock()
 
+
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "[INFO]" in line:
@@ -35,7 +36,7 @@ def output_stream(line: str) -> str:
 
     if "FOUND" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"
-    
+
     return line
 
 
@@ -72,7 +73,7 @@ def execute(options):
                     with log_lock:
                         smf.printf(stream_line)
             pipe.close()
-            
+
         # Thread for parsing info/error (stderr)
         def read_stderr(pipe):
             for line in iter(pipe.readline, ""):

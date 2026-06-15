@@ -91,7 +91,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, foundCounter *int32, processedC
 			}
 
 			if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
-				fmt.Printf("FOUND => %d | %-30s | %s | %s\n", resp.StatusCode, j.URL, server, contentType)
+				fmt.Printf("FOUND => %d | %-30s | %s | %s", resp.StatusCode, j.URL, server, contentType)
 				atomic.AddInt32(foundCounter, 1)
 			}
 		}(job)
@@ -114,7 +114,7 @@ func main() {
 
 	file, err := os.Open(*wordlistFlag)
 	if err != nil {
-		fmt.Printf("Error opening wordlist: %v\n", err)
+		fmt.Printf("Error opening wordlist: %v", err)
 		os.Exit(1)
 	}
 	defer file.Close()
@@ -136,7 +136,7 @@ func main() {
 	// Kembalikan pointer pembacaan file ke indeks 0 (awal file) agar bisa di-stream kembali
 	_, err = file.Seek(0, 0)
 	if err != nil {
-		fmt.Printf("Error resetting wordlist file pointer: %v\n", err)
+		fmt.Printf("Error resetting wordlist file pointer: %v", err)
 		os.Exit(1)
 	}
 	// --------------------------------------------------------
@@ -173,7 +173,7 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Printf("Error while reading wordlist: %v\n", err)
+		fmt.Printf("Error while reading wordlist: %v", err)
 	}
 
 	close(jobs)
@@ -181,5 +181,5 @@ func main() {
 
 	// Kirim sinyal progres 100% di akhir untuk memastikan visualisasi Python penuh
 	fmt.Printf("PROGRESS => 100\n")
-	fmt.Printf("Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
+	fmt.Printf("Enumeration complete. Found %d active subdomain.", atomic.LoadInt32(&activeCount))
 }

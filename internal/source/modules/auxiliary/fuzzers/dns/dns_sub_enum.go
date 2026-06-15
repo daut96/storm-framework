@@ -112,7 +112,7 @@ func main() {
 		go worker(jobs, &wg, &activeCount)
 	}
 
-	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type")
+	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
 
 	// 2. Stream Reading file teks (O(1) Memory footprint)
 	scanner := bufio.NewScanner(file)

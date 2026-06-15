@@ -88,7 +88,7 @@ func main() {
 	flag.Parse()
 
 	if *domainFlag == "" || *wordlistFlag == "" {
-		fmt.Println("[!] Error: Parameters -d (domain) and -w (wordlist) are required.")
+		fmt.Println("Error: Parameters -d (domain) and -w (wordlist) are required.")
 		os.Exit(1)
 	}
 
@@ -97,7 +97,7 @@ func main() {
 
 	file, err := os.Open(*wordlistFlag)
 	if err != nil {
-		fmt.Printf("[!] Error opening wordlist: %v\n", err)
+		fmt.Printf("Error opening wordlist: %v\n", err)
 		os.Exit(1)
 	}
 	defer file.Close()
@@ -106,7 +106,7 @@ func main() {
 	var wg sync.WaitGroup
 	var activeCount int32 = 0
 
-	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
+	fmt.Printf("STATUS | URL | SERVER | Content-Type\n")
 
 	// Spawning Worker Pool
 	for i := 0; i < *concurrency; i++ {
@@ -132,13 +132,13 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Printf("[!] Error while reading wordlist: %v\n", err)
+		fmt.Printf("Error while reading wordlist: %v\n", err)
 	}
 
 	// Cleanup: Tutup channel dan tunggu goroutines selesai
 	close(jobs)
 	wg.Wait()
 
-	fmt.Printf("[✓] Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
+	fmt.Printf("Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
 }
 

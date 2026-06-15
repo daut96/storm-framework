@@ -61,7 +61,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, foundCounter *int32, processedC
 							break
 						}
 						if atomic.CompareAndSwapInt32(lastPct, currentLast, pct) {
-							fmt.Printf("PROGRESS => %d\n", pct)
+							fmt.Printf("PROGRESS => %d|%d|%d\n", pct, processed, totalJobs)
 							break
 						}
 					}

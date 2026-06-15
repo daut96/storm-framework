@@ -31,13 +31,16 @@ log_lock = threading.Lock()
 
 def output_stream(line: str) -> str:
     """Color log stdout"""
-    if "[INFO]" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}"
+    if "[INFO] =>" in line:
+        return f"{CC.YELLOW}{line}{CC.RESET}\n\n"
 
-    if "FOUND" in line:
-        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
+    if "FOUND =>" in line:
+        return f"[✓] {CC.GREEN}{line}{CC.RESET}\n"
 
-    return line
+    if "[*]" in line:
+        return f"\n{CC.YELLOW}{line}{CC.RESET}\n"
+
+    return f"{line}\n"
 
 
 def execute(options):
@@ -67,7 +70,7 @@ def execute(options):
         # Thread for parsing valid results (stdout)
         def read_stdout(pipe):
             for line in iter(pipe.readline, ""):
-                cleaned_line = line.strip()
+                cleaned_line = line.rstrip("\r\n")
                 if cleaned_line:
                     stream_line = output_stream(cleaned_line)
                     with log_lock:
@@ -77,10 +80,10 @@ def execute(options):
         # Thread for parsing info/error (stderr)
         def read_stderr(pipe):
             for line in iter(pipe.readline, ""):
-                cleaned_line = line.strip()
+                cleaned_line = line.rstrip("\r\n")
                 if cleaned_line:
                     with log_lock:
-                        smf.printf(f"{CC.YELLOW}{cleaned_line}{CC.RESET}")
+                        smf.printf(f"{CC.YELLOW}{cleaned_line}{CC.RESET}\n")
             pipe.close()
 
         stdout_thread = threading.Thread(target=read_stdout, args=(process.stdout,))

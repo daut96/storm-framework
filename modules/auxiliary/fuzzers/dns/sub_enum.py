@@ -29,17 +29,17 @@ REQUIRED_OPTIONS = {
 
 def output_stream(line: str) -> str:
     """Color log stdout"""
-    if "[INFO] =>" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}"
+    if "STATUS" in line:
+        return f"[INFO] {CC.YELLOW}=> {line}{CC.RESET}\n"
 
     if "FOUND =>" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"
 
-    if "[✓]" in line:
-        return f"\n{CC.YELLOW}{line}{CC.RESET}"
+    if "Enumeration" in line:
+        return f"\n[✓] {CC.YELLOW}{line}{CC.RESET}"
 
-    if "[!]" in line:
-        return f"{CC.RED}{line}{CC.RESET}"
+    if "Error" in line:
+        return f"[!] {CC.RED}{line}{CC.RESET}"
 
     return line
 
@@ -52,11 +52,11 @@ def execute(options):
     binary = call_bin("dns_sub_enum")
 
     if not binary:
-        smf.printf(f"{CC.YELLOW}[!] WARN => Binary not found at >{CC.RESET}", binary)
+        smf.printf(f"[!] {CC.YELLOW}WARN => Binary not found at >{CC.RESET}", binary)
         return
 
     smf.printf(
-        f"\n{CC.YELLOW}[*] Starting SUBDOMAIN ENUMERATION for => {target_domain}{CC.RESET}"
+        f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}", target_domain
     )
     smf.printf()
 
@@ -82,7 +82,7 @@ def execute(options):
         smf.printf("\n[✓] Sub Enumeration is stopped")
 
     except Exception as e:
-        smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
+        smf.printf(f"[!] {CC.RED}An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
 
     finally:

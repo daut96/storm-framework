@@ -73,7 +73,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
 			// Format output linear agar mudah di-pipe ke bash/python
-			fmt.Printf("FOUND => %d | %30s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
+			fmt.Printf("FOUND => %d | %-30s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
 			atomic.AddInt32(counter, 1) // Operasi increment thread-safe
 		}
 		resp.Body.Close()

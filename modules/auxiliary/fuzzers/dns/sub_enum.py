@@ -90,19 +90,23 @@ def execute(options):
                 try:
                     # Pecah baris menjadi: [log_normal, angka_progress]
                     parts = cleaned_line.split("PROGRESS =>")
-                    log_to_print = parts[0].strip()   # Sisi kiri (bisa berupa teks FOUND atau kosong)
-                    progress_part = parts[1].strip()  # Sisi kanan (angka persen/progress)
+                    log_to_print = parts[
+                        0
+                    ].strip()  # Sisi kiri (bisa berupa teks FOUND atau kosong)
+                    progress_part = parts[
+                        1
+                    ].strip()  # Sisi kanan (angka persen/progress)
 
                     if progress_part:
                         percent = int(progress_part)
                         current_bar = render_progress_bar(percent)
-                        
+
                         # Cetak progress bar ke baris paling bawah
                         sys.stdout.write(current_bar)
                         sys.stdout.flush()
                 except (ValueError, IndexError):
                     pass
-                
+
                 # Jika baris ini murni sinyal PROGRESS (sisi kiri kosong), skip log normal
                 if not log_to_print:
                     continue
@@ -129,7 +133,9 @@ def execute(options):
 
     except KeyboardInterrupt:
         if current_bar:
-            sys.stdout.write("\r\033[K")  # Bersihkan bar saat di-stop agar prompt bersih
+            sys.stdout.write(
+                "\r\033[K"
+            )  # Bersihkan bar saat di-stop agar prompt bersih
         smf.printf("\n[✓] Sub Enumeration is stopped")
 
     except Exception as e:
@@ -152,4 +158,3 @@ def execute(options):
         smf.printf(
             f"[✓] {CC.GREEN}Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
         )
-            

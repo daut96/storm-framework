@@ -1,5 +1,4 @@
 import subprocess
-import threading
 import smf
 
 from apps.utility.colors import *
@@ -78,7 +77,7 @@ def execute(options):
 
         process.stdout.close()
         process.wait()
-        
+
     except KeyboardInterrupt:
         smf.printf("\n[✓] Sub Enumeration is stopped")
 

@@ -32,15 +32,15 @@ log_lock = threading.Lock()
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "[INFO] =>" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}\n\n"
+        return f"{CC.YELLOW}{line}{CC.RESET}\n"
 
     if "FOUND =>" in line:
-        return f"[✓] {CC.GREEN}{line}{CC.RESET}\n"
+        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
 
     if "[*]" in line:
-        return f"\n{CC.YELLOW}{line}{CC.RESET}\n"
+        return f"\n{CC.YELLOW}{line}{CC.RESET}"
 
-    return f"{line}\n"
+    return line
 
 
 def execute(options):

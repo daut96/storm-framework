@@ -73,7 +73,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
 			// Format output linear agar mudah di-pipe ke bash/python
-			fmt.Printf("FOUND => %d | %s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
+			fmt.Printf("FOUND => %d | %20s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
 			atomic.AddInt32(counter, 1) // Operasi increment thread-safe
 		}
 		resp.Body.Close()
@@ -106,15 +106,13 @@ func main() {
 	var wg sync.WaitGroup
 	var activeCount int32 = 0
 
-	// 1. Spawning Worker Pool
+	// Spawning Worker Pool
 	for i := 0; i < *concurrency; i++ {
 		wg.Add(1)
 		go worker(jobs, &wg, &activeCount)
 	}
 
-	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
-
-	// 2. Stream Reading file teks (O(1) Memory footprint)
+	// Stream Reading file teks (O(1) Memory footprint)
 	scanner := bufio.NewScanner(file)
 	protocols := []string{"http", "https"}
 
@@ -135,7 +133,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "[!] Error while reading wordlist: %v\n", err)
 	}
 
-	// 3. Cleanup: Tutup channel dan tunggu goroutines selesai
+	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
+
+	// Cleanup: Tutup channel dan tunggu goroutines selesai
 	close(jobs)
 	wg.Wait()
 

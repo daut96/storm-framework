@@ -52,6 +52,7 @@ def render_progress_bar(percent: int, width: int = 30) -> str:
     # Tampilan ala apt/modern CLI
     return f"\r\033[K[Progress] \033[36m[{bar}] {percent}%\033[0m"
 
+
 def execute(options):
     target_domain = options.get("DOMAIN")
     wordlist_path = options.get("SUBDOM")
@@ -64,7 +65,8 @@ def execute(options):
         return
 
     smf.printf(
-        f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}", target_domain
+        f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}",
+        target_domain,
     )
     smf.printf()
 
@@ -89,7 +91,7 @@ def execute(options):
                     # Ambil angka progress, misal dari "PROGRESS => 45"
                     percent = int(cleaned_line.split("=>")[1].strip())
                     current_bar = render_progress_bar(percent)
-                    
+
                     # Cetak langsung ke terminal tanpa newline
                     sys.stdout.write(current_bar)
                     sys.stdout.flush()
@@ -138,7 +140,7 @@ def execute(options):
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
-            
+
         smf.printf(
             f"[✓] {CC.GREEN}Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
         )

@@ -91,7 +91,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, foundCounter *int32, processedC
 			}
 
 			if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
-				fmt.Printf("FOUND => %d | %-30s | %s | %s", resp.StatusCode, j.URL, server, contentType)
+				fmt.Printf("FOUND => %d | %-30s | %s | %s\n", resp.StatusCode, j.URL, server, contentType)
 				atomic.AddInt32(foundCounter, 1)
 			}
 		}(job)
@@ -181,5 +181,5 @@ func main() {
 
 	// Kirim sinyal progres 100% di akhir untuk memastikan visualisasi Python penuh
 	fmt.Printf("PROGRESS => 100\n")
-	fmt.Printf("Enumeration complete. Found %d active subdomain.", atomic.LoadInt32(&activeCount))
+	fmt.Printf("Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
 }

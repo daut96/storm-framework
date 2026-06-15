@@ -57,6 +57,8 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
 		resp, err := httpClient.Do(req)
+		server := resp.Header.Get("Server")
+		contentType := resp.Header.Get("Content-Type")
 		if err != nil {
 			continue // Drop request jika RTO atau DNS tidak resolve
 		}
@@ -64,7 +66,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
 			// Format output linear agar mudah di-pipe ke bash/python
-			fmt.Printf("FOUND | %d | %s\n", resp.StatusCode, job.URL)
+			fmt.Printf("FOUND => %d | %s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
 			atomic.AddInt32(counter, 1) // Operasi increment thread-safe
 		}
 		resp.Body.Close()
@@ -75,7 +77,7 @@ func main() {
 	// Parameter Command-Line
 	domainFlag := flag.String("d", "", "Target domain (example: example.com)")
 	wordlistFlag := flag.String("w", "", "Path to wordlist .txt file")
-	concurrency := flag.Int("c", 10, "Number of concurrent workers")
+	concurrency := flag.Int("c", 1, "Number of concurrent workers")
 	flag.Parse()
 
 	if *domainFlag == "" || *wordlistFlag == "" {
@@ -102,6 +104,8 @@ func main() {
 		wg.Add(1)
 		go worker(jobs, &wg, &activeCount)
 	}
+
+	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type")
 
 	// 2. Stream Reading file teks (O(1) Memory footprint)
 	scanner := bufio.NewScanner(file)

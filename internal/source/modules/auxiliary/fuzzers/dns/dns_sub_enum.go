@@ -57,11 +57,18 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
 		resp, err := httpClient.Do(req)
-		server := resp.Header.Get("Server")
-		contentType := resp.Header.Get("Content-Type")
 		if err != nil {
 			continue // Drop request jika RTO atau DNS tidak resolve
 		}
+		server := resp.Header.Get("Server")
+		contentType := resp.Header.Get("Content-Type")
+
+		if server == "" {
+			server = "unknown"
+		}
+		if contentType == "" {
+			contentType = "unknown"
+		} 
 		
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
@@ -95,7 +102,7 @@ func main() {
 	}
 	defer file.Close()
 
-	jobs := make(chan Job, *concurrency*2)
+	jobs := make(chan Job, *concurrency)
 	var wg sync.WaitGroup
 	var activeCount int32 = 0
 

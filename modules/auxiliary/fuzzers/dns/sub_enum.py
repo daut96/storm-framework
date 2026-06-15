@@ -56,7 +56,8 @@ def execute(options):
         return
 
     smf.printf(
-        f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}", target_domain
+        f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}",
+        target_domain,
     )
     smf.printf()
 

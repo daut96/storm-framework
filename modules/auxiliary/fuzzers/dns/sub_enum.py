@@ -21,9 +21,17 @@ exploited.
     "License": "SMF License",
     "Date": "2026-04-20",
 }
-REQUIRED_OPTIONS = {"DOMAIN": "ex: google.com", "SUBDOM": "subdomain", "THREAD": "100"}
+REQUIRED_OPTIONS = {"DOMAIN": "ex: google.com", "SUBDOM": "Path to wordlist subdomain", "THREAD": "default 1"}
 
+def output_stream(line: str) -> str:
+    
+    if "[INFO]" in line:
+        return f"{CC.YELLOW}{line}{CC.RESET}\n"
 
+    if "FOUND" in line:
+        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
+
+    
 def execute(options):
     target_domain = options.get("DOMAIN")
     wordlist_path = options.get("SUBDOM")
@@ -36,7 +44,7 @@ def execute(options):
         return
 
     smf.printf(
-        f"\n{CC.YELLOW}[*] Starting SUBDOMAIN ENUMERATION for {target_domain}{CC.RESET}"
+        f"\n{CC.YELLOW}[*] Starting SUBDOMAIN ENUMERATION for => {target_domain}{CC.RESET}"
     )
     smf.printf()
 
@@ -51,7 +59,8 @@ def execute(options):
         def read_stdout(pipe):
             for line in iter(pipe.readline, ""):
                 if line:
-                    smf.printf(f"{CC.GREEN}[✓] {line.strip()}{CC.RESET}")
+                    stream_line = output_stream(line.strip())
+                    smf.printf(stream_line, end="", flush=True)
             pipe.close()
 
         # Thread for parsing info/error (stderr)

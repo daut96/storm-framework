@@ -73,7 +73,7 @@ func worker(jobs <-chan Job, wg *sync.WaitGroup, counter *int32) {
 		// Kriteria: Berhasil jika status code < 400 atau = 403 (Forbidden sering menyembunyikan panel admin)
 		if resp.StatusCode < 400 || resp.StatusCode == 403 || resp.StatusCode == 401 {
 			// Format output linear agar mudah di-pipe ke bash/python
-			fmt.Printf("FOUND => %d | %20s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
+			fmt.Printf("FOUND => %d | %30s | %s | %s\n", resp.StatusCode, job.URL, server, contentType)
 			atomic.AddInt32(counter, 1) // Operasi increment thread-safe
 		}
 		resp.Body.Close()
@@ -88,7 +88,7 @@ func main() {
 	flag.Parse()
 
 	if *domainFlag == "" || *wordlistFlag == "" {
-		fmt.Fprintln(os.Stderr, "[!] Error: Parameters -d (domain) and -w (wordlist) are required.")
+		fmt.Println("[!] Error: Parameters -d (domain) and -w (wordlist) are required.")
 		os.Exit(1)
 	}
 
@@ -97,7 +97,7 @@ func main() {
 
 	file, err := os.Open(*wordlistFlag)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[!] Error opening wordlist: %v\n", err)
+		fmt.Printf("[!] Error opening wordlist: %v\n", err)
 		os.Exit(1)
 	}
 	defer file.Close()
@@ -105,6 +105,8 @@ func main() {
 	jobs := make(chan Job, *concurrency)
 	var wg sync.WaitGroup
 	var activeCount int32 = 0
+
+	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
 
 	// Spawning Worker Pool
 	for i := 0; i < *concurrency; i++ {
@@ -130,16 +132,13 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "[!] Error while reading wordlist: %v\n", err)
+		fmt.Printf("[!] Error while reading wordlist: %v\n", err)
 	}
-
-	fmt.Printf("[INFO] => STATUS | URL | SERVER | Content-Type\n")
 
 	// Cleanup: Tutup channel dan tunggu goroutines selesai
 	close(jobs)
 	wg.Wait()
 
-	// Cetak rangkuman ke stderr agar tidak tercampur dengan hasil stdout jika di-pipe
-	fmt.Fprintf(os.Stderr, "\n[*] Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
+	fmt.Printf("[✓] Enumeration complete. Found %d active subdomain.\n", atomic.LoadInt32(&activeCount))
 }
 

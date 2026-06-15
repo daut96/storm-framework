@@ -21,17 +21,22 @@ exploited.
     "License": "SMF License",
     "Date": "2026-04-20",
 }
-REQUIRED_OPTIONS = {"DOMAIN": "ex: google.com", "SUBDOM": "Path to wordlist subdomain", "THREAD": "default 1"}
+REQUIRED_OPTIONS = {
+    "DOMAIN": "ex: google.com",
+    "SUBDOM": "Path to wordlist subdomain",
+    "THREAD": "default 1",
+}
+
 
 def output_stream(line: str) -> str:
-    
+
     if "[INFO]" in line:
         return f"{CC.YELLOW}{line}{CC.RESET}\n"
 
     if "FOUND" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"
 
-    
+
 def execute(options):
     target_domain = options.get("DOMAIN")
     wordlist_path = options.get("SUBDOM")

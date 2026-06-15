@@ -31,7 +31,7 @@ REQUIRED_OPTIONS = {
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "STATUS" in line:
-        return f"[INFO] {CC.YELLOW}=> {line}{CC.RESET}\n"
+        return f"[INFO] {CC.YELLOW}=> {line}{CC.RESET}\n\n"
 
     if "FOUND =>" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"
@@ -49,7 +49,7 @@ def render_progress_bar(percent: int, width: int = 30) -> str:
     """Menggambar visualisasi progress bar kustom"""
     pos = int((percent * width) / 100)
     bar = "■" * pos + " " * (width - pos)
-    return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} {CC.CYAN}[{bar}] {percent}%{CC.RESET}"
+    return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} [ {CC.CYAN}{bar}{CC.RESET} ] {CC.WHITE}{percent}%{CC.RESET}"
 
 
 def execute(options):
@@ -153,7 +153,7 @@ def execute(options):
                 process.kill()
 
         if current_bar:
-            print()  # Berikan newline asli di akhir eksekusi daemon agar shell rapi
+            sys.stdout.write("\r\033[K")
 
         smf.printf(
             f"[✓] {CC.GREEN}Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"

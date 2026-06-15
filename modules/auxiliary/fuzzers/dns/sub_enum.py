@@ -31,10 +31,10 @@ REQUIRED_OPTIONS = {
 def output_stream(line: str) -> str:
 
     if "[INFO]" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}\n"
+        return f"{CC.YELLOW}{line}{CC.RESET}\n\n"
 
     if "FOUND" in line:
-        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
+        return f"\n[✓] {CC.GREEN}{line}{CC.RESET}"
 
 
 def execute(options):

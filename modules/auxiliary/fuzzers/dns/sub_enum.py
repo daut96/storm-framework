@@ -114,16 +114,15 @@ def execute(options):
             # JIKA ADA LOG NORMAL YANG HARUS DICETAK (FOUND / STATUS / DLL)
             stream_line = output_stream(log_to_print)
 
-            # 1. Hapus progress bar yang sedang menggantung di bawah
+            # Hapus progress bar yang sedang menggantung di bawah
             if current_bar:
                 sys.stdout.write("\r\033[K")
                 sys.stdout.flush()
 
-            # 2. Cetak log normal hasil parsing output_stream
-            # .rstrip("\r\n") memotong double spacing karena smf.printf sudah otomatis memberi newline
-            smf.printf(stream_line.rstrip("\r\n"))
+            # Cetak log normal hasil parsing output_stream
+            smf.printf(stream_line)
 
-            # 3. Cetak ulang progress bar tepat di bawah log yang baru saja muncul
+            # Cetak ulang progress bar tepat di bawah log yang baru saja muncul
             if current_bar:
                 sys.stdout.write(current_bar)
                 sys.stdout.flush()

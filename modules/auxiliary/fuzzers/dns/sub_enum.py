@@ -26,21 +26,23 @@ REQUIRED_OPTIONS = {
     "SUBDOM": "Path to wordlist subdomain",
     "THREAD": "default 1",
 }
-log_lock = threading.Lock()
 
 
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "[INFO] =>" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}"
+        return f"{CC.YELLOW}{line}{CC.RESET}\n"
 
     if "FOUND =>" in line:
-        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
+        return f"[✓] {CC.GREEN}{line}{CC.RESET}\n"
 
-    if "[*]" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}"
+    if "[✓]" in line:
+        return f"\n{CC.YELLOW}{line}{CC.RESET}\n"
 
-    return line
+    if "[!]" in line:
+        return f"{CC.RED}{line}{CC.RESET}\n"
+
+    return f"{line}\n"
 
 
 def execute(options):
@@ -64,45 +66,24 @@ def execute(options):
     process = None
     try:
         process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
         )
 
         # Thread for parsing valid results (stdout)
-        def read_stdout(pipe):
-            for line in iter(pipe.readline, ""):
-                cleaned_line = line.rstrip("\r\n")
-                if cleaned_line:
-                    stream_line = output_stream(cleaned_line)
-                    with log_lock:
-                        smf.printf(stream_line)
-            pipe.close()
+        for line in iter(process.stdout.readline, ""):
+            cleaned_line = line.rstrip("\r\n")
+            if line:
+                stream_line = output_stream(cleaned_line)
+                smf.printf(stream_line)
 
-        # Thread for parsing info/error (stderr)
-        def read_stderr(pipe):
-            for line in iter(pipe.readline, ""):
-                cleaned_line = line.rstrip("\r\n")
-                if cleaned_line:
-                    with log_lock:
-                        smf.printf(f"{CC.YELLOW}{cleaned_line}{CC.RESET}\n")
-            pipe.close()
-
-        stdout_thread = threading.Thread(target=read_stdout, args=(process.stdout,))
-        stderr_thread = threading.Thread(target=read_stderr, args=(process.stderr,))
-
-        stdout_thread.start()
-        stderr_thread.start()
-
+        process.stdout.close()
         process.wait()
-        stdout_thread.join()
-        stderr_thread.join()
-
+        
     except KeyboardInterrupt:
-        with log_lock:
-            smf.printf("\n[✓] Sub Enumeration is stopped")
+        smf.printf("\n[✓] Sub Enumeration is stopped")
 
     except Exception as e:
-        with log_lock:
-            smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
+        smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
 
     finally:
@@ -112,7 +93,6 @@ def execute(options):
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
-        with log_lock:
-            smf.printf(
-                f"[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
-            )
+        smf.printf(
+            f"[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
+        )

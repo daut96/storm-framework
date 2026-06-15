@@ -26,15 +26,17 @@ REQUIRED_OPTIONS = {
     "SUBDOM": "Path to wordlist subdomain",
     "THREAD": "default 1",
 }
-
+log_lock = threading.Lock()
 
 def output_stream(line: str) -> str:
-
+    """Color log stdout"""
     if "[INFO]" in line:
-        return f"{CC.YELLOW}{line}{CC.RESET}\n\n"
+        return f"{CC.YELLOW}{line}{CC.RESET}"
 
     if "FOUND" in line:
-        return f"\n[✓] {CC.GREEN}{line}{CC.RESET}"
+        return f"[✓] {CC.GREEN}{line}{CC.RESET}"
+    
+    return line
 
 
 def execute(options):
@@ -55,6 +57,7 @@ def execute(options):
 
     cmd = [binary, "-d", target_domain, "-w", wordlist_path, "-c", threads]
 
+    process = None
     try:
         process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
@@ -63,16 +66,20 @@ def execute(options):
         # Thread for parsing valid results (stdout)
         def read_stdout(pipe):
             for line in iter(pipe.readline, ""):
-                if line:
-                    stream_line = output_stream(line.strip())
-                    smf.printf(stream_line, end="", flush=True)
+                cleaned_line = line.strip()
+                if cleaned_line:
+                    stream_line = output_stream(cleaned_line)
+                    with log_lock:
+                        smf.printf(stream_line)
             pipe.close()
-
+            
         # Thread for parsing info/error (stderr)
         def read_stderr(pipe):
             for line in iter(pipe.readline, ""):
-                if line:
-                    smf.printf(f"{CC.YELLOW}{line.strip()}{CC.RESET}")
+                cleaned_line = line.strip()
+                if cleaned_line:
+                    with log_lock:
+                        smf.printf(f"{CC.YELLOW}{cleaned_line}{CC.RESET}")
             pipe.close()
 
         stdout_thread = threading.Thread(target=read_stdout, args=(process.stdout,))
@@ -86,10 +93,12 @@ def execute(options):
         stderr_thread.join()
 
     except KeyboardInterrupt:
-        smf.printf("\n[✓] Sub Enumeration is stopped")
+        with log_lock:
+            smf.printf("\n[✓] Sub Enumeration is stopped")
 
     except Exception as e:
-        smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
+        with log_lock:
+            smf.printf(f"{CC.RED}[!] An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
 
     finally:
@@ -99,7 +108,7 @@ def execute(options):
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
-
-        smf.printf(
-            f"[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
-        )
+        with log_lock:
+            smf.printf(
+                f"[✓]{CC.GREEN} Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
+            )

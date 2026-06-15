@@ -50,7 +50,7 @@ def render_progress_bar(percent: int, width: int = 30) -> str:
     pos = int((percent * width) / 100)
     bar = "■" * pos + " " * (width - pos)
     # Tampilan ala apt/modern CLI
-    return f"\r\033[K[Progress] \033[36m[{bar}] {percent}%\033[0m"
+    return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} {CC.CYAN}[{bar}] {percent}%{CC.RESET}"
 
 
 def execute(options):
@@ -124,13 +124,13 @@ def execute(options):
     except KeyboardInterrupt:
         # Bersihkan baris progress saat interrupt sebelum mencetak pesan stop
         if current_bar:
-            sys.stdout.write("\r\033[K")
-        smf.printf("\n[✓] Sub Enumeration is stopped")
+            smf.printf()
+        smf.printf("[✓] Sub Enumeration is stopped")
 
     except Exception as e:
         if current_bar:
-            sys.stdout.write("\r\033[K")
-        smf.printf(f"\n[!] {CC.RED}An IPC module error occurred{CC.RESET}")
+            smf.printf()
+        smf.printf(f"[!] {CC.RED}An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
 
     finally:
@@ -140,6 +140,9 @@ def execute(options):
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
+
+        if current_bar:
+            smf.printf()
 
         smf.printf(
             f"[✓] {CC.GREEN}Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"

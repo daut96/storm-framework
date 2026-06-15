@@ -49,7 +49,6 @@ def render_progress_bar(percent: int, width: int = 30) -> str:
     """Menggambar visualisasi progress bar kustom"""
     pos = int((percent * width) / 100)
     bar = "■" * pos + " " * (width - pos)
-    # Tampilan ala apt/modern CLI
     return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} {CC.CYAN}[{bar}] {percent}%{CC.RESET}"
 
 
@@ -85,35 +84,42 @@ def execute(options):
             if not cleaned_line:
                 continue
 
-            # INTERCEPT: Jika baris adalah data progress dari Go
-            if cleaned_line.startswith("PROGRESS =>"):
+            # DEFENSIVE INTERCEPT: Handle jika log PROGRESS nempel di ujung log FOUND
+            log_to_print = cleaned_line
+            if "PROGRESS =>" in cleaned_line:
                 try:
-                    # Ambil angka progress, misal dari "PROGRESS => 45"
-                    percent = int(cleaned_line.split("=>")[1].strip())
-                    current_bar = render_progress_bar(percent)
+                    # Pecah baris menjadi: [log_normal, angka_progress]
+                    parts = cleaned_line.split("PROGRESS =>")
+                    log_to_print = parts[0].strip()   # Sisi kiri (bisa berupa teks FOUND atau kosong)
+                    progress_part = parts[1].strip()  # Sisi kanan (angka persen/progress)
 
-                    # Cetak langsung ke terminal tanpa newline
-                    sys.stdout.write(current_bar)
-                    sys.stdout.flush()
+                    if progress_part:
+                        percent = int(progress_part)
+                        current_bar = render_progress_bar(percent)
+                        
+                        # Cetak progress bar ke baris paling bawah
+                        sys.stdout.write(current_bar)
+                        sys.stdout.flush()
                 except (ValueError, IndexError):
                     pass
-                continue  # Skip proses log normal
+                
+                # Jika baris ini murni sinyal PROGRESS (sisi kiri kosong), skip log normal
+                if not log_to_print:
+                    continue
 
-            # JIKA LOG NORMAL: Lakukan langkah penyelamatan agar tidak tabrakan
-            stream_line = output_stream(cleaned_line)
+            # JIKA ADA LOG NORMAL YANG HARUS DICETAK (FOUND / STATUS / DLL)
+            stream_line = output_stream(log_to_print)
 
-            # 1. Hapus progress bar yang sedang menggantung di baris bawah
+            # 1. Hapus progress bar yang sedang menggantung di bawah
             if current_bar:
                 sys.stdout.write("\r\033[K")
                 sys.stdout.flush()
 
             # 2. Cetak log normal hasil parsing output_stream
-            # Memastikan log diakhiri newline agar kursor turun ke bawah
-            if not stream_line.endswith("\n"):
-                stream_line += "\n"
-            smf.printf(stream_line)
+            # .rstrip("\r\n") memotong double spacing karena smf.printf sudah otomatis memberi newline
+            smf.printf(stream_line.rstrip("\r\n"))
 
-            # 3. Cetak ulang progress bar di baris paling bawah yang baru
+            # 3. Cetak ulang progress bar tepat di bawah log yang baru saja muncul
             if current_bar:
                 sys.stdout.write(current_bar)
                 sys.stdout.flush()
@@ -122,14 +128,13 @@ def execute(options):
         process.wait()
 
     except KeyboardInterrupt:
-        # Bersihkan baris progress saat interrupt sebelum mencetak pesan stop
         if current_bar:
-            smf.printf()
-        smf.printf("[✓] Sub Enumeration is stopped")
+            sys.stdout.write("\r\033[K")  # Bersihkan bar saat di-stop agar prompt bersih
+        smf.printf("\n[✓] Sub Enumeration is stopped")
 
     except Exception as e:
         if current_bar:
-            smf.printf()
+            sys.stdout.write("\r\033[K")
         smf.printf(f"[!] {CC.RED}An IPC module error occurred{CC.RESET}")
         smf.printd("Subenum IPC error", e, level="ERROR")
 
@@ -142,8 +147,9 @@ def execute(options):
                 process.kill()
 
         if current_bar:
-            smf.printf()
+            print()  # Berikan newline asli di akhir eksekusi daemon agar shell rapi
 
         smf.printf(
             f"[✓] {CC.GREEN}Path Enumeration daemon successfully stopped and cleaned up.{CC.RESET}"
         )
+            

@@ -90,7 +90,7 @@ def execute(options):
                 try:
                     # Pecah baris menjadi: [log_normal, angka_progress]
                     parts = cleaned_line.split("PROGRESS =>")
-                    
+
                     log_to_print = parts[0].strip()
                     data_part = parts[1].strip()
                     values = [v.strip() for v in data_part.split("|")]

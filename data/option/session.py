@@ -23,6 +23,7 @@ def default_options():
         "HOSTNAME": "",
         "MODULE": "",
         "API": "",
+        "KEY": "",
         "SUBDOM": "",
     }
     return ldch.session(options)

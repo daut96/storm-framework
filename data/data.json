@@ -1,18 +1,17 @@
 {
     "main-repo": "Storm Framework",
     "organization": "StormWorld0",
-    "version": "3.10.0",
+    "version": "3.10.1",
     "license": "GPL-3.0",
     "author": {
         "name": "エルジー",
         "email": "elzyproot@protonmail.com"
         },
-    "wiki": "https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki",
+    "documentation": "https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki",
     "languages": [
         "Python",
         "Rust",
         "Golang",
-        "Bash",
-        "C/C++"
+        "Bash"
     ]
 }

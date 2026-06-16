@@ -31,7 +31,7 @@ REQUIRED_OPTIONS = {
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "STATUS" in line:
-        return f"[INFO] {CC.YELLOW}=> {line}{CC.RESET}\n\n"
+        return f"[*] {CC.YELLOW}INFO => {line}{CC.RESET}\n\n"
 
     if "FOUND =>" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"

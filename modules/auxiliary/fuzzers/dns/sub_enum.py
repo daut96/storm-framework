@@ -45,11 +45,11 @@ def output_stream(line: str) -> str:
     return line
 
 
-def render_progress_bar(percent: int, width: int = 30) -> str:
+def render_progress_bar(percent: int, current: int, total: int, width: int = 30) -> str:
     """Menggambar visualisasi progress bar kustom"""
     pos = int((percent * width) / 100)
     bar = "■" * pos + " " * (width - pos)
-    return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} [ {CC.CYAN}{bar}{CC.RESET} ] {CC.WHITE}{percent}%{CC.RESET}"
+    return f"\r\033[K{CC.YELLOW}Progress =>{CC.RESET} [ {CC.CYAN}{bar}{CC.RESET} ] {CC.WHITE}{percent}% ({current}/{total}){CC.RESET}"
 
 
 def execute(options):
@@ -90,16 +90,14 @@ def execute(options):
                 try:
                     # Pecah baris menjadi: [log_normal, angka_progress]
                     parts = cleaned_line.split("PROGRESS =>")
-                    log_to_print = parts[
-                        0
-                    ].strip()  # Sisi kiri (bisa berupa teks FOUND atau kosong)
-                    progress_part = parts[
-                        1
-                    ].strip()  # Sisi kanan (angka persen/progress)
+                    
+                    log_to_print = parts[0].strip()
+                    data_part = parts[1].strip()
+                    values = [v.strip() for v in data_part.split("|")]
 
-                    if progress_part:
-                        percent = int(progress_part)
-                        current_bar = render_progress_bar(percent)
+                    if len(values) == 3:
+                        pct, crt, tot = map(int, values)
+                        current_bar = render_progress_bar(pct, crt, tot)
 
                         # Cetak progress bar ke baris paling bawah
                         sys.stdout.write(current_bar)

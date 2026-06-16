@@ -31,7 +31,7 @@ REQUIRED_OPTIONS = {
 def output_stream(line: str) -> str:
     """Color log stdout"""
     if "STATUS" in line:
-        return f"[*] {CC.YELLOW}INFO => {line}{CC.RESET}\n\n"
+        return f"[*] {CC.YELLOW}INFO => {line}{CC.RESET}\n"
 
     if "FOUND =>" in line:
         return f"[✓] {CC.GREEN}{line}{CC.RESET}"
@@ -67,7 +67,6 @@ def execute(options):
         f"\n[*] {CC.YELLOW}Starting SUBDOMAIN ENUMERATION for =>{CC.RESET}",
         target_domain,
     )
-    smf.printf()
 
     cmd = [binary, "-d", target_domain, "-w", wordlist_path, "-c", threads]
 

@@ -2,7 +2,7 @@
   <img src="https://github.com/StormWorld0/storm-framework/blob/main/assets/images/storm-framework.jpg">
 </p>
 
-<h2 align="center">Storm-Framework</h2>
+<h1 align="center">Storm-Framework</h1>
 
 <p align="center">
   <a href="https://github.com/StormWorld0/storm-framework/blob/main/LICENSE">
@@ -55,23 +55,23 @@
   </a>
 </p>
 
-<p align="center">
-  Tool Suite for Information Gathering and Initial Vulnerability Analysis.
-</p>
+<h3 align="center">
+  Tool Suite for Offensive Security Framework
+</h3>
 
 ---
 
-### 🚀 Introduction
+## 🚀 INTRODUCTION
 
-**Storm-Framework** is a cyber tool suite specifically designed to assist cybersecurity professionals, bug bounty hunters, and researchers in the cybersecurity phase **information gathering (reconnaissance)** and **initial vulnerability analysis**. This tool aims to simplify the initial steps in the penetration testing process (pentest).
+**Storm-Framework** is an offensive security tool suite built for reconnaissance, vulnerability assessment, exploitation, and security research. It aims to streamline security testing workflows for cybersecurity professionals, penetration testers, and bug bounty hunters.
 
-### ⚙️ FLOW
+## ⚙️ FLOW
 
 See the explanation about **storm framework flow** in docs or in [FLOW](https://github.com/StormWorld0/storm-framework/blob/main/FLOW.md)
 
 We explain the essence so that it is easier to understand and not ambiguous, perhaps we do not explain some of the other logic because we are not yet sure about its maturity. But don't worry, we will continue to update it little by little in the future.
 
-### 🗺️ TREE
+## 🗺️ TREE
 
 To see **storm framework structure** clearly and completely, we made it in [TREE](https://github.com/StormWorld0/storm-framework/blob/main/TREE.md) you can see it.
 
@@ -79,7 +79,7 @@ TREE is used to see the complete structure of the Storm Framework so that it is 
 
 ---
 
-### Recommended installation
+## RECOMMENDED INSTALLATION
 
 We recommend the standard installation provided: 
 
@@ -88,14 +88,14 @@ We recommend the standard installation provided:
 - [Installation Termux](https://github.com/StormWorld0/storm-framework/blob/main/docs/storm-framework.wiki/INSTALLATION_TERMUX.md)
 
 
-## Using Storm
+## USING STORM
 
 To get started with Storm:
 
 **Start `storm`:** This is the main interface for interacting with Storm.
 
 
-## Communication and Questions
+## COMMUNICATION & QUESTION
 
 For questions or suggestions, etc:
 
@@ -105,13 +105,13 @@ For questions or suggestions, etc:
 
 
 
-### 📖 Wiki
+## 📖 WIKI
 
 In the wiki where we explain various feature logic and others, you can read about it at [wiki](https://github.com/StormWorld0/storm-framework/tree/main/docs/storm-framework.wiki)
 
 
 
-### 🤝 Contributing 
+## 🤝 CONTRIBUTING 
 
 This open source Storm-Framework project is open to anyone. 
 If you're interested in helping develop this project—whether through bug fixes, feature additions, or documentation—please check out our contribution guidelines. 
@@ -121,6 +121,6 @@ If you're interested in helping develop this project—whether through bug fixes
 
 Thank you for your interest in contributing! 💙 
 
-### 📜 License 
+## 📜 LICENSE
 
 This tool is distributed under the [GPL License](LICENSE).

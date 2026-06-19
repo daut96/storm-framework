@@ -56,7 +56,7 @@ def execute(options):
     # Take input
     ip = options.get("IP")
     thread = options.get("THREAD")
-    user = options.get("PATH")
+    user = options.get("USER")
     passw = options.get("PASS")
 
     # Binary path

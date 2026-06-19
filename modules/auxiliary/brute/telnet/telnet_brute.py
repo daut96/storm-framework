@@ -28,7 +28,7 @@ REQUIRED_OPTIONS = {
     "IP": "",
     "THREAD": "Default 1 thread",
     "PASS": "fill with wordlist password",
-    "PATH": "fill with wordlist username",
+    "USER": "fill with wordlist username",
 }
 
 

@@ -54,7 +54,7 @@ def render_progress_bar(percent: int, current: int, total: int, width: int = 30)
 
 def execute(options):
     target_domain = options.get("DOMAIN")
-    wordlist_path = options.get("SUBDOM")
+    wordlist_path = options.get("WORD")
     threads = str(options.get("THREAD"))
 
     binary = call_bin("dns_sub_enum")

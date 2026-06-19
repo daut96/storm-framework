@@ -124,7 +124,7 @@ def output_stream(line: str) -> str:
 
 def execute(options, runtime):
     url = options.get("URL")
-    wordl = options.get("PATH")
+    wordl = options.get("WORD")
     thread = options.get("THREAD")
 
     # Specifying the Linkfinder regex path

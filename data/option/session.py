@@ -25,5 +25,7 @@ def default_options():
         "API": "",
         "KEY": "",
         "SUBDOM": "",
+        "SERVER": "",
+        "WORD": "",
     }
     return ldch.session(options)

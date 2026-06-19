@@ -23,7 +23,7 @@ exploited.
 }
 REQUIRED_OPTIONS = {
     "DOMAIN": "ex: google.com",
-    "SUBDOM": "Path to wordlist subdomain",
+    "WORD": "Path to wordlist subdomain",
     "THREAD": "default 1",
 }
 

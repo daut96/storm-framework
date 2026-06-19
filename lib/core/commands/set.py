@@ -25,7 +25,7 @@ def execute(args, ctx):
             )
             return
 
-        allow = {"PASS", "SUBDOM", "PATH"}
+        allow = {"PASS", "WORD", "USER"}
         if var_name in allow:
             found_path = utils.resolve_path(var_value)
 

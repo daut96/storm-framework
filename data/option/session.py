@@ -27,5 +27,6 @@ def default_options():
         "SUBDOM": "",
         "SERVER": "",
         "WORD": "",
+        "COMMAND": "",
     }
     return ldch.session(options)

@@ -28,7 +28,7 @@ a combination of a wordlist and a recursive crawler.
 }
 REQUIRED_OPTIONS = {
     "URL": "",
-    "PATH": "File wordlist url path (opsional)",
+    "WORD": "File wordlist url path (opsional)",
     "THREAD": "Default 1",
 }
 RESULT_PATTERN = re.compile(

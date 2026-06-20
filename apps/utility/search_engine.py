@@ -27,6 +27,34 @@ def parse_query(query):
     return " ".join(base_queries), filters
 
 
+
+def resolve_module_path(self, user_input: str) -> str | None:
+    """Mendukung dual-mekanisme: mencari lewat module_path ATAU module_name"""
+    clean_input = user_input.strip().replace("\\", "/")
+
+    conn = _get_db_connection()
+    cursor = conn.cursor()
+    try:
+        if "/" in clean_input:
+            # Mekanisme 1: User menginput path lengkap (e.g., "Auth/LoginManager")
+            cursor.execute(
+                "SELECT module_path FROM module_cache WHERE module_path = ?", 
+                (clean_input,)
+            )
+        else:
+            # Mekanisme 2: User hanya menginput nama modul (e.g., "LoginManager")
+            cursor.execute(
+                "SELECT module_path FROM module_cache WHERE module_name = ?", 
+                (clean_input,)
+            )
+                
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None    
+    except Exception as e:
+        smf.printd("Error resolving module", e, level="ERROR")
+        return None
+
 # ---------------------------------------------------------
 # SHOW FUNCTION
 # ---------------------------------------------------------

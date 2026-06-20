@@ -4,7 +4,7 @@ import importlib
 
 from typing import List
 from rootmap import ROOT
-from .search_engine import show_modules
+from .load_db import *
 
 # utils.py It all contains help logic to make it easier during repairs and updates.
 # This is included in the core category which cannot be modified.
@@ -61,53 +61,22 @@ def resolve_path(options):
 
 
 # LOGIC USE
-def load_module_dynamically(module_name):
-    base_path = os.path.join(ROOT, "modules")
-    normalized_input = module_name.strip().replace("\\", "/")
+def load_module_dynamically(module_input):
+    # Returns module_path or module_name from DB
+    actual_path = resolve_module_path(module_input)
 
-    if "." in normalized_input:
+    if not actual_path:
         return None
 
-    is_path_mode = "/" in normalized_input
-    matches = []
-
-    for root, dirs, files in os.walk(base_path):
-        for file in files:
-            name_without_ext, ext = os.path.splitext(file)
-            if ext != ".py":
-                continue
-
-            full_file_path = os.path.join(root, file)
-            relative_path = os.path.relpath(full_file_path, ROOT)
-
-            clean_path = (
-                relative_path[:-3] if relative_path.endswith(".py") else relative_path
-            )
-            clean_path_norm = clean_path.replace(os.sep, "/")
-
-            if not is_path_mode:
-                if name_without_ext == normalized_input:
-                    matches.append(clean_path_norm)
-            else:
-                if clean_path_norm == normalized_input or clean_path_norm.endswith(
-                    "/" + normalized_input
-                ):
-                    matches.append(clean_path_norm)
-
-    if not matches:
-        return None
-
-    if len(matches) > 1:
-        return None
-
-    module_dots = matches[0].replace("/", ".")
+    # Direct transformation to dot notation for Python import
+    module_dots = f"modules.{actual_path.replace('/', '.')}"
 
     try:
         return importlib.import_module(module_dots)
     except Exception as e:
-        smf.printd("ERROR LOGIC USE UTILS", e, level="ERROR")
-        smf.printf(f"[!] ERROR USE UTILS")
+        smf.printd("ERROR DYNAMIC IMPORT", e, level="ERROR")
         return None
+        
 
 
 # UI MODULES

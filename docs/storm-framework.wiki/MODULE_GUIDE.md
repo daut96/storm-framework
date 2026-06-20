@@ -51,6 +51,7 @@ REQUIRED_OPTIONS = {
     "HASH": "",
     "MESSAGE": "",
     "USER": "",
+    "USERNAME": ""
     "ID": "",
     "COUNT": "",
     "PATH": "",
@@ -59,6 +60,7 @@ REQUIRED_OPTIONS = {
     "THREAD": "",
     "DOMAIN": "",
     "HOSTNAME": "",
+    "HOST": ""
     "MODULE": "",
     "API": "",
     "KEY": "",

@@ -1,4 +1,4 @@
-[project]
+k[project]
 name = "Storm-Framework"
 version = "3.10"
 authors = [
@@ -36,3 +36,11 @@ exclude = '''
 
 [tool.pyrefly]
 python_path = ["."]
+
+[tool.pyright]
+executionEnvironments = [
+  { root = "." }
+]
+
+[tool.mypy]
+mypy_path = "."

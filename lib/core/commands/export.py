@@ -21,17 +21,18 @@ def execute(args, ctx):
     # Validate argument length.
     if len(args) >= 2:
         cmd = args[0].lower()
-        val = args[1].upper()  # Example val: "CRITICAL", "WARN"
+        val = args[1]
 
+        valup = val.upper()
         if cmd == "log":
             # Security Validation (Whitelist)
             valid_levels = {"DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"}
-            if val not in valid_levels:
+            if valup not in valid_levels:
                 smf.printf(
-                    f"{CC.YELLOW}[!] Unknown log level => {val} >> Allowed => {', '.join(valid_levels)}{CC.RESET}"
+                    f"{CC.YELLOW}[!] Unknown log level => {valup} >> Allowed => {', '.join(valid_levels)}{CC.RESET}"
                 )
                 # Monitor user typos
-                smf.printd("Invalid log extraction attempt", val, level="WARN")
+                smf.printd("Invalid log extraction attempt", valup, level="WARN")
 
                 return
 
@@ -40,7 +41,7 @@ def execute(args, ctx):
             output_filename = f"log_{val}.txt"
 
             # Execute the extractor function with full parameters
-            extract_logs(val, output_file=output_filename)
+            extract_logs(valup, output_file=output_filename)
         else:
             # If the user types: take backup, take system, etc.
             smf.printf(
@@ -50,4 +51,4 @@ def execute(args, ctx):
         # If the user just types "take" or "take log" without a level argument
         smf.printf(f"{CC.YELLOW}[!] Syntax error. Usage: export log <level>{CC.RESET}")
         # Log syntax errors to the log database
-        smf.printd("CLI Syntax Error", args, level="WARN")
+        smf.printd("CLI Syntax Error", args, level="ERROR")

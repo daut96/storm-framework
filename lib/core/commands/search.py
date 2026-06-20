@@ -3,7 +3,7 @@
 import smf
 
 from apps.utility.colors import *
-from apps.utility.search_engine import search_modules
+from apps.utility.load_db import search_modules
 
 
 # Search command to search for the modules we want to search for

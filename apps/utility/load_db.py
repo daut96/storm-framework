@@ -27,7 +27,7 @@ def parse_query(query):
     return " ".join(base_queries), filters
 
 
-def resolve_module_path(self, user_input: str) -> str | None:
+def resolve_module_path(user_input: str) -> str | None:
     """Mendukung dual-mekanisme: mencari lewat module_path ATAU module_name"""
     clean_input = user_input.strip().replace("\\", "/")
 

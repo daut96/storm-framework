@@ -1,10 +1,8 @@
 import requests
-import argparse
 import smf
 
 from apps.utility.colors import *
 from urllib3.exceptions import InsecureRequestWarning
-
 
 metadata = {
     # Unique Identification & Attribution Module
@@ -32,10 +30,12 @@ Successful exploitation may result in:
     "Date": "2026-06-20",
     "Action": [
         ["Shoot EndPoints", {"Description": "Sending HEADERS with a custom PATH"}],
-        ["RESPONSE VALIDATION", {"Description": "Reading response codes and determining vulnerabilities"}],
+        [
+            "RESPONSE VALIDATION",
+            {"Description": "Reading response codes and determining vulnerabilities"},
+        ],
     ],
     "DefaultAction": "Scanning",
-
     # Vulnerability Intelligence
     "Vulnerability": {
         "CVE": "CVE-2026-20253",
@@ -46,9 +46,9 @@ Successful exploitation may result in:
             "https://nvd.nist.gov/vuln/detail/CVE-2026-20253",
             "https://www.cve.org/CVERecord?id=CVE-2026-20253",
             "https://www.tenable.com/cve/CVE-2026-20253",
-            "https://github.com/0xBlackash/CVE-2026-20253"
-        ]
-    }
+            "https://github.com/0xBlackash/CVE-2026-20253",
+        ],
+    },
 }
 # Variabel OPTIONS
 REQUIRED_OPTIONS = {
@@ -92,7 +92,7 @@ def check_splunk(host: str, port: int = 8089, prefix: str = "en-US"):
         except requests.exceptions.RequestException as e:
             smf.printf(f"{CC.YELLOW}Connection failed:{CC.RESET} {str(e)[:60]}")
             smf.printd("CONNECTION FAILED", e, level="WARN")
-            
+
     smf.printf("\n" + "=" * 78)
 
     if vulnerable:

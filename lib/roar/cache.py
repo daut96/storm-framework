@@ -39,6 +39,7 @@ class StormSmartCache:
                     mtime REAL,
                     category TEXT,
                     module_name TEXT,
+                    module_path TEXT,
                     description TEXT,
                     author TEXT,
                     actions TEXT,
@@ -47,6 +48,12 @@ class StormSmartCache:
             """)
             self.cursor.execute(
                 "CREATE INDEX IF NOT EXISTS idx_category ON module_cache(category)"
+            )
+            self.cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_module_path ON module_cache(module_path)"
+            )
+            self.cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_module_name ON module_cache(module_name)"
             )
             self.conn.commit()
         except Exception as e:
@@ -104,13 +111,14 @@ class StormSmartCache:
                                 or db_state[full_path] != mtime
                             ):
                                 rel_path = os.path.relpath(full_path, self.modules_dir)
-                                module_name = rel_path.replace(os.sep, "/").replace(
+                                module_path = rel_path.replace(os.sep, "/").replace(
                                     ".py", ""
                                 )
+                                module_name = entry.name.replace(".py", "")
                                 category = (
-                                    module_name.split("/")[0]
-                                    if "/" in module_name
-                                    else module_name
+                                    module_path.split("/")[0]
+                                    if "/" in module_path
+                                    else module_path
                                 )
 
                                 meta = self._extract_metadata(full_path)
@@ -131,6 +139,7 @@ class StormSmartCache:
                                         mtime,
                                         category,
                                         module_name,
+                                        module_path,
                                         clean_desc,
                                         author_json,
                                         actions_json,
@@ -157,8 +166,8 @@ class StormSmartCache:
                         self.cursor.executemany(
                             """
                             INSERT OR REPLACE INTO module_cache 
-                            (path, mtime, category, module_name, description, author, actions, default_action) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            (path, mtime, category, module_name, module_path, description, author, actions, default_action) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                             to_upsert,
                         )

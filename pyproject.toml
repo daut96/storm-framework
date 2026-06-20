@@ -35,7 +35,7 @@ exclude = '''
 '''
 
 [tool.pyrefly]
-python_path = ["."]
+search_path = ["."]
 
 [tool.pyright]
 executionEnvironments = [

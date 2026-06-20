@@ -68,7 +68,7 @@ def show_modules(category: str) -> List[str]:
         conn = _get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT module_name FROM module_cache WHERE category = ?", (category,)
+            "SELECT module_path FROM module_cache WHERE category = ?", (category,)
         )
         results = [row[0] for row in cursor.fetchall()]
         conn.close()
@@ -106,7 +106,7 @@ def search_modules(query):
     sql_params = []
 
     if base_query:
-        query_parts.append("module_name LIKE ?")
+        query_parts.append("module_path LIKE ?")
         sql_params.append(f"%{base_query}%")
 
     for f_key, f_val in filters.items():
@@ -121,7 +121,7 @@ def search_modules(query):
             sql_params.append(f"%{f_val}%")
 
     # Finalisasi SQL String
-    sql_query = "SELECT module_name, category, description FROM module_cache"
+    sql_query = "SELECT module_path, category, description FROM module_cache"
     if query_parts:
         # Menggunakan AND untuk strict evaluation (semua filter harus match)
         sql_query += " WHERE " + " AND ".join(query_parts)

@@ -76,7 +76,6 @@ def load_module_dynamically(module_input):
     except Exception as e:
         smf.printd("ERROR DYNAMIC IMPORT", e, level="ERROR")
         return None
-        
 
 
 # UI MODULES
